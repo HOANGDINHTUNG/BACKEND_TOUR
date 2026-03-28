@@ -1,0 +1,14 @@
+package com.wedservice.backend.module.auth.dto;
+
+import com.wedservice.backend.module.user.dto.response.UserResponse;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class AuthResponse {
+    private UserResponse user;
+    private String tokenType;
+    private String accessToken;
+    private long expiresIn;
+}
