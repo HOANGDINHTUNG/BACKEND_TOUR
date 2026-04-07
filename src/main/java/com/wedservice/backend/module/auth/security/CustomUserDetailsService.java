@@ -2,6 +2,7 @@ package com.wedservice.backend.module.auth.security;
 
 import com.wedservice.backend.module.user.entity.User;
 import com.wedservice.backend.module.user.repository.UserRepository;
+import com.wedservice.backend.module.user.util.UserContactNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,15 +15,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    // login bằng username/password hoặc khi bạn check JWT (filter của bạn cũng dùng)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailIgnoreCase(normalizeEmail(username))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+        String normalizedLogin = UserContactNormalizer.normalizeLoginIdentifier(username);
+
+        User user = userRepository.findByLoginIdentifier(normalizedLogin)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with login: " + username));
 
         return CustomUserDetails.fromUser(user);
-    }
-
-    private String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase();
     }
 }

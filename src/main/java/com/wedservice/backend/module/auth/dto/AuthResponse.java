@@ -4,6 +4,9 @@ import com.wedservice.backend.module.user.dto.response.UserResponse;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Authentication result returned after register/login.
+ */
 @Data
 @Builder
 public class AuthResponse {

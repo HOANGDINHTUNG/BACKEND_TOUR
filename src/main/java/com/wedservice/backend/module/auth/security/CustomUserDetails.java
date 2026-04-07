@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.auth.security;
 
 import com.wedservice.backend.module.user.entity.Role;
+import com.wedservice.backend.module.user.entity.Status;
 import com.wedservice.backend.module.user.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,43 +10,50 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private final Long userId;
+    private final UUID userId;
     private final String fullName;
-    private final String email;
+    private final String username;
     private final String password;
-    private final boolean active;
+    private final boolean enabled;
+    private final Status status;
     private final Role role;
     private final List<? extends GrantedAuthority> authorities;
 
     private CustomUserDetails(
-            Long userId,
+            UUID userId,
             String fullName,
-            String email,
+            String username,
             String password,
-            boolean active,
+            boolean enabled,
+            Status status,
             Role role,
             List<? extends GrantedAuthority> authorities
     ) {
         this.userId = userId;
         this.fullName = fullName;
-        this.email = email;
+        this.username = username;
         this.password = password;
-        this.active = active;
+        this.enabled = enabled;
+        this.status = status;
         this.role = role;
         this.authorities = authorities;
     }
 
     public static CustomUserDetails fromUser(User user) {
+        String principal = user.getEmail() != null ? user.getEmail() : user.getPhone();
+
         return new CustomUserDetails(
                 user.getId(),
                 user.getFullName(),
-                user.getEmail(),
-                user.getPassword(),
-                Boolean.TRUE.equals(user.getActive()),
+                principal,
+                user.getPasswordHash(),
+                user.getStatus() == Status.ACTIVE,
+                user.getStatus(),
                 user.getRole(),
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
@@ -63,7 +71,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
@@ -73,7 +81,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return status != Status.BLOCKED;
     }
 
     @Override
@@ -83,6 +91,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return active;
+        return enabled;
     }
 }

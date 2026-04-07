@@ -6,10 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+// Lấy tất cả config bắt đầu bằng app.security.jwt ở application.yaml và map vào class này
 @ConfigurationProperties(prefix = "app.security.jwt")
 @Getter
 @Setter
 public class JwtProperties {
-    private String secret;
-    private long expiration;
+    private String secret; // mã bí mật
+    private long expiration; // thời gian hết hạn
 }

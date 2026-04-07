@@ -1,18 +1,9 @@
-/*
-Dùng khi request hợp lệ về mặt format nhưng sai về mặt nghiệp vụ.
-
-Ví dụ:
-
-email đã tồn tại
-tour đã hết chỗ
-booking không hợp lệ
-
-Trường hợp create user, nếu email trùng thì dùng exception này.
- */
-
 package com.wedservice.backend.common.exception;
 
+// Exception tùy biến để biểu diễn nhóm lỗi `BadRequest` trong tầng nghiệp vụ.
+// Class này kế thừa `RuntimeException` và chỉ giữ lại constructor nhận `message`. Nó không mang thêm state hay logic xử lý.
 public class BadRequestException extends RuntimeException {
+
     public BadRequestException(String message) {
         super(message);
     }

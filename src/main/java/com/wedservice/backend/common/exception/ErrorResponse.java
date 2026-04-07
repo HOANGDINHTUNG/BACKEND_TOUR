@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+//DTO chuẩn cho response lỗi.
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

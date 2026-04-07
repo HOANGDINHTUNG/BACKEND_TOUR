@@ -1,10 +1,13 @@
 package com.wedservice.backend.module.auth.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wedservice.backend.module.user.entity.Role;
+import com.wedservice.backend.module.user.entity.Status;
 import com.wedservice.backend.module.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,12 +27,12 @@ class JwtServiceTest {
     @Test
     void generateAccessToken_extractsSubject_andValidatesSuccessfully() {
         User user = User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .fullName("Test User")
                 .email("test@example.com")
-                .password("encoded")
+                .passwordHash("encoded")
                 .phone("0123456789")
-                .active(true)
+                .status(Status.ACTIVE)
                 .role(Role.CUSTOMER)
                 .build();
 
@@ -47,5 +50,12 @@ class JwtServiceTest {
 
         assertThatThrownBy(() -> jwtService.extractAllClaims(invalidToken))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void extractSubject_throwsException_whenTokenFormatIsInvalid() {
+        assertThatThrownBy(() -> jwtService.extractSubject("not-a-jwt"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid JWT token format");
     }
 }

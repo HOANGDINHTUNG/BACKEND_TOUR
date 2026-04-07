@@ -1,4 +1,6 @@
-# WedService Backend
+# WedService Backend 
+run vsocde: 
+./mvnw spring-boot:run
 
 ## 1. Tôi đã chỉnh gì để project chạy ổn hơn
 
@@ -299,7 +301,8 @@ mvn test
 
 ## 11. Lưu ý quan trọng khi bạn chạy ở máy mình
 
-Vì file bạn gửi không có sẵn wrapper Maven và môi trường làm việc hiện tại của tôi cũng không có Maven CLI, tôi đã sửa project theo hướng **đủ cấu trúc để bạn chạy local bằng Maven** nhưng tôi **không thể chạy lệnh `mvn test` trực tiếp trong môi trường hiện tại** để xác nhận runtime 100% tại chỗ.
+Vì file bạn gửi không có sẵn wrapper Maven và môi trường làm việc hiện tại của tôi cũng không có Maven CLI, tôi đã sửa 
+project theo hướng **đủ cấu trúc để bạn chạy local bằng Maven** nhưng tôi **không thể chạy lệnh `mvn test` trực tiếp trong môi trường hiện tại** để xác nhận runtime 100% tại chỗ.
 
 Điều đó có nghĩa là:
 
@@ -311,4 +314,31 @@ mvn clean test
 mvn spring-boot:run
 ```
 
-Nếu còn lỗi phát sinh do version dependency hoặc môi trường MySQL local, sửa tiếp sẽ rất nhanh vì nền project lúc này đã sạch và rõ hơn nhiều.
+Nếu còn lỗi phát sinh do version dependency hoặc môi trường MySQL local, sửa tiếp sẽ rất nhanh vì nền project lúc này đã 
+sạch và rõ hơn nhiều.
+
+## 12. ý nghĩa tác dụng của từng folder
+
+1. common : Là thư mục chứa các thành phần dùng chung cho toàn hệ thống, có thể tái sử dụng ở nhiều module khác nhau để tránh lặp code.
+2. common/entity : Chứa các lớp đại diện cho các thực thể chung (base entity), thường được kế thừa bởi các entity khác trong hệ thống.
+3. common/exception : Chứa các xử lý lỗi tập trung, giúp quản lý exception toàn hệ thống một cách thống nhất và rõ ràng.
+4. common/response : Chứa các cấu trúc response chuẩn, giúp thống nhất định dạng dữ liệu trả về từ API.
+5. common/security : Chứa các thành phần bảo mật dùng chung như xử lý xác thực, phân quyền, lấy thông tin user hiện tại.
+6. config : Chứa các  cấu hình của hệ thống như security, bean, filter,... giúp thiết lập cách ứng dụng hoạt động.
+7. module : Là thư mục chứa các chức năng chính của hệ thống, được chia theo từng nghiệp vụ (auth, user, system,...).
+8. module/auth : Chứa toàn bộ logic liên quan đến xác thực và đăng nhập/đăng ký người dùng.
+9. module/auth/controller : Chứa các API endpoint liên quan đến xác thực, nhận request từ client.
+10. module/auth/dto : Chứa các đối tượng truyền dữ liệu vào/ra cho API xác thực.
+11. module/auth/security : Chứa các xử lý liên quan đến JWT, xác thực người dùng và bảo mật trong module auth.
+12. module/auth/service : Chứa logic xử lý nghiệp vụ liên quan đến đăng nhập, đăng ký.
+13. module/user : Chứa các chức năng liên quan đến quản lý người dùng.
+14. module/user/controller : Chứa API liên quan đến user như quản lý hoặc cập nhật thông tin cá nhân.
+15. module/user/dto : Chứa các đối tượng dữ liệu dùng cho request và response của user.
+16. module/user/entity : Chứa các lớp đại diện cho bảng dữ liệu user trong database.
+17. module/user/mapper : Chứa các lớp chuyển đổi dữ liệu giữa entity và DTO.
+18. module/user/repository : Chứa các lớp làm việc với database (truy vấn dữ liệu).
+19. module/user/service : Chứa logic nghiệp vụ liên quan đến user.
+20. module/system : Chứa các chức năng hệ thống chung như kiểm tra trạng thái hệ thống.
+21. resources : Chứa các file cấu hình và tài nguyên của ứng dụng như file yaml, static, template.
+22. test : Chứa các mã kiểm thử để đảm bảo hệ thống hoạt động đúng.
+23. test/resources : Chứa cấu hình riêng phục vụ cho môi trường test.

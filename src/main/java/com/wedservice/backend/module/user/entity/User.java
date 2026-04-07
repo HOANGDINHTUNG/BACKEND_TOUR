@@ -1,11 +1,13 @@
 package com.wedservice.backend.module.user.entity;
 
+import com.wedservice.backend.common.entity.AuditableEntity;
+import com.wedservice.backend.module.user.entity.converter.GenderConverter;
+import com.wedservice.backend.module.user.entity.converter.MemberLevelConverter;
+import com.wedservice.backend.module.user.entity.converter.RoleConverter;
+import com.wedservice.backend.module.user.entity.converter.StatusConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -16,7 +18,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -25,50 +30,116 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User extends AuditableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id", columnDefinition = "CHAR(36)", nullable = false, updatable = false)
+    private UUID id;
 
-    @Column(nullable = false)
-    private String fullName;
-
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "email", unique = true, length = 150)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false, length = 20)
+    @Column(name = "phone", unique = true, length = 20)
     private String phone;
 
-    @Column(nullable = false)
-    private Boolean active;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Role role;
+    @Convert(converter = RoleConverter.class)
+    @Column(name = "role", nullable = false, length = 20)
+    @Builder.Default
+    private Role role = Role.CUSTOMER;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Convert(converter = StatusConverter.class)
+    @Column(name = "status", nullable = false, length = 20)
+    @Builder.Default
+    private Status status = Status.ACTIVE;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "full_name", nullable = false, length = 150)
+    private String fullName;
+
+    @Column(name = "display_name", length = 120)
+    private String displayName;
+
+    @Convert(converter = GenderConverter.class)
+    @Column(name = "gender", nullable = false, length = 20)
+    @Builder.Default
+    private Gender gender = Gender.UNKNOWN;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
+    private String avatarUrl;
+
+    @Convert(converter = MemberLevelConverter.class)
+    @Column(name = "member_level", nullable = false, length = 20)
+    @Builder.Default
+    private MemberLevel memberLevel = MemberLevel.BRONZE;
+
+    @Column(name = "loyalty_points", nullable = false)
+    @Builder.Default
+    private Integer loyaltyPoints = 0;
+
+    @Column(name = "total_spent", nullable = false, precision = 14, scale = 2)
+    @Builder.Default
+    private BigDecimal totalSpent = BigDecimal.ZERO;
+
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
+    @Column(name = "phone_verified_at")
+    private LocalDateTime phoneVerifiedAt;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @PrePersist
-    public void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+    protected void beforeInsert() {
+        super.onCreate();
 
-        if (this.active == null) {
-            this.active = true;
+        if (id == null) {
+            id = UUID.randomUUID();
         }
+        applyDefaults();
+        validateState();
     }
 
     @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    protected void beforeUpdate() {
+        super.onUpdate();
+
+        applyDefaults();
+        validateState();
+    }
+
+    private void applyDefaults() {
+        if (role == null) {
+            role = Role.CUSTOMER;
+        }
+        if (status == null) {
+            status = Status.ACTIVE;
+        }
+        if (gender == null) {
+            gender = Gender.UNKNOWN;
+        }
+        if (memberLevel == null) {
+            memberLevel = MemberLevel.BRONZE;
+        }
+        if (loyaltyPoints == null) {
+            loyaltyPoints = 0;
+        }
+        if (totalSpent == null) {
+            totalSpent = BigDecimal.ZERO;
+        }
+    }
+
+    private void validateState() {
+        if ((email == null || email.isBlank()) && (phone == null || phone.isBlank())) {
+            throw new IllegalStateException("User must have at least email or phone");
+        }
     }
 }
