@@ -1,13 +1,14 @@
 package com.wedservice.backend.module.auth.security;
 
-import com.wedservice.backend.module.user.entity.User;
-import com.wedservice.backend.module.user.repository.UserRepository;
-import com.wedservice.backend.module.user.util.UserContactNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.repository.UserRepository;
+import com.wedservice.backend.module.users.util.UserContactNormalizer;
 
 @Service
 @RequiredArgsConstructor

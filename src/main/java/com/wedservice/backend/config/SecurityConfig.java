@@ -4,7 +4,8 @@ import com.wedservice.backend.common.security.RestAccessDeniedHandler;
 import com.wedservice.backend.common.security.RestAuthenticationEntryPoint;
 import com.wedservice.backend.module.auth.security.CustomUserDetailsService;
 import com.wedservice.backend.module.auth.security.JwtAuthenticationFilter;
-import com.wedservice.backend.module.user.entity.Role;
+import com.wedservice.backend.module.users.entity.Role;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

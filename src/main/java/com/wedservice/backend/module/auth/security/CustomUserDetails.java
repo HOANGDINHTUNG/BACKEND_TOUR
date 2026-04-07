@@ -1,12 +1,13 @@
 package com.wedservice.backend.module.auth.security;
 
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
 
 import java.util.Collection;
 import java.util.List;

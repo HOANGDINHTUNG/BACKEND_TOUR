@@ -1,6 +1,5 @@
 package com.wedservice.backend.module.auth.dto;
 
-import com.wedservice.backend.module.user.entity.Gender;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,6 +8,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.util.StringUtils;
+
+import com.wedservice.backend.module.users.entity.Gender;
 
 import java.time.LocalDate;
 

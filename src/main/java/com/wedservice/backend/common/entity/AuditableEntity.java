@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 // Lớp cha dùng chung cho các entity cần theo dõi thời gian 
 
-
 @MappedSuperclass
 @Getter
 @Setter

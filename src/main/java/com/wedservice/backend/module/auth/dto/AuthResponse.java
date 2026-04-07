@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.auth.dto;
 
-import com.wedservice.backend.module.user.dto.response.UserResponse;
+import com.wedservice.backend.module.users.dto.response.UserResponse;
+
 import lombok.Builder;
 import lombok.Data;
 

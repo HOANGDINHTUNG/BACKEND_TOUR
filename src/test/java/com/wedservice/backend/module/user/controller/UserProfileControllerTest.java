@@ -1,11 +1,6 @@
 package com.wedservice.backend.module.user.controller;
 
 
-import com.wedservice.backend.module.user.dto.request.UpdateMyProfileRequest;
-import com.wedservice.backend.module.user.dto.response.UserResponse;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.service.UserProfileService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -13,6 +8,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.wedservice.backend.module.users.controller.UserProfileController;
+import com.wedservice.backend.module.users.dto.request.UpdateMyProfileRequest;
+import com.wedservice.backend.module.users.dto.response.UserResponse;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.service.UserProfileService;
+
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;

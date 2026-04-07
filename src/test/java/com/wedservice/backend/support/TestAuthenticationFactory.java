@@ -3,9 +3,10 @@ package com.wedservice.backend.support;
 import java.util.UUID;
 
 import com.wedservice.backend.module.auth.security.CustomUserDetails;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.User;
-import com.wedservice.backend.module.user.entity.Status;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;

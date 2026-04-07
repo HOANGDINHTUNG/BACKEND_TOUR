@@ -1,12 +1,14 @@
 package com.wedservice.backend.module.user.controller;
 
 import com.wedservice.backend.common.response.PageResponse;
-import com.wedservice.backend.module.user.dto.request.AdminCreateUserRequest;
-import com.wedservice.backend.module.user.dto.request.AdminUpdateUserRequest;
-import com.wedservice.backend.module.user.dto.response.UserResponse;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.service.AdminUserService;
+import com.wedservice.backend.module.users.controller.AdminUserController;
+import com.wedservice.backend.module.users.dto.request.AdminCreateUserRequest;
+import com.wedservice.backend.module.users.dto.request.AdminUpdateUserRequest;
+import com.wedservice.backend.module.users.dto.response.UserResponse;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.service.AdminUserService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

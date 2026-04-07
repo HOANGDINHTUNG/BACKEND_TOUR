@@ -1,9 +1,9 @@
 package com.wedservice.backend.config;
 
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.entity.User;
-import com.wedservice.backend.module.user.repository.UserRepository;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.support.TestAuthenticationFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

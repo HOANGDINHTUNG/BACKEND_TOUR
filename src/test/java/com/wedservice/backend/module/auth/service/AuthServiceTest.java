@@ -7,11 +7,12 @@ import com.wedservice.backend.module.auth.dto.LoginRequest;
 import com.wedservice.backend.module.auth.dto.RegisterRequest;
 import com.wedservice.backend.module.auth.security.CustomUserDetails;
 import com.wedservice.backend.module.auth.security.JwtService;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.entity.User;
-import com.wedservice.backend.module.user.mapper.UserMapper;
-import com.wedservice.backend.module.user.repository.UserRepository;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.mapper.UserMapper;
+import com.wedservice.backend.module.users.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

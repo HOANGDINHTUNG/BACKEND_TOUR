@@ -1,10 +1,12 @@
 package com.wedservice.backend.module.auth.security;
 
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
+
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;

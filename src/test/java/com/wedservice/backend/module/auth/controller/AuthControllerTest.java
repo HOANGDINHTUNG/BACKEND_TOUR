@@ -4,9 +4,10 @@ import com.wedservice.backend.module.auth.dto.AuthResponse;
 import com.wedservice.backend.module.auth.dto.LoginRequest;
 import com.wedservice.backend.module.auth.dto.RegisterRequest;
 import com.wedservice.backend.module.auth.service.AuthService;
-import com.wedservice.backend.module.user.dto.response.UserResponse;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
+import com.wedservice.backend.module.users.dto.response.UserResponse;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

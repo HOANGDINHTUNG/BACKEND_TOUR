@@ -1,9 +1,5 @@
 package com.wedservice.backend.module.user.repository;
 
-import com.wedservice.backend.module.user.entity.MemberLevel;
-import com.wedservice.backend.module.user.entity.Role;
-import com.wedservice.backend.module.user.entity.Status;
-import com.wedservice.backend.module.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.wedservice.backend.module.users.entity.MemberLevel;
+import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
