@@ -2,6 +2,7 @@ package com.wedservice.backend.common.security;
 
 import com.wedservice.backend.common.exception.UnauthorizedException;
 import com.wedservice.backend.module.auth.security.CustomUserDetails;
+import com.wedservice.backend.module.users.entity.Role;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,6 +47,18 @@ public class AuthenticatedUserProvider {
 
     public String getRequiredCurrentUserEmailOrPhone() {
         return getRequiredCurrentUserLogin();
+    }
+
+    public boolean isCurrentUserAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof CustomUserDetails details) {
+            return details.getRole() == Role.ADMIN;
+        }
+        return false;
     }
 
     private Object getRequiredPrincipal() {

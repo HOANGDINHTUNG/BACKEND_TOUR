@@ -72,9 +72,16 @@ public class DestinationService {
         }
 
         Destination destination = destinationMapper.toEntity(request);
-        destination.setStatus(DestinationStatus.PENDING);
-        destination.setIsOfficial(false);
-        destination.setProposedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+
+        if (authenticatedUserProvider.isCurrentUserAdmin()) {
+            destination.setStatus(DestinationStatus.APPROVED);
+            destination.setIsOfficial(true);
+            destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+        } else {
+            destination.setStatus(DestinationStatus.PENDING);
+            destination.setIsOfficial(false);
+            destination.setProposedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+        }
 
         return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
