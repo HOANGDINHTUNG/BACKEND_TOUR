@@ -5,6 +5,7 @@ import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.entity.Destination;
 import com.wedservice.backend.module.destinations.entity.DestinationStatus;
@@ -51,14 +52,14 @@ public class AdminDestinationService {
     }
 
     @Transactional(readOnly = true)
-    public DestinationResponse getDestinationByUuid(UUID uuid) {
-        return destinationRepository.findByUuid(uuid)
-                .map(destinationMapper::toResponse)
+    public DestinationDetailResponse getDestinationByUuid(UUID uuid) {
+        Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
+        return destinationMapper.toDetailResponse(destination);
     }
 
     @Transactional
-    public DestinationResponse createDestination(DestinationRequest request) {
+    public DestinationDetailResponse createDestination(DestinationRequest request) {
         if (destinationRepository.existsByCodeIgnoreCase(request.getCode())) {
             throw new BadRequestException("Destination code already exists: " + request.getCode());
         }
@@ -67,11 +68,11 @@ public class AdminDestinationService {
         }
 
         Destination destination = destinationMapper.toEntity(request);
-        return destinationMapper.toResponse(destinationRepository.save(destination));
+        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 
     @Transactional
-    public DestinationResponse updateDestination(UUID uuid, DestinationRequest request) {
+    public DestinationDetailResponse updateDestination(UUID uuid, DestinationRequest request) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
@@ -83,7 +84,7 @@ public class AdminDestinationService {
         }
 
         destinationMapper.updateEntity(destination, request);
-        return destinationMapper.toResponse(destinationRepository.save(destination));
+        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 
     @Transactional
@@ -94,7 +95,7 @@ public class AdminDestinationService {
     }
 
     @Transactional
-    public DestinationResponse approveProposal(UUID uuid) {
+    public DestinationDetailResponse approveProposal(UUID uuid) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
@@ -105,11 +106,11 @@ public class AdminDestinationService {
         destination.setStatus(DestinationStatus.APPROVED);
         destination.setIsOfficial(true);
         destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
-        return destinationMapper.toResponse(destinationRepository.save(destination));
+        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 
     @Transactional
-    public DestinationResponse rejectProposal(UUID uuid, String reason) {
+    public DestinationDetailResponse rejectProposal(UUID uuid, String reason) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
@@ -120,6 +121,6 @@ public class AdminDestinationService {
         destination.setStatus(DestinationStatus.REJECTED);
         destination.setRejectionReason(reason);
         destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
-        return destinationMapper.toResponse(destinationRepository.save(destination));
+        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 }

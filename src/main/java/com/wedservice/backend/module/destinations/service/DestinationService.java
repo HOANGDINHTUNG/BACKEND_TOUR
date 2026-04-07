@@ -6,6 +6,7 @@ import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.entity.Destination;
 import com.wedservice.backend.module.destinations.entity.DestinationStatus;
@@ -41,8 +42,8 @@ public class DestinationService {
                 request.getCrowdLevel(),
                 request.getIsFeatured(),
                 request.getIsActive() != null ? request.getIsActive() : true,
-                DestinationStatus.APPROVED, // Only approved
-                true, // Only official
+                DestinationStatus.APPROVED,
+                true,
                 pageable
         );
 
@@ -50,19 +51,19 @@ public class DestinationService {
     }
 
     @Transactional(readOnly = true)
-    public DestinationResponse getApprovedDestinationByUuid(UUID uuid) {
+    public DestinationDetailResponse getApprovedDestinationByUuid(UUID uuid) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
-        
+
         if (destination.getStatus() != DestinationStatus.APPROVED || !destination.getIsActive()) {
             throw new ResourceNotFoundException("Destination not found or not approved");
         }
-        
-        return destinationMapper.toResponse(destination);
+
+        return destinationMapper.toDetailResponse(destination);
     }
 
     @Transactional
-    public DestinationResponse proposeDestination(DestinationRequest request) {
+    public DestinationDetailResponse proposeDestination(DestinationRequest request) {
         if (destinationRepository.existsByCodeIgnoreCase(request.getCode())) {
             throw new BadRequestException("Destination code already exists: " + request.getCode());
         }
@@ -74,7 +75,7 @@ public class DestinationService {
         destination.setStatus(DestinationStatus.PENDING);
         destination.setIsOfficial(false);
         destination.setProposedBy(authenticatedUserProvider.getRequiredCurrentUserId());
-        
-        return destinationMapper.toResponse(destinationRepository.save(destination));
+
+        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 }

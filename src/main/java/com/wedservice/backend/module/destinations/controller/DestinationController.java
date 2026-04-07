@@ -4,6 +4,7 @@ import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.service.DestinationService;
 import jakarta.validation.Valid;
@@ -33,14 +34,14 @@ public class DestinationController {
     }
 
     @GetMapping("/{uuid}")
-    public ApiResponse<DestinationResponse> getDestination(@PathVariable UUID uuid) {
+    public ApiResponse<DestinationDetailResponse> getDestination(@PathVariable UUID uuid) {
         return ApiResponse.success(destinationService.getApprovedDestinationByUuid(uuid));
     }
 
     @PostMapping("/propose")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<DestinationResponse> proposeDestination(@Valid @RequestBody DestinationRequest request) {
+    public ApiResponse<DestinationDetailResponse> proposeDestination(@Valid @RequestBody DestinationRequest request) {
         return ApiResponse.success(destinationService.proposeDestination(request), "Propose destination successfully, please wait for admin review");
     }
 }

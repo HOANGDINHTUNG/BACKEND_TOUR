@@ -4,6 +4,7 @@ import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.service.AdminDestinationService;
 import jakarta.validation.Valid;
@@ -37,18 +38,18 @@ public class AdminDestinationController {
     }
 
     @GetMapping("/{uuid}")
-    public ApiResponse<DestinationResponse> getDestination(@PathVariable UUID uuid) {
+    public ApiResponse<DestinationDetailResponse> getDestination(@PathVariable UUID uuid) {
         return ApiResponse.success(adminDestinationService.getDestinationByUuid(uuid));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<DestinationResponse> createDestination(@Valid @RequestBody DestinationRequest request) {
+    public ApiResponse<DestinationDetailResponse> createDestination(@Valid @RequestBody DestinationRequest request) {
         return ApiResponse.success(adminDestinationService.createDestination(request), "Create destination successfully");
     }
 
     @PutMapping("/{uuid}")
-    public ApiResponse<DestinationResponse> updateDestination(
+    public ApiResponse<DestinationDetailResponse> updateDestination(
             @PathVariable UUID uuid,
             @Valid @RequestBody DestinationRequest request
     ) {
@@ -63,12 +64,12 @@ public class AdminDestinationController {
     }
 
     @PatchMapping("/{uuid}/approve")
-    public ApiResponse<DestinationResponse> approveProposal(@PathVariable UUID uuid) {
+    public ApiResponse<DestinationDetailResponse> approveProposal(@PathVariable UUID uuid) {
         return ApiResponse.success(adminDestinationService.approveProposal(uuid), "Approve proposal successfully");
     }
 
     @PatchMapping("/{uuid}/reject")
-    public ApiResponse<DestinationResponse> rejectProposal(
+    public ApiResponse<DestinationDetailResponse> rejectProposal(
             @PathVariable UUID uuid,
             @RequestBody String rejectionReason
     ) {

@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.destinations.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -18,6 +21,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -109,6 +114,32 @@ public class Destination extends AuditableEntity {
     @Column(name = "is_official", nullable = false)
     @Builder.Default
     private Boolean isOfficial = false;
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    @Builder.Default
+    private List<DestinationMedia> mediaList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DestinationFood> foods = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DestinationSpecialty> specialties = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DestinationActivity> activities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    @Builder.Default
+    private List<DestinationTip> tips = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DestinationEvent> events = new ArrayList<>();
 
     @PrePersist
     protected void beforeInsert() {

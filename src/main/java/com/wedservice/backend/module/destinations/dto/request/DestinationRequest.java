@@ -1,5 +1,6 @@
 package com.wedservice.backend.module.destinations.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.wedservice.backend.module.destinations.entity.CrowdLevel;
 
@@ -58,4 +60,11 @@ public class DestinationRequest {
     private Boolean isFeatured;
     private Boolean isActive;
     private Boolean isOfficial;
+
+    private List<@Valid DestinationMediaRequest> mediaList;
+    private List<@Valid DestinationFoodRequest> foods;
+    private List<@Valid DestinationSpecialtyRequest> specialties;
+    private List<@Valid DestinationActivityRequest> activities;
+    private List<@Valid DestinationTipRequest> tips;
+    private List<@Valid DestinationEventRequest> events;
 }

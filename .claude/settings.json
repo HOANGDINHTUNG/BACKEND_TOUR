@@ -14,7 +14,10 @@
       "Bash(powershell -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }')",
       "Bash(powershell -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }')",
       "Bash(timeout 30 bash -c './mvnw spring-boot:run 2>&1')",
-      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")"
+      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")",
+      "Bash(./mvnw compile:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(echo \"Exit code: $?\")"
     ]
   }
 }
