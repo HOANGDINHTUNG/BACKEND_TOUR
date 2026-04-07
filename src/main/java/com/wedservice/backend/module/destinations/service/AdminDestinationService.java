@@ -5,6 +5,7 @@ import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.request.RejectProposalRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.entity.Destination;
@@ -91,7 +92,8 @@ public class AdminDestinationService {
     public void deleteDestination(UUID uuid) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
-        destinationRepository.delete(destination);
+        destination.setIsActive(false);
+        destinationRepository.save(destination);
     }
 
     @Transactional
@@ -110,7 +112,7 @@ public class AdminDestinationService {
     }
 
     @Transactional
-    public DestinationDetailResponse rejectProposal(UUID uuid, String reason) {
+    public DestinationDetailResponse rejectProposal(UUID uuid, RejectProposalRequest request) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
@@ -119,7 +121,7 @@ public class AdminDestinationService {
         }
 
         destination.setStatus(DestinationStatus.REJECTED);
-        destination.setRejectionReason(reason);
+        destination.setRejectionReason(request.getReason());
         destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
         return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }

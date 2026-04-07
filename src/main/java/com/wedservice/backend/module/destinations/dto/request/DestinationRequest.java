@@ -29,7 +29,6 @@ public class DestinationRequest {
     @Size(max = 200, message = "Name must not exceed 200 characters")
     private String name;
 
-    @NotBlank(message = "Slug is required")
     @Size(max = 220, message = "Slug must not exceed 220 characters")
     private String slug;
 

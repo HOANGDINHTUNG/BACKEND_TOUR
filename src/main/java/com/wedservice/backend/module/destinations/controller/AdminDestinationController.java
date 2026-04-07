@@ -4,6 +4,7 @@ import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
+import com.wedservice.backend.module.destinations.dto.request.RejectProposalRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
 import com.wedservice.backend.module.destinations.service.AdminDestinationService;
@@ -71,8 +72,8 @@ public class AdminDestinationController {
     @PatchMapping("/{uuid}/reject")
     public ApiResponse<DestinationDetailResponse> rejectProposal(
             @PathVariable UUID uuid,
-            @RequestBody String rejectionReason
+            @Valid @RequestBody RejectProposalRequest request
     ) {
-        return ApiResponse.success(adminDestinationService.rejectProposal(uuid, rejectionReason), "Reject proposal successfully");
+        return ApiResponse.success(adminDestinationService.rejectProposal(uuid, request), "Reject proposal successfully");
     }
 }

@@ -1,6 +1,8 @@
 # WedService Backend 
 run vsocde: 
 ./mvnw spring-boot:run
+install: 
+./mvnw clean install
 
 ## 1. Tôi đã chỉnh gì để project chạy ổn hơn
 

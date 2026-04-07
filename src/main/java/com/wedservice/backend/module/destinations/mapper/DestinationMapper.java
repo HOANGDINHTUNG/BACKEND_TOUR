@@ -1,12 +1,6 @@
 package com.wedservice.backend.module.destinations.mapper;
 
-import com.wedservice.backend.module.destinations.dto.request.DestinationActivityRequest;
-import com.wedservice.backend.module.destinations.dto.request.DestinationEventRequest;
-import com.wedservice.backend.module.destinations.dto.request.DestinationFoodRequest;
-import com.wedservice.backend.module.destinations.dto.request.DestinationMediaRequest;
 import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
-import com.wedservice.backend.module.destinations.dto.request.DestinationSpecialtyRequest;
-import com.wedservice.backend.module.destinations.dto.request.DestinationTipRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationActivityResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationEventResponse;
@@ -116,10 +110,16 @@ public class DestinationMapper {
     public Destination toEntity(DestinationRequest request) {
         if (request == null) return null;
 
+        String name = normalize(request.getName());
+        String slug = normalize(request.getSlug());
+        if (!StringUtils.hasText(slug) && StringUtils.hasText(name)) {
+            slug = com.wedservice.backend.common.util.SlugUtils.toSlug(name);
+        }
+
         Destination destination = Destination.builder()
                 .code(normalize(request.getCode()))
-                .name(normalize(request.getName()))
-                .slug(normalize(request.getSlug()))
+                .name(name)
+                .slug(slug)
                 .countryCode(StringUtils.hasText(request.getCountryCode()) ? request.getCountryCode().toUpperCase() : "VN")
                 .province(normalize(request.getProvince()))
                 .district(normalize(request.getDistrict()))
@@ -147,9 +147,15 @@ public class DestinationMapper {
     public void updateEntity(Destination destination, DestinationRequest request) {
         if (request == null) return;
 
+        String name = normalize(request.getName());
+        String slug = normalize(request.getSlug());
+        if (!StringUtils.hasText(slug) && StringUtils.hasText(name)) {
+            slug = com.wedservice.backend.common.util.SlugUtils.toSlug(name);
+        }
+
         destination.setCode(normalize(request.getCode()));
-        destination.setName(normalize(request.getName()));
-        destination.setSlug(normalize(request.getSlug()));
+        destination.setName(name);
+        destination.setSlug(slug);
         if (StringUtils.hasText(request.getCountryCode())) {
             destination.setCountryCode(request.getCountryCode().toUpperCase());
         }
