@@ -33,7 +33,8 @@ import java.util.UUID;
 public class User extends AuditableEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "CHAR(36)", nullable = false, updatable = false)
+    @Column(name = "id", columnDefinition = "CHAR(36)", nullable = false, updatable = false, length = 36)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.CHAR)
     private UUID id;
 
     @Column(name = "email", unique = true, length = 150)

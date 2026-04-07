@@ -2,11 +2,11 @@ package com.wedservice.backend.module.user.service;
 
 import com.wedservice.backend.common.exception.BadRequestException;
 import com.wedservice.backend.common.response.PageResponse;
-import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.user.dto.request.AdminCreateUserRequest;
 import com.wedservice.backend.module.user.dto.request.AdminUpdateUserRequest;
 import com.wedservice.backend.module.user.dto.request.UserSearchRequest;
 import com.wedservice.backend.module.user.dto.response.UserResponse;
+import com.wedservice.backend.module.user.entity.MemberLevel;
 import com.wedservice.backend.module.user.entity.Role;
 import com.wedservice.backend.module.user.entity.Status;
 import com.wedservice.backend.module.user.entity.User;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -46,18 +47,11 @@ class AdminUserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private AuthenticatedUserProvider authenticatedUserProvider;
-
+    @Spy
+    private UserMapper userMapper;
 
     @InjectMocks
     private AdminUserService adminUserService;
-
-    @BeforeEach
-    void setUp() {
-        userMapper = new UserMapper();
-        adminUserService = new AdminUserService();
-    }
 
     @Test
     void createUser_normalizesEmail_encodesPassword_andPersistsAuditActor() {
@@ -81,7 +75,6 @@ class AdminUserServiceTest {
 
         when(userRepository.existsByEmailIgnoreCase("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("123456")).thenReturn("encoded-password");
-        when(authenticatedUserProvider.getRequiredCurrentUserLogin()).thenReturn("admin@example.com");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         UserResponse response = adminUserService.createUser(request);
@@ -196,7 +189,6 @@ class AdminUserServiceTest {
                 .build();
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
-        when(authenticatedUserProvider.getRequiredCurrentUserLogin()).thenReturn("super-admin@example.com");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = adminUserService.deactivateUser(id);
@@ -228,7 +220,6 @@ class AdminUserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
         when(userRepository.existsByEmailIgnoreCaseAndIdNot("updated@example.com", id)).thenReturn(false);
-        when(authenticatedUserProvider.getRequiredCurrentUserLogin()).thenReturn("admin@example.com");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = adminUserService.updateUser(id, request);

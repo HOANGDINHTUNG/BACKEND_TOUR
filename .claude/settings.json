@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn clean:*)",
+      "Bash(cmd.exe /c \"mvn clean install\")",
+      "Bash(cmd.exe /c \"mvn --version\")",
+      "Bash(powershell.exe -Command \"mvn --version\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem -Path 'C:\\\\' -Filter 'mvn.cmd' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 3 -ExpandProperty FullName\")",
+      "Bash(powershell.exe -Command \".\\\\mvnw.cmd clean install\")",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(mysql --version)",
+      "Bash(powershell -Command \"Get-Service -Name 'MySQL*' | Select-Object Name, Status\")",
+      "Bash(powershell -Command \"& 'C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe' -u wed_user -p123456 -e 'SELECT 1' wedservice 2>&1\")",
+      "Bash(powershell -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }')",
+      "Bash(powershell -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }')",
+      "Bash(timeout 30 bash -c './mvnw spring-boot:run 2>&1')",
+      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")"
+    ]
+  }
+}
