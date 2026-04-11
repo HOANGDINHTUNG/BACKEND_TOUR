@@ -13,7 +13,7 @@ import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
-import com.wedservice.backend.module.users.util.UserContactNormalizer;
+import com.wedservice.backend.common.util.DataNormalizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -51,8 +51,8 @@ public class AuthService {
     private final UserMapper userMapper;
 
     public AuthResponse register(RegisterRequest request) {
-        String email = UserContactNormalizer.normalizeEmail(request.getEmail());
-        String phone = UserContactNormalizer.normalizePhone(request.getPhone());
+        String email = DataNormalizer.normalizeEmail(request.getEmail());
+        String phone = DataNormalizer.normalizePhone(request.getPhone());
         validateRequiredContact(email, phone);
         validateUniqueContacts(email, phone, null);
 
@@ -90,7 +90,7 @@ public class AuthService {
 
             Nếu đúng: Nó trả về object Authentication.
          */
-        String login = UserContactNormalizer.normalizeLoginIdentifier(request.getLogin());
+        String login = DataNormalizer.normalizeLoginIdentifier(request.getLogin());
 
         Authentication authentication = authenticationManager.authenticate(
             /*
@@ -132,7 +132,7 @@ public class AuthService {
 
         return AuthResponse.builder()
                 // Chuyển entity User sang DTO trả về.
-                .user(userMapper.toResponse(user))
+                .user(userMapper.toDto(user))
                 // Ghi loại token là Bearer (ghi chứ cho frontend biết cách dùng)
                 .tokenType("Bearer")
                 // Tạo JWT access token: Đây là token client sẽ cầm để gọi các API cần đăng nhập

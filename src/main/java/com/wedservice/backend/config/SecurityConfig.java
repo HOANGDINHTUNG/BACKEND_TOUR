@@ -19,7 +19,6 @@ import com.wedservice.backend.common.security.RestAccessDeniedHandler;
 import com.wedservice.backend.common.security.RestAuthenticationEntryPoint;
 import com.wedservice.backend.module.auth.security.CustomUserDetailsService;
 import com.wedservice.backend.module.auth.security.JwtAuthenticationFilter;
-import com.wedservice.backend.module.users.entity.Role;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,50 +34,30 @@ import lombok.RequiredArgsConstructor;
 // Spring sẽ đọc nó để tạo các bean liên quan đến bảo mật.
 
 @Configuration
-// Dùng để tạo contructor cho các field final
 @RequiredArgsConstructor
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
-    // Đây là filter dùng để đọc JWT token từ request.
-    // lấy token ra
-    // kiểm tra token có hợp lệ không
-    // nếu hợp lệ thì xác định user là ai
-    // gắn thông tin user vào SecurityContext
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    // Đây là service để Spring Security lấy thông tin user từ database.
-    private final CustomUserDetailsService customUserDetailsService;
-    // user chưa đăng nhập hoặc token không hợp lệ nhưng lại gọi API cần xác thực
-    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    // user đã đăng nhập rồi nhưng không đủ quyền để thực thi các thao tác khác
-    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
-    // SecurityFilterChain là các chuỗi filter (cổng kiểm tra) chạy trước khi
-    // resquest vào controller
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) // tắt CSRF
-                .formLogin(AbstractHttpConfigurer::disable) // tắt loginform mặc định
+        http.csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth //// Cấu hình quyền truy cập API
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/register",
                                 "/auth/login",
                                 "/system/health")
-                        .permitAll() // Các enpoint này không cần đăng nhập có thể dô trực tiếp
-                        // Destination public endpoints - xem danh sách & chi tiết điểm đến
+                        .permitAll()
+                        // Public GET endpoints for destinations
                         .requestMatchers(HttpMethod.GET, "/destinations", "/destinations/{uuid}").permitAll()
-                        // Destination follow - cần đăng nhập
-                        .requestMatchers("/destinations/me/**").authenticated()
-                        .requestMatchers("/destinations/*/follow", "/destinations/*/follow/**").authenticated()
-                        .requestMatchers("/destinations/propose").authenticated()
-                        // Admin endpoints
-                        .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers("/users/me", "/users/me/**").authenticated() // Cần phải đăng nhập hợp lệ và có
-                                                                                      // token hợp lệ
-                        .requestMatchers("/users/**").hasRole(Role.ADMIN.name()) // lưu ý cái so sánh của nó là
-                                                                                 // ROLE_ADMIN nhma .hasRole() có cơ chế
-                                                                                 // chuyển rồi nên ko ảnh hưởng
-                        .anyRequest().authenticated() // mọi api khác không khớp thì vẫn phải đăng nhập
+                        // Any other request must be authenticated (rules will be defined in controllers)
+                        .anyRequest().authenticated()
                 )
                 // Đây là nơi chỉ định cách trả lỗi khi có vấn đề bảo mật.
                 .exceptionHandling(ex -> ex

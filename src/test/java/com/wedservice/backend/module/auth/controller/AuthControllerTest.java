@@ -3,7 +3,7 @@ package com.wedservice.backend.module.auth.controller;
 import com.wedservice.backend.module.auth.dto.AuthResponse;
 import com.wedservice.backend.module.auth.dto.LoginRequest;
 import com.wedservice.backend.module.auth.dto.RegisterRequest;
-import com.wedservice.backend.module.auth.service.AuthService;
+import com.wedservice.backend.module.auth.facade.AuthFacade;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
@@ -35,8 +35,8 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private AuthService authService;
+        @MockitoBean
+        private AuthFacade authService;
 
     @Test
     void register_returnsWrappedApiResponse() throws Exception {

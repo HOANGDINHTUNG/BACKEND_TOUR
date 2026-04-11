@@ -6,10 +6,11 @@ import com.wedservice.backend.module.users.dto.request.AdminCreateUserRequest;
 import com.wedservice.backend.module.users.dto.request.AdminUpdateUserRequest;
 import com.wedservice.backend.module.users.dto.request.UserSearchRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.service.AdminUserService;
+import com.wedservice.backend.module.users.facade.AdminUserFacade;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,13 +28,14 @@ import java.util.UUID;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
-    private final AdminUserService adminUserService;
+    private final AdminUserFacade adminUserFacade;
 
     @PostMapping
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody AdminCreateUserRequest request) {
-        UserResponse response = adminUserService.createUser(request);
+        UserResponse response = adminUserFacade.createUser(request);
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)
@@ -44,7 +46,7 @@ public class AdminUserController {
 
     @GetMapping
     public ApiResponse<PageResponse<UserResponse>> getUsers(@Valid @ModelAttribute UserSearchRequest request) {
-        PageResponse<UserResponse> users = adminUserService.getUsers(request);
+        PageResponse<UserResponse> users = adminUserFacade.getUsers(request);
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .success(true)
@@ -55,7 +57,7 @@ public class AdminUserController {
 
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getUserById(@PathVariable UUID id) {
-        UserResponse user = adminUserService.getUserById(id);
+        UserResponse user = adminUserFacade.getUserById(id);
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)
@@ -69,7 +71,7 @@ public class AdminUserController {
             @PathVariable UUID id,
             @Valid @RequestBody AdminUpdateUserRequest request
     ) {
-        UserResponse updatedUser = adminUserService.updateUser(id, request);
+        UserResponse updatedUser = adminUserFacade.updateUser(id, request);
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)
@@ -80,7 +82,7 @@ public class AdminUserController {
 
     @PatchMapping("/{id}/deactivate")
     public ApiResponse<UserResponse> deactivateUser(@PathVariable UUID id) {
-        UserResponse deactivatedUser = adminUserService.deactivateUser(id);
+        UserResponse deactivatedUser = adminUserFacade.deactivateUser(id);
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)

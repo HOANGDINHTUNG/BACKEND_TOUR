@@ -1,5 +1,8 @@
 package com.wedservice.backend.module.users.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.wedservice.backend.module.users.entity.QUser;
+
 import com.wedservice.backend.common.exception.BadRequestException;
 import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
@@ -11,7 +14,7 @@ import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
-import com.wedservice.backend.module.users.util.UserContactNormalizer;
+import com.wedservice.backend.common.util.DataNormalizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,9 +28,22 @@ import org.springframework.util.StringUtils;
 import java.util.Set;
 import java.util.UUID;
 
+import com.wedservice.backend.common.service.BaseService;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 @Service
 @RequiredArgsConstructor
-public class AdminUserService {
+public class AdminUserService extends BaseService<User, UUID> {
+    
+    @Override
+    protected JpaRepository<User, UUID> getRepository() {
+        return userRepository;
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "User";
+    }
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "id",
@@ -49,8 +65,8 @@ public class AdminUserService {
     private final UserMapper userMapper;
 
     public UserResponse createUser(AdminCreateUserRequest request) {
-        String email = UserContactNormalizer.normalizeEmail(request.getEmail());
-        String phone = UserContactNormalizer.normalizePhone(request.getPhone());
+        String email = DataNormalizer.normalizeEmail(request.getEmail());
+        String phone = DataNormalizer.normalizePhone(request.getPhone());
         validateRequiredContact(email, phone);
         validateUniqueContacts(email, phone, null);
 
@@ -62,23 +78,39 @@ public class AdminUserService {
         );
 
         User savedUser = userRepository.save(user);
-        return userMapper.toResponse(savedUser);
+        return userMapper.toDto(savedUser);
     }
 
     public PageResponse<UserResponse> getUsers(UserSearchRequest request) {
         String keyword = normalizeKeyword(request.getKeyword());
         Pageable pageable = buildPageable(request);
 
-        Page<User> userPage = userRepository.searchUsers(
-                keyword,
-                request.getStatus(),
-                request.getRole(),
-                request.getMemberLevel(),
-                pageable
-        );
+        QUser qUser = QUser.user;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (StringUtils.hasText(keyword)) {
+            builder.and(qUser.fullName.containsIgnoreCase(keyword)
+                    .or(qUser.displayName.containsIgnoreCase(keyword))
+                    .or(qUser.email.containsIgnoreCase(keyword))
+                    .or(qUser.phone.contains(keyword)));
+        }
+
+        if (request.getStatus() != null) {
+            builder.and(qUser.status.eq(request.getStatus()));
+        }
+
+        if (request.getRole() != null) {
+            builder.and(qUser.role.eq(request.getRole()));
+        }
+
+        if (request.getMemberLevel() != null) {
+            builder.and(qUser.memberLevel.eq(request.getMemberLevel()));
+        }
+
+        Page<User> userPage = userRepository.findAll(builder, pageable);
 
         return PageResponse.<UserResponse>builder()
-                .content(userPage.getContent().stream().map(userMapper::toResponse).toList())
+                .content(userPage.getContent().stream().map(userMapper::toDto).toList())
                 .page(userPage.getNumber())
                 .size(userPage.getSize())
                 .totalElements(userPage.getTotalElements())
@@ -88,13 +120,13 @@ public class AdminUserService {
     }
 
     public UserResponse getUserById(UUID id) {
-        return userMapper.toResponse(findUserById(id));
+        return userMapper.toDto(findUserById(id));
     }
 
     public UserResponse updateUser(UUID id, AdminUpdateUserRequest request) {
         User user = findUserById(id);
-        String email = UserContactNormalizer.normalizeEmail(request.getEmail());
-        String phone = UserContactNormalizer.normalizePhone(request.getPhone());
+        String email = DataNormalizer.normalizeEmail(request.getEmail());
+        String phone = DataNormalizer.normalizePhone(request.getPhone());
         validateRequiredContact(email, phone);
         validateUniqueContacts(email, phone, user.getId());
 
@@ -105,7 +137,7 @@ public class AdminUserService {
         userMapper.applyAdminUpdate(user, request, email, phone, encodedPassword);
 
         User updatedUser = userRepository.save(user);
-        return userMapper.toResponse(updatedUser);
+        return userMapper.toDto(updatedUser);
     }
 
     public UserResponse deactivateUser(UUID id) {
@@ -113,7 +145,7 @@ public class AdminUserService {
         user.setStatus(Status.SUSPENDED);
 
         User updatedUser = userRepository.save(user);
-        return userMapper.toResponse(updatedUser);
+        return userMapper.toDto(updatedUser);
     }
 
     private User findUserById(UUID id) {
@@ -158,6 +190,6 @@ public class AdminUserService {
     }
 
     private String normalizeKeyword(String keyword) {
-        return StringUtils.hasText(keyword) ? keyword.trim() : null;
+        return DataNormalizer.normalize(keyword);
     }
 }

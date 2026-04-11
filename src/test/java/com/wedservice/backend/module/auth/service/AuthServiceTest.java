@@ -12,6 +12,7 @@ import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
+import org.mapstruct.factory.Mappers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        userMapper = new UserMapper();
+        userMapper = Mappers.getMapper(UserMapper.class);
         authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, userMapper);
     }
 

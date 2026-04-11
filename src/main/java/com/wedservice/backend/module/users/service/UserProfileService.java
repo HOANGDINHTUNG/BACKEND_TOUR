@@ -8,7 +8,7 @@ import com.wedservice.backend.module.users.dto.response.UserResponse;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
-import com.wedservice.backend.module.users.util.UserContactNormalizer;
+import com.wedservice.backend.common.util.DataNormalizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,20 +25,20 @@ public class UserProfileService {
     private final AuthenticatedUserProvider authenticatedUserProvider;
 
     public UserResponse getMyProfile() {
-        return userMapper.toResponse(findCurrentUser());
+        return userMapper.toDto(findCurrentUser());
     }
 
     public UserResponse updateMyProfile(UpdateMyProfileRequest request) {
         User currentUser = findCurrentUser();
-        String email = UserContactNormalizer.normalizeEmail(request.getEmail());
-        String phone = UserContactNormalizer.normalizePhone(request.getPhone());
+        String email = DataNormalizer.normalizeEmail(request.getEmail());
+        String phone = DataNormalizer.normalizePhone(request.getPhone());
         validateRequiredContact(email, phone);
         validateUniqueContacts(email, phone, currentUser.getId());
 
         userMapper.applyProfileUpdate(currentUser, request, email, phone);
 
         User updatedUser = userRepository.save(currentUser);
-        return userMapper.toResponse(updatedUser);
+        return userMapper.toDto(updatedUser);
     }
 
     private User findCurrentUser() {

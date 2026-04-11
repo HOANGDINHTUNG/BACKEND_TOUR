@@ -1,5 +1,7 @@
 package com.wedservice.backend.module.destinations.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.wedservice.backend.module.destinations.entity.QDestination;
 import com.wedservice.backend.common.exception.BadRequestException;
 import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
@@ -13,12 +15,18 @@ import com.wedservice.backend.module.destinations.entity.DestinationStatus;
 import com.wedservice.backend.module.destinations.mapper.DestinationMapper;
 import com.wedservice.backend.module.destinations.repository.DestinationRepository;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
+import com.wedservice.backend.common.util.DataNormalizer;
+
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
+
+import com.wedservice.backend.common.service.BaseService;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +34,20 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AdminDestinationService {
+public class AdminDestinationService extends BaseService<Destination, Long> {
 
     private final DestinationRepository destinationRepository;
     private final DestinationMapper destinationMapper;
+
+    @Override
+    protected JpaRepository<Destination, Long> getRepository() {
+        return destinationRepository;
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Destination";
+    }
     private final AuthenticatedUserProvider authenticatedUserProvider;
 
     @Transactional(readOnly = true)
@@ -37,19 +55,46 @@ public class AdminDestinationService {
         Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDir()), request.getSortBy());
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 
-        Page<Destination> page = destinationRepository.searchDestinations(
-                request.getKeyword(),
-                request.getProvince(),
-                request.getRegion(),
-                request.getCrowdLevel(),
-                request.getIsFeatured(),
-                request.getIsActive(),
-                request.getStatus(),
-                request.getIsOfficial(),
-                pageable
-        );
+        QDestination qDestination = QDestination.destination;
+        BooleanBuilder builder = new BooleanBuilder();
 
-        return PageResponse.of(page.map(destinationMapper::toResponse));
+        String keyword = DataNormalizer.normalize(request.getKeyword());
+        if (StringUtils.hasText(keyword)) {
+            builder.and(qDestination.name.containsIgnoreCase(keyword)
+                    .or(qDestination.code.containsIgnoreCase(keyword)));
+        }
+
+        if (StringUtils.hasText(request.getProvince())) {
+            builder.and(qDestination.province.eq(request.getProvince()));
+        }
+
+        if (StringUtils.hasText(request.getRegion())) {
+            builder.and(qDestination.region.eq(request.getRegion()));
+        }
+
+        if (request.getCrowdLevel() != null) {
+            builder.and(qDestination.crowdLevelDefault.eq(request.getCrowdLevel()));
+        }
+
+        if (request.getIsFeatured() != null) {
+            builder.and(qDestination.isFeatured.eq(request.getIsFeatured()));
+        }
+
+        if (request.getIsActive() != null) {
+            builder.and(qDestination.isActive.eq(request.getIsActive()));
+        }
+
+        if (request.getStatus() != null) {
+            builder.and(qDestination.status.eq(request.getStatus()));
+        }
+
+        if (request.getIsOfficial() != null) {
+            builder.and(qDestination.isOfficial.eq(request.getIsOfficial()));
+        }
+
+        Page<Destination> page = destinationRepository.findAll(builder, pageable);
+
+        return PageResponse.of(page.map(destinationMapper::toDto));
     }
 
     @Transactional(readOnly = true)

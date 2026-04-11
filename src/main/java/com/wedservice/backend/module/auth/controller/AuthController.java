@@ -20,7 +20,7 @@ import com.wedservice.backend.module.auth.dto.RegisterRequest;
 
     Hiểu đơn giản: Controller là người tiếp tân, còn AuthService là người làm nghiệp vụ thật.
  */
-import com.wedservice.backend.module.auth.service.AuthService;
+import com.wedservice.backend.module.auth.facade.AuthFacade;
 // Dùng để kích hoạt validation cho object request
 // // Hiểu đơn giản kiểm tra dữu liệu đầu vào trước khi xử lý.
 import jakarta.validation.Valid;
@@ -68,11 +68,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthFacade authFacade;
 
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
+    AuthResponse response = authFacade.register(request);
 
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
@@ -83,7 +83,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+    AuthResponse response = authFacade.login(request);
 
         return ApiResponse.<AuthResponse>builder()
                 .success(true)

@@ -11,10 +11,12 @@ import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID>, QuerydslPredicateExecutor<User> {
 
     boolean existsByEmailIgnoreCase(String email);
 

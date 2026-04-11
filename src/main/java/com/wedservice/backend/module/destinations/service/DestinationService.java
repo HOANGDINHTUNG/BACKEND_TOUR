@@ -1,5 +1,7 @@
 package com.wedservice.backend.module.destinations.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.wedservice.backend.module.destinations.entity.QDestination;
 import com.wedservice.backend.common.exception.BadRequestException;
 import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
@@ -12,6 +14,9 @@ import com.wedservice.backend.module.destinations.entity.Destination;
 import com.wedservice.backend.module.destinations.entity.DestinationStatus;
 import com.wedservice.backend.module.destinations.mapper.DestinationMapper;
 import com.wedservice.backend.module.destinations.repository.DestinationRepository;
+import com.wedservice.backend.common.util.DataNormalizer;
+import org.springframework.util.StringUtils;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,19 +40,39 @@ public class DestinationService {
         Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDir()), request.getSortBy());
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 
-        Page<Destination> page = destinationRepository.searchDestinations(
-                request.getKeyword(),
-                request.getProvince(),
-                request.getRegion(),
-                request.getCrowdLevel(),
-                request.getIsFeatured(),
-                request.getIsActive() != null ? request.getIsActive() : true,
-                DestinationStatus.APPROVED,
-                true,
-                pageable
-        );
+        QDestination qDestination = QDestination.destination;
+        BooleanBuilder builder = new BooleanBuilder();
 
-        return PageResponse.of(page.map(destinationMapper::toResponse));
+        String keyword = DataNormalizer.normalize(request.getKeyword());
+        if (StringUtils.hasText(keyword)) {
+            builder.and(qDestination.name.containsIgnoreCase(keyword)
+                    .or(qDestination.code.containsIgnoreCase(keyword)));
+        }
+
+        if (StringUtils.hasText(request.getProvince())) {
+            builder.and(qDestination.province.eq(request.getProvince()));
+        }
+
+        if (StringUtils.hasText(request.getRegion())) {
+            builder.and(qDestination.region.eq(request.getRegion()));
+        }
+
+        if (request.getCrowdLevel() != null) {
+            builder.and(qDestination.crowdLevelDefault.eq(request.getCrowdLevel()));
+        }
+
+        if (request.getIsFeatured() != null) {
+            builder.and(qDestination.isFeatured.eq(request.getIsFeatured()));
+        }
+
+        // Must be approved and active for public search
+        builder.and(qDestination.status.eq(DestinationStatus.APPROVED));
+        builder.and(qDestination.isActive.isTrue());
+        builder.and(qDestination.isOfficial.isTrue());
+
+        Page<Destination> page = destinationRepository.findAll(builder, pageable);
+
+        return PageResponse.of(page.map(destinationMapper::toDto));
     }
 
     @Transactional(readOnly = true)

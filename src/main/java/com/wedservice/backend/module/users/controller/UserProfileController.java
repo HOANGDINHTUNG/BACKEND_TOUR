@@ -3,10 +3,11 @@ package com.wedservice.backend.module.users.controller;
 import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.module.users.dto.request.UpdateMyProfileRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.service.UserProfileService;
+import com.wedservice.backend.module.users.facade.UserProfileFacade;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,13 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/users/me")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class UserProfileController {
 
-    private final UserProfileService userProfileService;
+    private final UserProfileFacade userProfileFacade;
 
     @GetMapping
     public ApiResponse<UserResponse> getMyProfile() {
-        UserResponse response = userProfileService.getMyProfile();
+        UserResponse response = userProfileFacade.getMyProfile();
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)
@@ -36,7 +38,7 @@ public class UserProfileController {
 
     @PutMapping
     public ApiResponse<UserResponse> updateMyProfile(@Valid @RequestBody UpdateMyProfileRequest request) {
-        UserResponse response = userProfileService.updateMyProfile(request);
+        UserResponse response = userProfileFacade.updateMyProfile(request);
 
         return ApiResponse.<UserResponse>builder()
                 .success(true)

@@ -7,7 +7,7 @@ import com.wedservice.backend.module.destinations.dto.request.DestinationSearchR
 import com.wedservice.backend.module.destinations.dto.request.RejectProposalRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
-import com.wedservice.backend.module.destinations.service.AdminDestinationService;
+import com.wedservice.backend.module.destinations.facade.AdminDestinationFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,22 +31,22 @@ import java.util.UUID;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminDestinationController {
 
-    private final AdminDestinationService adminDestinationService;
+    private final AdminDestinationFacade adminDestinationFacade;
 
     @GetMapping
     public ApiResponse<PageResponse<DestinationResponse>> searchDestinations(DestinationSearchRequest request) {
-        return ApiResponse.success(adminDestinationService.searchDestinations(request));
+    return ApiResponse.success(adminDestinationFacade.searchDestinations(request));
     }
 
     @GetMapping("/{uuid}")
     public ApiResponse<DestinationDetailResponse> getDestination(@PathVariable UUID uuid) {
-        return ApiResponse.success(adminDestinationService.getDestinationByUuid(uuid));
+    return ApiResponse.success(adminDestinationFacade.getDestinationByUuid(uuid));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<DestinationDetailResponse> createDestination(@Valid @RequestBody DestinationRequest request) {
-        return ApiResponse.success(adminDestinationService.createDestination(request), "Create destination successfully");
+    return ApiResponse.success(adminDestinationFacade.createDestination(request), "Create destination successfully");
     }
 
     @PutMapping("/{uuid}")
@@ -54,19 +54,19 @@ public class AdminDestinationController {
             @PathVariable UUID uuid,
             @Valid @RequestBody DestinationRequest request
     ) {
-        return ApiResponse.success(adminDestinationService.updateDestination(uuid, request), "Update destination successfully");
+    return ApiResponse.success(adminDestinationFacade.updateDestination(uuid, request), "Update destination successfully");
     }
 
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ApiResponse<Void> deleteDestination(@PathVariable UUID uuid) {
-        adminDestinationService.deleteDestination(uuid);
+    adminDestinationFacade.deleteDestination(uuid);
         return ApiResponse.success(null, "Delete destination successfully");
     }
 
     @PatchMapping("/{uuid}/approve")
     public ApiResponse<DestinationDetailResponse> approveProposal(@PathVariable UUID uuid) {
-        return ApiResponse.success(adminDestinationService.approveProposal(uuid), "Approve proposal successfully");
+    return ApiResponse.success(adminDestinationFacade.approveProposal(uuid), "Approve proposal successfully");
     }
 
     @PatchMapping("/{uuid}/reject")
@@ -74,6 +74,6 @@ public class AdminDestinationController {
             @PathVariable UUID uuid,
             @Valid @RequestBody RejectProposalRequest request
     ) {
-        return ApiResponse.success(adminDestinationService.rejectProposal(uuid, request), "Reject proposal successfully");
+    return ApiResponse.success(adminDestinationFacade.rejectProposal(uuid, request), "Reject proposal successfully");
     }
 }

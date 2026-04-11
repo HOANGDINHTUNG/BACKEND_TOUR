@@ -4,7 +4,7 @@ import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.destinations.dto.request.FollowDestinationRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationFollowResponse;
-import com.wedservice.backend.module.destinations.service.DestinationFollowService;
+import com.wedservice.backend.module.destinations.facade.DestinationFollowFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,7 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public class DestinationFollowController {
 
-    private final DestinationFollowService followService;
+    private final DestinationFollowFacade destinationFollowFacade;
 
     @PostMapping("/{uuid}/follow")
     @ResponseStatus(HttpStatus.CREATED)
@@ -39,12 +39,12 @@ public class DestinationFollowController {
         if (request == null) {
             request = new FollowDestinationRequest();
         }
-        return ApiResponse.success(followService.followDestination(uuid, request), "Follow destination successfully");
+    return ApiResponse.success(destinationFollowFacade.followDestination(uuid, request), "Follow destination successfully");
     }
 
     @DeleteMapping("/{uuid}/follow")
     public ApiResponse<Void> unfollowDestination(@PathVariable UUID uuid) {
-        followService.unfollowDestination(uuid);
+    destinationFollowFacade.unfollowDestination(uuid);
         return ApiResponse.success(null, "Unfollow destination successfully");
     }
 
@@ -53,7 +53,7 @@ public class DestinationFollowController {
             @PathVariable UUID uuid,
             @Valid @RequestBody FollowDestinationRequest request
     ) {
-        return ApiResponse.success(followService.updateFollowSettings(uuid, request), "Update follow settings successfully");
+    return ApiResponse.success(destinationFollowFacade.updateFollowSettings(uuid, request), "Update follow settings successfully");
     }
 
     @GetMapping("/me/follows")
@@ -61,6 +61,6 @@ public class DestinationFollowController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.success(followService.getMyFollows(page, size));
+    return ApiResponse.success(destinationFollowFacade.getMyFollows(page, size));
     }
 }

@@ -6,7 +6,7 @@ import com.wedservice.backend.module.destinations.dto.request.DestinationRequest
 import com.wedservice.backend.module.destinations.dto.request.DestinationSearchRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
-import com.wedservice.backend.module.destinations.service.DestinationService;
+import com.wedservice.backend.module.destinations.facade.DestinationFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,22 +26,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DestinationController {
 
-    private final DestinationService destinationService;
+    private final DestinationFacade destinationFacade;
 
     @GetMapping
     public ApiResponse<PageResponse<DestinationResponse>> searchDestinations(DestinationSearchRequest request) {
-        return ApiResponse.success(destinationService.searchApprovedDestinations(request));
+    return ApiResponse.success(destinationFacade.searchApprovedDestinations(request));
     }
 
     @GetMapping("/{uuid}")
     public ApiResponse<DestinationDetailResponse> getDestination(@PathVariable UUID uuid) {
-        return ApiResponse.success(destinationService.getApprovedDestinationByUuid(uuid));
+    return ApiResponse.success(destinationFacade.getApprovedDestinationByUuid(uuid));
     }
 
     @PostMapping("/propose")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<DestinationDetailResponse> proposeDestination(@Valid @RequestBody DestinationRequest request) {
-        return ApiResponse.success(destinationService.proposeDestination(request), "Propose destination successfully, please wait for admin review");
+    return ApiResponse.success(destinationFacade.proposeDestination(request), "Propose destination successfully, please wait for admin review");
     }
 }
