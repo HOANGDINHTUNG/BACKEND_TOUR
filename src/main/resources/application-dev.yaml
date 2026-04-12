@@ -18,6 +18,12 @@ spring:
 
 app:
   security:
+    whitelist:
+      - "/auth/register"
+      - "/auth/login"
+      - "/auth/refresh"
+      - "/system/health"
     jwt:
       secret: ${JWT_SECRET:wedservice-local-dev-secret-key-change-before-production}
-      expiration: ${JWT_EXPIRATION:86400000}
+      expiration: ${JWT_EXPIRATION:3600000} # 1 hour (default)
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days (default)

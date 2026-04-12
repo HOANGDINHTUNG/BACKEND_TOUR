@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -77,6 +76,4 @@ public class Booking extends AuditableEntity {
     @Builder.Default
     private String currency = "VND";
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 }

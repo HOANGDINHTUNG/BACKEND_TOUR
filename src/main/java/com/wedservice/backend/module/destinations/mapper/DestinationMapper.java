@@ -70,7 +70,6 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     DestinationDetailResponse toDetailResponse(Destination destination);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
     DestinationMedia toMediaEntity(DestinationMediaRequest request);
 
     DestinationMediaResponse toMediaResponse(DestinationMedia entity);

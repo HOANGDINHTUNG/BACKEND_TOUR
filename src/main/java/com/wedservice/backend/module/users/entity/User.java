@@ -10,8 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -96,13 +95,8 @@ public class User extends AuditableEntity {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @PrePersist
+    @jakarta.persistence.PrePersist
     protected void beforeInsert() {
-        super.onCreate();
-
         if (id == null) {
             id = UUID.randomUUID();
         }
@@ -110,33 +104,19 @@ public class User extends AuditableEntity {
         validateState();
     }
 
-    @PreUpdate
+    @jakarta.persistence.PreUpdate
     protected void beforeUpdate() {
-        super.onUpdate();
-
         applyDefaults();
         validateState();
     }
 
     private void applyDefaults() {
-        if (role == null) {
-            role = Role.CUSTOMER;
-        }
-        if (status == null) {
-            status = Status.ACTIVE;
-        }
-        if (gender == null) {
-            gender = Gender.UNKNOWN;
-        }
-        if (memberLevel == null) {
-            memberLevel = MemberLevel.BRONZE;
-        }
-        if (loyaltyPoints == null) {
-            loyaltyPoints = 0;
-        }
-        if (totalSpent == null) {
-            totalSpent = BigDecimal.ZERO;
-        }
+        if (role == null) role = Role.CUSTOMER;
+        if (status == null) status = Status.ACTIVE;
+        if (gender == null) gender = Gender.UNKNOWN;
+        if (memberLevel == null) memberLevel = MemberLevel.BRONZE;
+        if (loyaltyPoints == null) loyaltyPoints = 0;
+        if (totalSpent == null) totalSpent = BigDecimal.ZERO;
     }
 
     private void validateState() {

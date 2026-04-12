@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class JwtProperties {
-    private String secret; // mã bí mật
-    private long expiration; // thời gian hết hạn
+    private String secret;        // mã bí mật
+    private long expiration;       // thời gian hết hạn của access token (ms)
+    private long refreshExpiration; // thời gian hết hạn của refresh token (ms)
 }

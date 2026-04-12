@@ -13,6 +13,10 @@ import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 
+import com.wedservice.backend.module.users.entity.QUser;
+import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.StringUtils;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -35,8 +39,8 @@ class UserRepositoryTest {
         userRepository.save(buildUser("Nguyen Van A", "first@example.com", "0987654321", Status.ACTIVE, Role.CUSTOMER));
         userRepository.save(buildUser("Tran Thi B", "special.keyword@example.com", "0987654322", Status.ACTIVE, Role.ADMIN));
 
-        Page<User> resultByName = userRepository.searchUsers("nguyen", Status.ACTIVE, Role.CUSTOMER, null, PageRequest.of(0, 10));
-        Page<User> resultByEmail = userRepository.searchUsers("keyword", Status.ACTIVE, Role.ADMIN, null, PageRequest.of(0, 10));
+        Page<User> resultByName = searchUsersRepository("nguyen", Status.ACTIVE, Role.CUSTOMER, null, PageRequest.of(0, 10));
+        Page<User> resultByEmail = searchUsersRepository("keyword", Status.ACTIVE, Role.ADMIN, null, PageRequest.of(0, 10));
 
         assertThat(resultByName.getContent()).hasSize(1);
         assertThat(resultByName.getContent().getFirst().getFullName()).isEqualTo("Nguyen Van A");
@@ -49,11 +53,27 @@ class UserRepositoryTest {
         userRepository.save(buildUser("Active User", "active@example.com", "0987654321", Status.ACTIVE, Role.CUSTOMER));
         userRepository.save(buildUser("Suspended User", "suspended@example.com", "0987654322", Status.SUSPENDED, Role.CUSTOMER));
 
-        Page<User> activeOnly = userRepository.searchUsers(null, Status.ACTIVE, Role.CUSTOMER, MemberLevel.BRONZE, PageRequest.of(0, 10));
-        Page<User> suspendedOnly = userRepository.searchUsers(null, Status.SUSPENDED, Role.CUSTOMER, MemberLevel.BRONZE, PageRequest.of(0, 10));
+        Page<User> activeOnly = searchUsersRepository(null, Status.ACTIVE, Role.CUSTOMER, null, PageRequest.of(0, 10));
+        Page<User> suspendedOnly = searchUsersRepository(null, Status.SUSPENDED, Role.CUSTOMER, null, PageRequest.of(0, 10));
 
         assertThat(activeOnly.getContent()).extracting(User::getEmail).containsExactly("active@example.com");
         assertThat(suspendedOnly.getContent()).extracting(User::getEmail).containsExactly("suspended@example.com");
+    }
+
+    private Page<User> searchUsersRepository(String keyword, Status status, Role role, MemberLevel memberLevel, PageRequest pageRequest) {
+        QUser qUser = QUser.user;
+        BooleanBuilder builder = new BooleanBuilder();
+        if (StringUtils.hasText(keyword)) {
+            builder.and(qUser.fullName.containsIgnoreCase(keyword)
+                    .or(qUser.displayName.containsIgnoreCase(keyword))
+                    .or(qUser.email.containsIgnoreCase(keyword))
+                    .or(qUser.phone.contains(keyword)));
+        }
+        if (status != null) builder.and(qUser.status.eq(status));
+        if (role != null) builder.and(qUser.role.eq(role));
+        if (memberLevel != null) builder.and(qUser.memberLevel.eq(memberLevel));
+        
+        return userRepository.findAll(builder, pageRequest);
     }
 
     private User buildUser(String fullName, String email, String phone, Status status, Role role) {

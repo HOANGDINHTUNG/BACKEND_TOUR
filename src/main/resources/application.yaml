@@ -1,16 +1,44 @@
+app:
+  security:
+    whitelist:
+      - "/auth/register"
+      - "/auth/login"
+      - "/auth/refresh"
+      - "/actuator/health/**"
+      - "/actuator/info"
+    jwt:
+      secret: ${JWT_SECRET:wedservice-default-secret-change-me}
+      expiration: ${JWT_EXPIRATION:3600000} # 1 hour
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days
+
 spring:
   application:
     name: wedservice-backend
   profiles:
     default: dev
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [%X{traceId:-NO-TRACE}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [%X{traceId:-NO-TRACE}] - %msg%n"
 
 server:
   port: 8088
   servlet:
     context-path: /api/v1
-
-app:
-  security:
-    jwt:
-      secret: ${JWT_SECRET:wedservice-default-secret-change-me}
-      expiration: ${JWT_EXPIRATION:86400000}

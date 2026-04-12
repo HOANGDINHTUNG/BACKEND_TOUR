@@ -143,7 +143,8 @@ public class AdminUserService extends BaseService<User, UUID> {
     public UserResponse deactivateUser(UUID id) {
         User user = findUserById(id);
         user.setStatus(Status.SUSPENDED);
-
+        user.setDeletedAt(java.time.LocalDateTime.now());
+        
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);
     }
@@ -182,7 +183,7 @@ public class AdminUserService extends BaseService<User, UUID> {
     private Pageable buildPageable(UserSearchRequest request) {
         String sortBy = request.getSortBy();
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new BadRequestException("sortBy is invalid");
+            throw new BadRequestException("sortBy must be one of " + ALLOWED_SORT_FIELDS);
         }
 
         Sort.Direction direction = Sort.Direction.fromString(request.getSortDir());

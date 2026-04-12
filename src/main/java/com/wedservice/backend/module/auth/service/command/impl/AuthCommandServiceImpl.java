@@ -2,6 +2,7 @@ package com.wedservice.backend.module.auth.service.command.impl;
 
 import com.wedservice.backend.module.auth.dto.AuthResponse;
 import com.wedservice.backend.module.auth.dto.RegisterRequest;
+import com.wedservice.backend.module.auth.security.CustomUserDetails;
 import com.wedservice.backend.module.auth.service.command.AuthCommandService;
 import com.wedservice.backend.module.auth.validator.AuthValidator;
 import com.wedservice.backend.module.users.entity.Gender;
@@ -11,6 +12,8 @@ import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.module.auth.security.JwtService;
+import com.wedservice.backend.module.users.event.UserRegisteredEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ public class AuthCommandServiceImpl implements AuthCommandService {
     private final JwtService jwtService;
     private final UserMapper userMapper;
     private final AuthValidator authValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -50,12 +54,21 @@ public class AuthCommandServiceImpl implements AuthCommandService {
 
         User savedUser = userRepository.save(user);
 
-        // Build AuthResponse similar to previous AuthService.buildAuthResponse
+        // Publish registration event for async processing
+        eventPublisher.publishEvent(new UserRegisteredEvent(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getFullName()
+        ));
+
+        CustomUserDetails userDetails = CustomUserDetails.fromUser(savedUser);
         return AuthResponse.builder()
                 .user(userMapper.toDto(savedUser))
                 .tokenType("Bearer")
-                .accessToken(jwtService.generateAccessToken(com.wedservice.backend.module.auth.security.CustomUserDetails.fromUser(savedUser)))
+                .accessToken(jwtService.generateAccessToken(userDetails))
                 .expiresIn(jwtService.getExpiration())
+                .refreshToken(jwtService.generateRefreshToken(userDetails))
+                .refreshExpiresIn(jwtService.getRefreshExpiration())
                 .build();
     }
 }

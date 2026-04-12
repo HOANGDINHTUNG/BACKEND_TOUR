@@ -11,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -93,10 +91,6 @@ public class Destination extends AuditableEntity {
     @Builder.Default
     private Boolean isFeatured = false;
 
-    @Column(name = "is_active", nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
@@ -141,19 +135,13 @@ public class Destination extends AuditableEntity {
     @Builder.Default
     private List<DestinationEvent> events = new ArrayList<>();
 
-    @PrePersist
+    @jakarta.persistence.PrePersist
     protected void beforeInsert() {
-        super.onCreate();
         if (uuid == null) {
             uuid = UUID.randomUUID();
         }
         if (status == null) {
             status = DestinationStatus.APPROVED;
         }
-    }
-
-    @PreUpdate
-    protected void beforeUpdate() {
-        super.onUpdate();
     }
 }

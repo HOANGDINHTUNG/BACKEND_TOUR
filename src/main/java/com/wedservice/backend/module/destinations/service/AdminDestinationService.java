@@ -81,7 +81,11 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
         }
 
         if (request.getIsActive() != null) {
-            builder.and(qDestination.isActive.eq(request.getIsActive()));
+            if (Boolean.TRUE.equals(request.getIsActive())) {
+                builder.and(qDestination.deletedAt.isNull());
+            } else {
+                builder.and(qDestination.deletedAt.isNotNull());
+            }
         }
 
         if (request.getStatus() != null) {
@@ -137,7 +141,7 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
     public void deleteDestination(UUID uuid) {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
-        destination.setIsActive(false);
+        destination.setDeletedAt(java.time.LocalDateTime.now());
         destinationRepository.save(destination);
     }
 

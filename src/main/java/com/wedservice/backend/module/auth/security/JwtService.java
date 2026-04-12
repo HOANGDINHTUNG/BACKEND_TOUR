@@ -64,31 +64,43 @@ public class JwtService {
 
     // Đây là method tạo JWT access token cho user sau khi đăng nhập thành công.
     public String generateAccessToken(CustomUserDetails userDetails) {
-        // Lấy tgian hiện tại, dòng này lấy thời gian hiện tại tính theo mili giây từ mốc Unix epoch.
-        // VD : 17123000000
         long issuedAt = Instant.now().toEpochMilli();
-        long expiredAt = issuedAt + jwtProperties.getExpiration();// Tính giờ gian hết hạn
+        long expiredAt = issuedAt + jwtProperties.getExpiration();
 
-        Map<String, Object> header = Map.of(
-                "alg", "HS256",
-                "typ", "JWT"
-        );
-
-        // Tạo payload
+        Map<String, Object> header = Map.of("alg", "HS256", "typ", "JWT");
         Map<String, Object> payload = new HashMap<>();
         payload.put("sub", userDetails.getUsername());
         payload.put("userId", userDetails.getUserId());
         payload.put("role", userDetails.getRole().name());
+        payload.put("type", "access");
         payload.put("iat", issuedAt);
         payload.put("exp", expiredAt);
 
-        // header JSON → eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-        // payload JSON → một chuỗi Base64 khác
         String encodedHeader = encodeJson(header);
         String encodedPayload = encodeJson(payload);
-        // Tạo chữ ký trên chuỗi
         String signature = sign(encodedHeader + "." + encodedPayload);
+        return encodedHeader + "." + encodedPayload + "." + signature;
+    }
 
+    /**
+     * Tạo refresh token với TTL dài hơn access token.
+     * Refresh token chứa claim "type":"refresh" để phân biệt với access token.
+     */
+    public String generateRefreshToken(CustomUserDetails userDetails) {
+        long issuedAt = Instant.now().toEpochMilli();
+        long expiredAt = issuedAt + jwtProperties.getRefreshExpiration();
+
+        Map<String, Object> header = Map.of("alg", "HS256", "typ", "JWT");
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sub", userDetails.getUsername());
+        payload.put("userId", userDetails.getUserId());
+        payload.put("type", "refresh");
+        payload.put("iat", issuedAt);
+        payload.put("exp", expiredAt);
+
+        String encodedHeader = encodeJson(header);
+        String encodedPayload = encodeJson(payload);
+        String signature = sign(encodedHeader + "." + encodedPayload);
         return encodedHeader + "." + encodedPayload + "." + signature;
     }
 
@@ -98,20 +110,45 @@ public class JwtService {
         return subject == null ? null : subject.toString();
     }
 
-    // Đây không chỉ là method kiểm tra token có hợp lệ hay không mà còn so subject với userDetails.
+    /** Trả về giá trị claim "type" (access | refresh). */
+    public String extractTokenType(String token) {
+        Object type = extractAllClaims(token).get("type");
+        return type == null ? "access" : type.toString();
+    }
+
+    // Kiểm tra access token hợp lệ — refresh token bị loại bỏ.
     public boolean isTokenValid(String token, UserDetails userDetails) {
         Map<String, Object> claims = extractAllClaims(token);
         String subject = claims.get("sub") == null ? null : claims.get("sub").toString();
         long expirationTime = toLong(claims.get("exp"));
+        String tokenType = claims.get("type") == null ? "access" : claims.get("type").toString();
 
         return subject != null
                 && subject.equalsIgnoreCase(userDetails.getUsername())
-                && expirationTime > Instant.now().toEpochMilli();
+                && expirationTime > Instant.now().toEpochMilli()
+                && "access".equals(tokenType); // refresh token không được dùng như access token
     }
 
-    // Method này chỉ trả lại thời gian sống của token từ config
+    /** Kiểm tra refresh token hợp lệ (chưa hết hạn và đúng type). */
+    public boolean isRefreshTokenValid(String token) {
+        try {
+            Map<String, Object> claims = extractAllClaims(token);
+            long expirationTime = toLong(claims.get("exp"));
+            String tokenType = claims.get("type") == null ? "" : claims.get("type").toString();
+            return "refresh".equals(tokenType) && expirationTime > Instant.now().toEpochMilli();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Method này chỉ trả lại thời gian sống của access token từ config
     public long getExpiration() {
         return jwtProperties.getExpiration();
+    }
+
+    // Trả lại thời gian sống của refresh token từ config
+    public long getRefreshExpiration() {
+        return jwtProperties.getRefreshExpiration();
     }
 
     // Đây là method rất trung tâm. Nó làm việc đọc toàn bộ payload từ token.

@@ -32,37 +32,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 // Định nghĩa đường dẫn gốc cho controller.
 import org.springframework.web.bind.annotation.RequestMapping;
-/*
-    Biến class này thành REST Controller trong Spring.
-
-    Spring sẽ hiểu:
-        đây là bean cần quản lý
-        đây là nơi nhận request HTTP
-        giá trị trả về sẽ tự chuyển thành JSON
-
-    Hiểu đơn giản: @RestController = “class này chuyên làm API”.
- */
 import org.springframework.web.bind.annotation.RestController;
+
+import com.wedservice.backend.module.auth.dto.RefreshTokenRequest;
 
 /*
     nhận request từ client ở các API /auth/register và /auth/login
     lấy dữ liệu người dùng gửi lên
-    gọi AuthService để xử lý nghiệp vụ
+    gọi AuthFacade để xử lý nghiệp vụ
     trả kết quả về dưới dạng ApiResponse<AuthResponse>
  */
 
-
-/*
-    Đánh dấu class này là controller REST.
-
-    Spring sẽ:
-        tạo object AuthController
-        quản lý nó trong IoC container
-        cho phép nhận request HTTP
-        tự convert object Java trả về thành JSON
-
-    Nếu không có nó: Class này chỉ là class Java bình thường, không nhận request được.
- */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -72,8 +52,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-    AuthResponse response = authFacade.register(request);
-
+        AuthResponse response = authFacade.register(request);
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .message("Register successfully")
@@ -83,11 +62,24 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-    AuthResponse response = authFacade.login(request);
-
+        AuthResponse response = authFacade.login(request);
         return ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .message("Login successfully")
+                .data(response)
+                .build();
+    }
+
+    /**
+     * Dùng refresh token để lấy cặp token mới (access + refresh).
+     * Client gửi refreshToken, nhận về accessToken mới và refreshToken mới.
+     */
+    @PostMapping("/refresh")
+    public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = authFacade.refresh(request);
+        return ApiResponse.<AuthResponse>builder()
+                .success(true)
+                .message("Token refreshed successfully")
                 .data(response)
                 .build();
     }

@@ -65,9 +65,9 @@ public class DestinationService {
             builder.and(qDestination.isFeatured.eq(request.getIsFeatured()));
         }
 
-        // Must be approved and active for public search
+        // Must be approved and official for public search, and not soft-deleted
         builder.and(qDestination.status.eq(DestinationStatus.APPROVED));
-        builder.and(qDestination.isActive.isTrue());
+        builder.and(qDestination.deletedAt.isNull());
         builder.and(qDestination.isOfficial.isTrue());
 
         Page<Destination> page = destinationRepository.findAll(builder, pageable);
@@ -80,7 +80,7 @@ public class DestinationService {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
-        if (destination.getStatus() != DestinationStatus.APPROVED || !destination.getIsActive()) {
+        if (destination.getStatus() != DestinationStatus.APPROVED || destination.getDeletedAt() != null) {
             throw new ResourceNotFoundException("Destination not found or not approved");
         }
 

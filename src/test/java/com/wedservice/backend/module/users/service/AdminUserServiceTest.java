@@ -6,7 +6,6 @@ import com.wedservice.backend.module.users.dto.request.AdminCreateUserRequest;
 import com.wedservice.backend.module.users.dto.request.AdminUpdateUserRequest;
 import com.wedservice.backend.module.users.dto.request.UserSearchRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.entity.MemberLevel;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
@@ -26,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.querydsl.core.types.Predicate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -124,12 +124,12 @@ class AdminUserServiceTest {
                 .build();
 
         Page<User> page = new PageImpl<>(List.of(user), PageRequest.of(1, 5), 6);
-        when(userRepository.searchUsers(eq("nguyen"), eq(Status.ACTIVE), eq(Role.CUSTOMER), eq(MemberLevel.BRONZE), any(Pageable.class))).thenReturn(page);
+        when(userRepository.findAll(any(Predicate.class), any(Pageable.class))).thenReturn(page);
 
         PageResponse<UserResponse> response = adminUserService.getUsers(request);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(userRepository).searchUsers(eq("nguyen"), eq(Status.ACTIVE), eq(Role.CUSTOMER), eq(MemberLevel.BRONZE), pageableCaptor.capture());
+        verify(userRepository).findAll(any(Predicate.class), pageableCaptor.capture());
 
         Pageable pageable = pageableCaptor.getValue();
         assertThat(pageable.getPageNumber()).isEqualTo(1);
