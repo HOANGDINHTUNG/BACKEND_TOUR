@@ -3109,3 +3109,3286 @@ org.springframework.web.HttpMediaTypeNotSupportedException: Content-Type 'text/p
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-04-13 14:19:25 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 34000 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-13 14:19:25 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-13 14:19:25 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-13 14:19:27 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-13 14:19:28 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 194 ms. Found 17 JPA repository interfaces.
+2026-04-13 14:19:31 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-13 14:19:31 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-13 14:19:31 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-13 14:19:31 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 5434 ms
+2026-04-13 14:19:32 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-13 14:19:32 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-13 14:19:33 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-13 14:19:33 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-13 14:19:33 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3c39c739
+2026-04-13 14:19:33 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-13 14:19:33 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-13 14:19:36 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-13 14:19:36 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-13 14:19:36 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-13 14:19:36 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-13 14:19:38 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-13 14:19:38 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-13 14:19:38 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-13 14:19:38 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-13 14:19:38 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-13 14:19:40 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-13 14:19:40 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-13 14:19:40 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 15.706 seconds (process running for 16.286)
+2026-04-13 14:20:43 [http-nio-8088-exec-2] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-13 14:20:43 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-13 14:20:43 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 5 ms
+2026-04-13 14:20:43 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [99684457-55c2-47a8-8711-9d6928e6d68a] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:20:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [5886a78a-2bb3-47ad-a660-3f6c23ace6a0] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:20:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [5886a78a-2bb3-47ad-a660-3f6c23ace6a0] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        d1_0.id 
+    from
+        destinations d1_0 
+    where
+        upper(d1_0.code)=upper(?) 
+        and d1_0.id<>? 
+    limit
+        ?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        d1_0.id 
+    from
+        destinations d1_0 
+    where
+        upper(d1_0.slug)=upper(?) 
+        and d1_0.id<>? 
+    limit
+        ?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        ml1_0.destination_id,
+        ml1_0.id,
+        ml1_0.alt_text,
+        ml1_0.created_at,
+        ml1_0.deleted_at,
+        ml1_0.is_active,
+        ml1_0.media_type,
+        ml1_0.media_url,
+        ml1_0.sort_order,
+        ml1_0.updated_at 
+    from
+        destination_media ml1_0 
+    where
+        ml1_0.destination_id=? 
+    order by
+        ml1_0.sort_order
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        f1_0.destination_id,
+        f1_0.id,
+        f1_0.created_at,
+        f1_0.deleted_at,
+        f1_0.description,
+        f1_0.food_name,
+        f1_0.is_featured,
+        f1_0.updated_at 
+    from
+        destination_foods f1_0 
+    where
+        f1_0.destination_id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    insert 
+    into
+        destination_foods
+        (created_at, deleted_at, description, destination_id, food_name, is_featured, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    insert 
+    into
+        destination_foods
+        (created_at, deleted_at, description, destination_id, food_name, is_featured, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    insert 
+    into
+        destination_media
+        (alt_text, created_at, deleted_at, destination_id, is_active, media_type, media_url, sort_order, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        s1_0.destination_id,
+        s1_0.id,
+        s1_0.created_at,
+        s1_0.deleted_at,
+        s1_0.description,
+        s1_0.specialty_name,
+        s1_0.updated_at 
+    from
+        destination_specialties s1_0 
+    where
+        s1_0.destination_id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        a1_0.destination_id,
+        a1_0.id,
+        a1_0.activity_name,
+        a1_0.activity_score,
+        a1_0.created_at,
+        a1_0.deleted_at,
+        a1_0.description,
+        a1_0.updated_at 
+    from
+        destination_activities a1_0 
+    where
+        a1_0.destination_id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        t1_0.destination_id,
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted_at,
+        t1_0.sort_order,
+        t1_0.tip_content,
+        t1_0.tip_title,
+        t1_0.updated_at 
+    from
+        destination_tips t1_0 
+    where
+        t1_0.destination_id=? 
+    order by
+        t1_0.sort_order
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    select
+        e1_0.destination_id,
+        e1_0.id,
+        e1_0.created_at,
+        e1_0.deleted_at,
+        e1_0.description,
+        e1_0.ends_at,
+        e1_0.event_name,
+        e1_0.event_type,
+        e1_0.is_active,
+        e1_0.notify_all_followers,
+        e1_0.starts_at,
+        e1_0.updated_at 
+    from
+        destination_events e1_0 
+    where
+        e1_0.destination_id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    update
+        destinations 
+    set
+        address=?,
+        best_time_from_month=?,
+        best_time_to_month=?,
+        code=?,
+        country_code=?,
+        crowd_level_default=?,
+        deleted_at=?,
+        description=?,
+        district=?,
+        is_active=?,
+        is_featured=?,
+        is_official=?,
+        latitude=?,
+        longitude=?,
+        name=?,
+        proposed_by=?,
+        province=?,
+        region=?,
+        rejection_reason=?,
+        short_description=?,
+        slug=?,
+        status=?,
+        updated_at=?,
+        verified_by=? 
+    where
+        id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    delete 
+    from
+        destination_foods 
+    where
+        id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    delete 
+    from
+        destination_foods 
+    where
+        id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    delete 
+    from
+        destination_media 
+    where
+        id=?
+2026-04-13 14:21:32 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [69fc820f-0f7f-48d4-882d-f25bc2416ce6] - 
+    delete 
+    from
+        destination_media 
+    where
+        id=?
+2026-04-13 14:22:12 [http-nio-8088-exec-5] DEBUG org.hibernate.SQL [22c25bd1-665a-401b-9f82-dca737036bae] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:22:39 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [8ac8e423-8e3d-48a9-bfb7-6f4857dd69f6] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:22:39 [http-nio-8088-exec-6] ERROR c.w.b.c.e.GlobalExceptionHandler [8ac8e423-8e3d-48a9-bfb7-6f4857dd69f6] - Unhandled exception
+org.springframework.web.HttpMediaTypeNotSupportedException: Content-Type 'text/plain;charset=UTF-8' is not supported
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver.readWithMessageConverters(AbstractMessageConverterMethodArgumentResolver.java:235)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.readWithMessageConverters(RequestResponseBodyMethodProcessor.java:181)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:156)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:174)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:650)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.security.RateLimitFilter.doFilterInternal(RateLimitFilter.java:63)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at com.wedservice.backend.module.auth.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:89)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.logging.CorrelationIdFilter.doFilterInternal(CorrelationIdFilter.java:59)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-04-13 14:23:15 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [783bf12a-9c48-481e-8b07-25dc1646a22f] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:23:15 [http-nio-8088-exec-8] ERROR c.w.b.c.e.GlobalExceptionHandler [783bf12a-9c48-481e-8b07-25dc1646a22f] - Unhandled exception
+org.springframework.web.HttpMediaTypeNotSupportedException: Content-Type 'text/plain;charset=UTF-8' is not supported
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver.readWithMessageConverters(AbstractMessageConverterMethodArgumentResolver.java:235)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.readWithMessageConverters(RequestResponseBodyMethodProcessor.java:181)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:156)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:174)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:650)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.security.RateLimitFilter.doFilterInternal(RateLimitFilter.java:63)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at com.wedservice.backend.module.auth.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:89)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.logging.CorrelationIdFilter.doFilterInternal(CorrelationIdFilter.java:59)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-04-13 14:24:04 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [cc058c9c-cc7d-4438-867c-dc8fe29d265a] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:24:04 [http-nio-8088-exec-10] ERROR c.w.b.c.e.GlobalExceptionHandler [cc058c9c-cc7d-4438-867c-dc8fe29d265a] - Unhandled exception
+org.springframework.web.HttpMediaTypeNotSupportedException: Content-Type 'text/plain;charset=UTF-8' is not supported
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver.readWithMessageConverters(AbstractMessageConverterMethodArgumentResolver.java:235)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.readWithMessageConverters(RequestResponseBodyMethodProcessor.java:181)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:156)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:174)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:650)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.security.RateLimitFilter.doFilterInternal(RateLimitFilter.java:63)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at com.wedservice.backend.module.auth.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:89)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at com.wedservice.backend.common.logging.CorrelationIdFilter.doFilterInternal(CorrelationIdFilter.java:59)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+2026-04-13 14:26:03 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 22200 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-13 14:26:03 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-13 14:26:03 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-13 14:26:05 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-13 14:26:06 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 244 ms. Found 17 JPA repository interfaces.
+2026-04-13 14:26:08 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-13 14:26:08 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-13 14:26:08 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-13 14:26:08 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 4524 ms
+2026-04-13 14:26:09 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-13 14:26:09 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-13 14:26:10 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-13 14:26:10 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-13 14:26:10 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4f3b11e6
+2026-04-13 14:26:10 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-13 14:26:11 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-13 14:26:14 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-13 14:26:14 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-13 14:26:14 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-13 14:26:14 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-13 14:26:17 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-13 14:26:17 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-13 14:26:17 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-13 14:26:17 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-13 14:26:17 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-13 14:26:20 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-13 14:26:20 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-13 14:26:20 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 17.935 seconds (process running for 18.729)
+2026-04-13 14:26:26 [http-nio-8088-exec-2] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-13 14:26:26 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-13 14:26:26 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 4 ms
+2026-04-13 14:26:27 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [419abc6f-f3e2-468c-8021-f50afb12bdad] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        d1_0.id 
+    from
+        destinations d1_0 
+    where
+        upper(d1_0.code)=upper(?) 
+        and d1_0.id<>? 
+    limit
+        ?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        d1_0.id 
+    from
+        destinations d1_0 
+    where
+        upper(d1_0.slug)=upper(?) 
+        and d1_0.id<>? 
+    limit
+        ?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        ml1_0.destination_id,
+        ml1_0.id,
+        ml1_0.alt_text,
+        ml1_0.created_at,
+        ml1_0.deleted_at,
+        ml1_0.is_active,
+        ml1_0.media_type,
+        ml1_0.media_url,
+        ml1_0.sort_order,
+        ml1_0.updated_at 
+    from
+        destination_media ml1_0 
+    where
+        ml1_0.destination_id=? 
+    order by
+        ml1_0.sort_order
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        f1_0.destination_id,
+        f1_0.id,
+        f1_0.created_at,
+        f1_0.deleted_at,
+        f1_0.description,
+        f1_0.food_name,
+        f1_0.is_featured,
+        f1_0.updated_at 
+    from
+        destination_foods f1_0 
+    where
+        f1_0.destination_id=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        s1_0.destination_id,
+        s1_0.id,
+        s1_0.created_at,
+        s1_0.deleted_at,
+        s1_0.description,
+        s1_0.specialty_name,
+        s1_0.updated_at 
+    from
+        destination_specialties s1_0 
+    where
+        s1_0.destination_id=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        a1_0.destination_id,
+        a1_0.id,
+        a1_0.activity_name,
+        a1_0.activity_score,
+        a1_0.created_at,
+        a1_0.deleted_at,
+        a1_0.description,
+        a1_0.updated_at 
+    from
+        destination_activities a1_0 
+    where
+        a1_0.destination_id=?
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        t1_0.destination_id,
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted_at,
+        t1_0.sort_order,
+        t1_0.tip_content,
+        t1_0.tip_title,
+        t1_0.updated_at 
+    from
+        destination_tips t1_0 
+    where
+        t1_0.destination_id=? 
+    order by
+        t1_0.sort_order
+2026-04-13 14:26:50 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    select
+        e1_0.destination_id,
+        e1_0.id,
+        e1_0.created_at,
+        e1_0.deleted_at,
+        e1_0.description,
+        e1_0.ends_at,
+        e1_0.event_name,
+        e1_0.event_type,
+        e1_0.is_active,
+        e1_0.notify_all_followers,
+        e1_0.starts_at,
+        e1_0.updated_at 
+    from
+        destination_events e1_0 
+    where
+        e1_0.destination_id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_activities
+        (activity_name, activity_score, created_at, deleted_at, description, destination_id, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_activities
+        (activity_name, activity_score, created_at, deleted_at, description, destination_id, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_events
+        (created_at, deleted_at, description, destination_id, ends_at, event_name, event_type, is_active, notify_all_followers, starts_at, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_foods
+        (created_at, deleted_at, description, destination_id, food_name, is_featured, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_foods
+        (created_at, deleted_at, description, destination_id, food_name, is_featured, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_media
+        (alt_text, created_at, deleted_at, destination_id, is_active, media_type, media_url, sort_order, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_media
+        (alt_text, created_at, deleted_at, destination_id, is_active, media_type, media_url, sort_order, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_specialties
+        (created_at, deleted_at, description, destination_id, specialty_name, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_specialties
+        (created_at, deleted_at, description, destination_id, specialty_name, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_tips
+        (created_at, deleted_at, destination_id, sort_order, tip_content, tip_title, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    insert 
+    into
+        destination_tips
+        (created_at, deleted_at, destination_id, sort_order, tip_content, tip_title, updated_at) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    update
+        destinations 
+    set
+        address=?,
+        best_time_from_month=?,
+        best_time_to_month=?,
+        code=?,
+        country_code=?,
+        crowd_level_default=?,
+        deleted_at=?,
+        description=?,
+        district=?,
+        is_active=?,
+        is_featured=?,
+        is_official=?,
+        latitude=?,
+        longitude=?,
+        name=?,
+        proposed_by=?,
+        province=?,
+        region=?,
+        rejection_reason=?,
+        short_description=?,
+        slug=?,
+        status=?,
+        updated_at=?,
+        verified_by=? 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_activities 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_activities 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_events 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_foods 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_foods 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_media 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_specialties 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_specialties 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_tips 
+    where
+        id=?
+2026-04-13 14:26:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [fc8dacba-3d97-45c2-943b-291a6e83a1d0] - 
+    delete 
+    from
+        destination_tips 
+    where
+        id=?
+2026-04-13 14:29:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [46aa6b35-b511-44a1-893c-264d7de69cb8] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:29:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [46aa6b35-b511-44a1-893c-264d7de69cb8] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 14:29:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [46aa6b35-b511-44a1-893c-264d7de69cb8] - 
+    update
+        destinations 
+    set
+        address=?,
+        best_time_from_month=?,
+        best_time_to_month=?,
+        code=?,
+        country_code=?,
+        crowd_level_default=?,
+        deleted_at=?,
+        description=?,
+        district=?,
+        is_active=?,
+        is_featured=?,
+        is_official=?,
+        latitude=?,
+        longitude=?,
+        name=?,
+        proposed_by=?,
+        province=?,
+        region=?,
+        rejection_reason=?,
+        short_description=?,
+        slug=?,
+        status=?,
+        updated_at=?,
+        verified_by=? 
+    where
+        id=?
+2026-04-13 14:30:16 [http-nio-8088-exec-7] DEBUG org.hibernate.SQL [82295f0c-f94c-4eb3-b91a-1aa94975bf34] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:30:16 [http-nio-8088-exec-7] DEBUG org.hibernate.SQL [82295f0c-f94c-4eb3-b91a-1aa94975bf34] - 
+    select
+        d1_0.id 
+    from
+        destinations d1_0 
+    where
+        upper(d1_0.code)=upper(?) 
+    limit
+        ?
+2026-04-13 14:31:03 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [f2aba8dd-1f45-4bfe-ba04-bca88076ce22] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:31:03 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [f2aba8dd-1f45-4bfe-ba04-bca88076ce22] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 14:31:03 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [f2aba8dd-1f45-4bfe-ba04-bca88076ce22] - 
+    update
+        destinations 
+    set
+        address=?,
+        best_time_from_month=?,
+        best_time_to_month=?,
+        code=?,
+        country_code=?,
+        crowd_level_default=?,
+        deleted_at=?,
+        description=?,
+        district=?,
+        is_active=?,
+        is_featured=?,
+        is_official=?,
+        latitude=?,
+        longitude=?,
+        name=?,
+        proposed_by=?,
+        province=?,
+        region=?,
+        rejection_reason=?,
+        short_description=?,
+        slug=?,
+        status=?,
+        updated_at=?,
+        verified_by=? 
+    where
+        id=?
+2026-04-13 14:33:39 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 37760 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-13 14:33:39 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-13 14:33:39 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-13 14:33:41 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-13 14:33:41 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 239 ms. Found 17 JPA repository interfaces.
+2026-04-13 14:33:42 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-13 14:33:43 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-13 14:33:43 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-13 14:33:43 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 3641 ms
+2026-04-13 14:33:43 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-13 14:33:44 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-13 14:33:44 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-13 14:33:44 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-13 14:33:45 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@604e8a6
+2026-04-13 14:33:45 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-13 14:33:45 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-13 14:33:48 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-13 14:33:48 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-13 14:33:48 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-13 14:33:48 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-13 14:33:50 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-13 14:33:50 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-13 14:33:50 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-13 14:33:50 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-13 14:33:50 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-13 14:33:52 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-13 14:33:55 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-13 14:33:55 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 16.817 seconds (process running for 17.832)
+2026-04-13 14:34:32 [http-nio-8088-exec-2] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-13 14:34:32 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-13 14:34:32 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 3 ms
+2026-04-13 14:34:32 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [de319553-4422-4e52-ae59-6590903b1729] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:34:32 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [de319553-4422-4e52-ae59-6590903b1729] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 14:34:33 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [de319553-4422-4e52-ae59-6590903b1729] - 
+    update
+        destinations 
+    set
+        address=?,
+        best_time_from_month=?,
+        best_time_to_month=?,
+        code=?,
+        country_code=?,
+        crowd_level_default=?,
+        deleted_at=?,
+        description=?,
+        district=?,
+        is_active=?,
+        is_featured=?,
+        is_official=?,
+        latitude=?,
+        longitude=?,
+        name=?,
+        proposed_by=?,
+        province=?,
+        region=?,
+        rejection_reason=?,
+        short_description=?,
+        slug=?,
+        status=?,
+        updated_at=?,
+        verified_by=? 
+    where
+        id=?
+2026-04-13 14:34:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [36e8b807-cd4a-4502-ae9b-f46b96274421] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:34:51 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [36e8b807-cd4a-4502-ae9b-f46b96274421] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 14:55:16 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 15128 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-13 14:55:16 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-13 14:55:16 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-13 14:55:18 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-13 14:55:19 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 319 ms. Found 17 JPA repository interfaces.
+2026-04-13 14:55:20 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-13 14:55:20 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-13 14:55:20 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-13 14:55:21 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 3989 ms
+2026-04-13 14:55:22 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-13 14:55:22 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-13 14:55:23 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-13 14:55:23 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-13 14:55:23 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@9fd5dd0
+2026-04-13 14:55:23 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-13 14:55:24 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-13 14:55:27 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-13 14:55:27 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-13 14:55:27 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-13 14:55:28 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-13 14:55:29 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-13 14:55:29 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-13 14:55:29 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-13 14:55:29 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-13 14:55:29 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-13 14:55:32 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-13 14:55:33 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-13 14:55:33 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 16.96 seconds (process running for 17.705)
+2026-04-13 14:55:51 [http-nio-8088-exec-2] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-13 14:55:51 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-13 14:55:51 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 7 ms
+2026-04-13 14:57:15 [http-nio-8088-exec-5] DEBUG org.hibernate.SQL [e70898a6-cda2-4a4f-9bd6-e1a62a8956a3] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:57:15 [http-nio-8088-exec-5] DEBUG org.hibernate.SQL [e70898a6-cda2-4a4f-9bd6-e1a62a8956a3] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 14:59:36 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [e7f48b9f-c15b-417d-a709-4dbf1c6b9e54] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:59:36 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [e7f48b9f-c15b-417d-a709-4dbf1c6b9e54] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        (
+            lower(d1_0.name) like ? escape '!' 
+            or lower(d1_0.code) like ? escape '!'
+        ) 
+        and d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 14:59:55 [http-nio-8088-exec-9] DEBUG org.hibernate.SQL [9aeeb7af-9a95-4fc7-8e6d-cfb9be9c2611] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 14:59:55 [http-nio-8088-exec-9] DEBUG org.hibernate.SQL [9aeeb7af-9a95-4fc7-8e6d-cfb9be9c2611] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.id=?
+2026-04-13 15:00:11 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [52d54041-9b7d-4f4a-be45-50edcae54213] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:00:28 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [c998ab74-df4b-4560-a7e0-d6097514fc7e] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:00:28 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [c998ab74-df4b-4560-a7e0-d6097514fc7e] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:00:28 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [c998ab74-df4b-4560-a7e0-d6097514fc7e] - 
+    select
+        count(d1_0.id) 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=?
+2026-04-13 15:00:49 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [07eb5864-1da9-4031-b5cd-47b15ccd863b] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:01:08 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [ae7c6fb2-ddb7-408e-bc76-b716e0f56bcf] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:01:41 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [cd124d6a-088e-4b61-884c-2c601954d0b8] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:01:41 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [cd124d6a-088e-4b61-884c-2c601954d0b8] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:01:41 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [cd124d6a-088e-4b61-884c-2c601954d0b8] - 
+    select
+        count(d1_0.id) 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=?
+2026-04-13 15:01:57 [http-nio-8088-exec-5] DEBUG org.hibernate.SQL [89e09019-aa1e-4dc2-9001-2c78f494c8d5] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:02:41 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [496a85d0-572b-4bbe-b123-01006ea6ed35] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:02:57 [http-nio-8088-exec-7] DEBUG org.hibernate.SQL [b5cd2f23-98f1-4e6e-ba80-01c9451bcd48] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:03:07 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [c3581e55-8fd8-4223-af22-cbee50a50876] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:03:07 [http-nio-8088-exec-8] DEBUG org.hibernate.SQL [c3581e55-8fd8-4223-af22-cbee50a50876] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:04:09 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [cfe72485-572c-4ee2-9dcc-6ef225d1e8d8] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:04:29 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [1690b349-b512-4992-ba78-7df950fe8b5b] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:08:40 [http-nio-8088-exec-5] DEBUG org.hibernate.SQL [d365c2a6-60ca-4ed9-afaf-35f20011c264] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:09:16 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [ee30f3b4-ef6a-41af-9031-dc7387cc4228] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:11:17 [http-nio-8088-exec-9] DEBUG org.hibernate.SQL [3d21e31c-28c8-44f0-a655-0cd2c407b216] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:11:27 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [cf2185cf-3136-4683-b8fc-f849f5827368] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:11:45 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [4ea4899d-6e77-4b93-aa58-4af051ac4a31] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:11:45 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [4ea4899d-6e77-4b93-aa58-4af051ac4a31] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:11:45 [http-nio-8088-exec-1] DEBUG org.hibernate.SQL [4ea4899d-6e77-4b93-aa58-4af051ac4a31] - 
+    select
+        count(d1_0.id) 
+    from
+        destinations d1_0 
+    where
+        d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=?
+2026-04-13 15:12:44 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [d9416cfe-c62a-4da6-99bc-6023afc5347a] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:12:44 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [d9416cfe-c62a-4da6-99bc-6023afc5347a] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        (
+            lower(d1_0.name) like ? escape '!' 
+            or lower(d1_0.code) like ? escape '!'
+        ) 
+        and d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:12:55 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [0e9b8bc9-2eb8-4c3c-b45e-bfb1e4fb3b1c] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:13:45 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [091a70e5-1f3e-4347-9f6d-1604f9ab1761] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:13:45 [http-nio-8088-exec-4] DEBUG org.hibernate.SQL [091a70e5-1f3e-4347-9f6d-1604f9ab1761] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        (
+            lower(d1_0.name) like ? escape '!' 
+            or lower(d1_0.code) like ? escape '!'
+        ) 
+        and d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        ml1_0.destination_id,
+        ml1_0.id,
+        ml1_0.alt_text,
+        ml1_0.created_at,
+        ml1_0.deleted_at,
+        ml1_0.is_active,
+        ml1_0.media_type,
+        ml1_0.media_url,
+        ml1_0.sort_order,
+        ml1_0.updated_at 
+    from
+        destination_media ml1_0 
+    where
+        ml1_0.destination_id=? 
+    order by
+        ml1_0.sort_order
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        f1_0.destination_id,
+        f1_0.id,
+        f1_0.created_at,
+        f1_0.deleted_at,
+        f1_0.description,
+        f1_0.food_name,
+        f1_0.is_featured,
+        f1_0.updated_at 
+    from
+        destination_foods f1_0 
+    where
+        f1_0.destination_id=?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        s1_0.destination_id,
+        s1_0.id,
+        s1_0.created_at,
+        s1_0.deleted_at,
+        s1_0.description,
+        s1_0.specialty_name,
+        s1_0.updated_at 
+    from
+        destination_specialties s1_0 
+    where
+        s1_0.destination_id=?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        a1_0.destination_id,
+        a1_0.id,
+        a1_0.activity_name,
+        a1_0.activity_score,
+        a1_0.created_at,
+        a1_0.deleted_at,
+        a1_0.description,
+        a1_0.updated_at 
+    from
+        destination_activities a1_0 
+    where
+        a1_0.destination_id=?
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        t1_0.destination_id,
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted_at,
+        t1_0.sort_order,
+        t1_0.tip_content,
+        t1_0.tip_title,
+        t1_0.updated_at 
+    from
+        destination_tips t1_0 
+    where
+        t1_0.destination_id=? 
+    order by
+        t1_0.sort_order
+2026-04-13 15:15:10 [http-nio-8088-exec-10] DEBUG org.hibernate.SQL [78505e9b-f8f8-4306-a4ef-12cf1e4958f7] - 
+    select
+        e1_0.destination_id,
+        e1_0.id,
+        e1_0.created_at,
+        e1_0.deleted_at,
+        e1_0.description,
+        e1_0.ends_at,
+        e1_0.event_name,
+        e1_0.event_type,
+        e1_0.is_active,
+        e1_0.notify_all_followers,
+        e1_0.starts_at,
+        e1_0.updated_at 
+    from
+        destination_events e1_0 
+    where
+        e1_0.destination_id=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        ml1_0.destination_id,
+        ml1_0.id,
+        ml1_0.alt_text,
+        ml1_0.created_at,
+        ml1_0.deleted_at,
+        ml1_0.is_active,
+        ml1_0.media_type,
+        ml1_0.media_url,
+        ml1_0.sort_order,
+        ml1_0.updated_at 
+    from
+        destination_media ml1_0 
+    where
+        ml1_0.destination_id=? 
+    order by
+        ml1_0.sort_order
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        f1_0.destination_id,
+        f1_0.id,
+        f1_0.created_at,
+        f1_0.deleted_at,
+        f1_0.description,
+        f1_0.food_name,
+        f1_0.is_featured,
+        f1_0.updated_at 
+    from
+        destination_foods f1_0 
+    where
+        f1_0.destination_id=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        s1_0.destination_id,
+        s1_0.id,
+        s1_0.created_at,
+        s1_0.deleted_at,
+        s1_0.description,
+        s1_0.specialty_name,
+        s1_0.updated_at 
+    from
+        destination_specialties s1_0 
+    where
+        s1_0.destination_id=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        a1_0.destination_id,
+        a1_0.id,
+        a1_0.activity_name,
+        a1_0.activity_score,
+        a1_0.created_at,
+        a1_0.deleted_at,
+        a1_0.description,
+        a1_0.updated_at 
+    from
+        destination_activities a1_0 
+    where
+        a1_0.destination_id=?
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        t1_0.destination_id,
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted_at,
+        t1_0.sort_order,
+        t1_0.tip_content,
+        t1_0.tip_title,
+        t1_0.updated_at 
+    from
+        destination_tips t1_0 
+    where
+        t1_0.destination_id=? 
+    order by
+        t1_0.sort_order
+2026-04-13 15:16:38 [http-nio-8088-exec-6] DEBUG org.hibernate.SQL [4476dd33-b3aa-4dde-9ea1-b0e398d4365e] - 
+    select
+        e1_0.destination_id,
+        e1_0.id,
+        e1_0.created_at,
+        e1_0.deleted_at,
+        e1_0.description,
+        e1_0.ends_at,
+        e1_0.event_name,
+        e1_0.event_type,
+        e1_0.is_active,
+        e1_0.notify_all_followers,
+        e1_0.starts_at,
+        e1_0.updated_at 
+    from
+        destination_events e1_0 
+    where
+        e1_0.destination_id=?
+2026-04-13 15:33:06 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 14668 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-13 15:33:06 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-13 15:33:06 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-13 15:33:08 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-13 15:33:08 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 271 ms. Found 17 JPA repository interfaces.
+2026-04-13 15:33:10 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-13 15:33:10 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-13 15:33:10 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-13 15:33:10 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 4067 ms
+2026-04-13 15:33:11 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-13 15:33:11 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-13 15:33:11 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-13 15:33:12 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-13 15:33:12 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@35b38986
+2026-04-13 15:33:12 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-13 15:33:12 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-13 15:33:15 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-13 15:33:15 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-13 15:33:15 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-13 15:33:15 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-13 15:33:17 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-13 15:33:17 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-13 15:33:17 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-13 15:33:17 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-13 15:33:17 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-13 15:33:19 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-13 15:33:20 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-13 15:33:20 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 15.03 seconds (process running for 15.79)
+2026-04-13 15:33:25 [http-nio-8088-exec-3] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-13 15:33:25 [http-nio-8088-exec-3] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-13 15:33:25 [http-nio-8088-exec-3] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 3 ms
+2026-04-13 15:33:25 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        d1_0.uuid=?
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        ml1_0.destination_id,
+        ml1_0.id,
+        ml1_0.alt_text,
+        ml1_0.created_at,
+        ml1_0.deleted_at,
+        ml1_0.is_active,
+        ml1_0.media_type,
+        ml1_0.media_url,
+        ml1_0.sort_order,
+        ml1_0.updated_at 
+    from
+        destination_media ml1_0 
+    where
+        ml1_0.destination_id=? 
+    order by
+        ml1_0.sort_order
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        f1_0.destination_id,
+        f1_0.id,
+        f1_0.created_at,
+        f1_0.deleted_at,
+        f1_0.description,
+        f1_0.food_name,
+        f1_0.is_featured,
+        f1_0.updated_at 
+    from
+        destination_foods f1_0 
+    where
+        f1_0.destination_id=?
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        s1_0.destination_id,
+        s1_0.id,
+        s1_0.created_at,
+        s1_0.deleted_at,
+        s1_0.description,
+        s1_0.specialty_name,
+        s1_0.updated_at 
+    from
+        destination_specialties s1_0 
+    where
+        s1_0.destination_id=?
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        a1_0.destination_id,
+        a1_0.id,
+        a1_0.activity_name,
+        a1_0.activity_score,
+        a1_0.created_at,
+        a1_0.deleted_at,
+        a1_0.description,
+        a1_0.updated_at 
+    from
+        destination_activities a1_0 
+    where
+        a1_0.destination_id=?
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        t1_0.destination_id,
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted_at,
+        t1_0.sort_order,
+        t1_0.tip_content,
+        t1_0.tip_title,
+        t1_0.updated_at 
+    from
+        destination_tips t1_0 
+    where
+        t1_0.destination_id=? 
+    order by
+        t1_0.sort_order
+2026-04-13 15:33:26 [http-nio-8088-exec-3] DEBUG org.hibernate.SQL [489fa729-8cc6-47bd-ba9d-f2f118b074fa] - 
+    select
+        e1_0.destination_id,
+        e1_0.id,
+        e1_0.created_at,
+        e1_0.deleted_at,
+        e1_0.description,
+        e1_0.ends_at,
+        e1_0.event_name,
+        e1_0.event_type,
+        e1_0.is_active,
+        e1_0.notify_all_followers,
+        e1_0.starts_at,
+        e1_0.updated_at 
+    from
+        destination_events e1_0 
+    where
+        e1_0.destination_id=?
+2026-04-13 15:33:37 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [0e125ec5-bf58-4650-8690-937121e47fe0] - 
+    select
+        u1_0.id,
+        u1_0.avatar_url,
+        u1_0.created_at,
+        u1_0.date_of_birth,
+        u1_0.deleted_at,
+        u1_0.display_name,
+        u1_0.email,
+        u1_0.email_verified_at,
+        u1_0.full_name,
+        u1_0.gender,
+        u1_0.last_login_at,
+        u1_0.loyalty_points,
+        u1_0.member_level,
+        u1_0.password_hash,
+        u1_0.phone,
+        u1_0.phone_verified_at,
+        u1_0.role,
+        u1_0.status,
+        u1_0.total_spent,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        or u1_0.phone=?
+2026-04-13 15:33:37 [http-nio-8088-exec-2] DEBUG org.hibernate.SQL [0e125ec5-bf58-4650-8690-937121e47fe0] - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.best_time_from_month,
+        d1_0.best_time_to_month,
+        d1_0.code,
+        d1_0.country_code,
+        d1_0.created_at,
+        d1_0.crowd_level_default,
+        d1_0.deleted_at,
+        d1_0.description,
+        d1_0.district,
+        d1_0.is_active,
+        d1_0.is_featured,
+        d1_0.is_official,
+        d1_0.latitude,
+        d1_0.longitude,
+        d1_0.name,
+        d1_0.proposed_by,
+        d1_0.province,
+        d1_0.region,
+        d1_0.rejection_reason,
+        d1_0.short_description,
+        d1_0.slug,
+        d1_0.status,
+        d1_0.updated_at,
+        d1_0.uuid,
+        d1_0.verified_by 
+    from
+        destinations d1_0 
+    where
+        (
+            lower(d1_0.name) like ? escape '!' 
+            or lower(d1_0.code) like ? escape '!'
+        ) 
+        and d1_0.status=? 
+        and d1_0.deleted_at is null 
+        and d1_0.is_official=? 
+    order by
+        d1_0.name 
+    limit
+        ?, ?

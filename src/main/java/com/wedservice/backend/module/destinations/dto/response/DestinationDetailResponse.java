@@ -42,6 +42,7 @@ public class DestinationDetailResponse {
     private Boolean isOfficial;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     private List<DestinationMediaResponse> mediaList;
     private List<DestinationFoodResponse> foods;

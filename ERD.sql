@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(150) UNIQUE,
     phone VARCHAR(20) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('customer', 'staffusers', 'admin') NOT NULL DEFAULT 'customer',
+    user_category ENUM('INTERNAL', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
     status ENUM('pending', 'active', 'suspended', 'blocked', 'deleted') NOT NULL DEFAULT 'active',
     full_name VARCHAR(150) NOT NULL,
     display_name VARCHAR(120),
@@ -29,6 +29,70 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT chk_user_contact_required CHECK (email IS NOT NULL OR phone IS NOT NULL)
 )  ENGINE=INNODB; 
 
+CREATE TABLE IF NOT EXISTS roles (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    description VARCHAR(255),
+    role_scope ENUM('SYSTEM', 'BACKOFFICE', 'CUSTOMER') NOT NULL DEFAULT 'SYSTEM',
+    hierarchy_level INT NOT NULL DEFAULT 0,
+    is_system_role BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB; 
+
+CREATE TABLE IF NOT EXISTS permissions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    module_name VARCHAR(80) NOT NULL,
+    action_name VARCHAR(80) NOT NULL,
+    description VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB; 
+
+CREATE TABLE IF NOT EXISTS role_permissions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    role_id BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
+    granted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    granted_by CHAR(36) NULL,
+    UNIQUE KEY uk_role_permission (role_id, permission_id),
+    CONSTRAINT fk_role_permissions_role
+        FOREIGN KEY (role_id) REFERENCES roles(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_permission
+        FOREIGN KEY (permission_id) REFERENCES permissions(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_granted_by
+        FOREIGN KEY (granted_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB; 
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id CHAR(36) NOT NULL,
+    role_id BIGINT NOT NULL,
+    is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+    assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expired_at DATETIME NULL,
+    assigned_by CHAR(36) NULL,
+    note VARCHAR(255) NULL,
+    UNIQUE KEY uk_user_role (user_id, role_id),
+    KEY idx_user_roles_user_primary (user_id, is_primary),
+    KEY idx_user_roles_role (role_id),
+    CONSTRAINT fk_user_roles_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_role
+        FOREIGN KEY (role_id) REFERENCES roles(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_assigned_by
+        FOREIGN KEY (assigned_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB; 
 
 CREATE TABLE IF NOT EXISTS user_preferences ( 
 	id BIGINT PRIMARY KEY AUTO_INCREMENT, 
@@ -1267,7 +1331,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- 15. INDEXES -- 
 
 
-CREATE INDEX idx_users_role_status ON users(role, status); 
+CREATE INDEX idx_users_status ON users(status); 
+CREATE INDEX idx_users_user_category ON users(user_category); 
+CREATE INDEX idx_roles_code_active ON roles(code, is_active); 
+CREATE INDEX idx_permissions_module_action ON permissions(module_name, action_name); 
 CREATE INDEX idx_users_member_level ON users(member_level); 
 CREATE INDEX idx_destinations_province ON destinations(province); 
 CREATE INDEX idx_destinations_region ON destinations(region); 
@@ -1362,6 +1429,44 @@ CREATE OR REPLACE VIEW v_tour_public_summary AS
     
     
 
+
+CREATE OR REPLACE VIEW v_user_primary_roles AS
+    SELECT 
+        u.id AS user_id,
+        u.full_name,
+        u.email,
+        u.phone,
+        u.status,
+        u.user_category,
+        r.code AS primary_role_code,
+        r.name AS primary_role_name,
+        r.hierarchy_level
+    FROM
+        users u
+            LEFT JOIN
+        user_roles ur ON ur.user_id = u.id AND ur.is_primary = TRUE
+            LEFT JOIN
+        roles r ON r.id = ur.role_id;
+
+CREATE OR REPLACE VIEW v_user_effective_permissions AS
+    SELECT DISTINCT
+        u.id AS user_id,
+        u.full_name,
+        r.code AS role_code,
+        p.code AS permission_code,
+        p.module_name,
+        p.action_name
+    FROM
+        users u
+            JOIN
+        user_roles ur ON ur.user_id = u.id
+            JOIN
+        roles r ON r.id = ur.role_id AND r.is_active = TRUE
+            JOIN
+        role_permissions rp ON rp.role_id = r.id
+            JOIN
+        permissions p ON p.id = rp.permission_id AND p.is_active = TRUE; 
+
 -- 17. FUNCTIONS / PROCEDURES -- 
 DELIMITER $$ CREATE FUNCTION fn_generate_code(p_prefix VARCHAR(10)) 
 RETURNS VARCHAR(50) DETERMINISTIC BEGIN RETURN CONCAT( 
@@ -1432,8 +1537,22 @@ SET
     total_spent = total_spent + NEW.final_amount,
     loyalty_points = loyalty_points + FLOOR(NEW.final_amount / 1000000)
 WHERE
-    id = NEW.user_id; END IF; END$$ CREATE TRIGGER trg_bookings_after_delete AFTER DELETE ON bookings FOR EACH ROW BEGIN CALL sp_sync_schedule_booked_seats(OLD.schedule_id); CALL sp_sync_tour_booking_stats(OLD.tour_id); END$$ CREATE TRIGGER trg_payments_before_insert BEFORE INSERT ON payments FOR EACH ROW BEGIN IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN SET NEW.payment_code = fn_generate_code('PM'); END IF; END$$ CREATE TRIGGER trg_refund_requests_before_insert BEFORE INSERT ON refund_requests FOR EACH ROW BEGIN IF NEW.refund_code IS NULL OR NEW.refund_code = '' THEN SET NEW.refund_code = fn_generate_code('RF'); END IF; END$$ CREATE TRIGGER trg_support_sessions_before_insert BEFORE INSERT ON support_sessions FOR EACH ROW BEGIN IF NEW.session_code IS NULL OR NEW.session_code = '' THEN SET NEW.session_code = fn_generate_code('CS'); END IF; END$$ CREATE TRIGGER trg_users_after_insert AFTER INSERT ON users FOR EACH ROW BEGIN INSERT INTO travel_passports(user_id, passport_no) VALUES (NEW.id, fn_generate_code('TVP')); END$$ CREATE TRIGGER trg_reviews_after_insert AFTER INSERT ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(NEW.tour_id); END$$ CREATE TRIGGER trg_reviews_after_update AFTER UPDATE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); IF NEW.tour_id <> OLD.tour_id THEN CALL sp_sync_tour_rating(NEW.tour_id); END IF; END$$ CREATE TRIGGER trg_reviews_after_delete AFTER DELETE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); END$$ CREATE TRIGGER trg_user_checkins_after_insert AFTER INSERT ON user_checkins FOR EACH ROW BEGIN UPDATE travel_passports tp SET tp.total_checkins = ( SELECT COUNT(*) FROM user_checkins uc WHERE uc.user_id = NEW.user_id ) WHERE tp.user_id = NEW.user_id; END$$ DELIMITER ; 
+    id = NEW.user_id; END IF; END$$ CREATE TRIGGER trg_bookings_after_delete AFTER DELETE ON bookings FOR EACH ROW BEGIN CALL sp_sync_schedule_booked_seats(OLD.schedule_id); CALL sp_sync_tour_booking_stats(OLD.tour_id); END$$ CREATE TRIGGER trg_payments_before_insert BEFORE INSERT ON payments FOR EACH ROW BEGIN IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN SET NEW.payment_code = fn_generate_code('PM'); END IF; END$$ CREATE TRIGGER trg_refund_requests_before_insert BEFORE INSERT ON refund_requests FOR EACH ROW BEGIN IF NEW.refund_code IS NULL OR NEW.refund_code = '' THEN SET NEW.refund_code = fn_generate_code('RF'); END IF; END$$ CREATE TRIGGER trg_support_sessions_before_insert BEFORE INSERT ON support_sessions FOR EACH ROW BEGIN IF NEW.session_code IS NULL OR NEW.session_code = '' THEN SET NEW.session_code = fn_generate_code('CS'); END IF; END$$ CREATE TRIGGER trg_users_after_insert AFTER INSERT ON users FOR EACH ROW BEGIN DECLARE v_user_role_id BIGINT; INSERT INTO travel_passports(user_id, passport_no) VALUES (NEW.id, fn_generate_code('TVP')); SELECT id INTO v_user_role_id FROM roles WHERE code = 'USER' LIMIT 1; IF v_user_role_id IS NOT NULL THEN INSERT IGNORE INTO user_roles(user_id, role_id, is_primary, assigned_at, note) VALUES (NEW.id, v_user_role_id, TRUE, NOW(), 'Auto assign default USER role'); END IF; END$$ CREATE TRIGGER trg_reviews_after_insert AFTER INSERT ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(NEW.tour_id); END$$ CREATE TRIGGER trg_reviews_after_update AFTER UPDATE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); IF NEW.tour_id <> OLD.tour_id THEN CALL sp_sync_tour_rating(NEW.tour_id); END IF; END$$ CREATE TRIGGER trg_reviews_after_delete AFTER DELETE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); END$$ CREATE TRIGGER trg_user_checkins_after_insert AFTER INSERT ON user_checkins FOR EACH ROW BEGIN UPDATE travel_passports tp SET tp.total_checkins = ( SELECT COUNT(*) FROM user_checkins uc WHERE uc.user_id = NEW.user_id ) WHERE tp.user_id = NEW.user_id; END$$ DELIMITER ; 
 -- ========================================================= -- 19. DEFAULT DATA -- ========================================================= 
+
+INSERT IGNORE INTO roles (code, name, description, role_scope, hierarchy_level, is_system_role, is_active) 
+VALUES ('SUPER_ADMIN', 'Super Admin', 'Toàn quyền hệ thống, quản lý role và permission', 'SYSTEM', 100, TRUE, TRUE), ('ADMIN', 'Admin', 'Quản trị vận hành toàn hệ thống nhưng không toàn quyền như Super Admin', 'BACKOFFICE', 80, TRUE, TRUE), ('CONTENT_EDITOR', 'Content Editor', 'Quản lý nội dung điểm đến, tour, media, bài viết mô tả', 'BACKOFFICE', 60, TRUE, TRUE), ('FIELD_STAFF', 'Field Staff', 'Nhân sự khảo sát thực địa, cập nhật dữ liệu thực tế, check điểm đón', 'BACKOFFICE', 50, TRUE, TRUE), ('OPERATOR', 'Operator', 'Điều phối lịch khởi hành, booking, support, refund cơ bản', 'BACKOFFICE', 55, TRUE, TRUE), ('USER', 'User', 'Khách hàng sử dụng ứng dụng đặt tour', 'CUSTOMER', 10, TRUE, TRUE); 
+
+INSERT IGNORE INTO permissions (code, name, module_name, action_name, description) 
+VALUES ('dashboard.view', 'Xem dashboard', 'dashboard', 'view', 'Truy cập dashboard quản trị'), ('user.view', 'Xem người dùng', 'user', 'view', 'Xem danh sách và chi tiết người dùng'), ('user.create', 'Tạo người dùng', 'user', 'create', 'Tạo tài khoản người dùng nội bộ hoặc khách hàng'), ('user.update', 'Sửa người dùng', 'user', 'update', 'Cập nhật hồ sơ người dùng'), ('user.delete', 'Xóa người dùng', 'user', 'delete', 'Xóa mềm hoặc vô hiệu người dùng'), ('user.block', 'Khóa người dùng', 'user', 'block', 'Khóa / mở khóa tài khoản người dùng'), ('role.view', 'Xem role', 'role', 'view', 'Xem danh sách role'), ('role.create', 'Tạo role', 'role', 'create', 'Tạo role mới'), ('role.update', 'Sửa role', 'role', 'update', 'Chỉnh sửa role'), ('role.delete', 'Xóa role', 'role', 'delete', 'Xóa role không còn sử dụng'), ('role.assign', 'Gán role', 'role', 'assign', 'Gán role cho user'), ('permission.view', 'Xem permission', 'permission', 'view', 'Xem danh sách permission'), ('permission.assign', 'Gán permission', 'permission', 'assign', 'Gán permission cho role'), ('destination.view', 'Xem destination', 'destination', 'view', 'Xem điểm đến'), ('destination.create', 'Tạo destination', 'destination', 'create', 'Tạo điểm đến'), ('destination.update', 'Sửa destination', 'destination', 'update', 'Sửa điểm đến'), ('destination.delete', 'Xóa destination', 'destination', 'delete', 'Xóa / ẩn điểm đến'), ('destination.publish', 'Xuất bản destination', 'destination', 'publish', 'Kích hoạt / hiển thị điểm đến'), ('content.view', 'Xem nội dung', 'content', 'view', 'Xem nội dung CMS'), ('content.create', 'Tạo nội dung', 'content', 'create', 'Tạo nội dung mô tả / media / tips / events'), ('content.update', 'Sửa nội dung', 'content', 'update', 'Cập nhật nội dung'), ('content.delete', 'Xóa nội dung', 'content', 'delete', 'Xóa nội dung'), ('content.publish', 'Xuất bản nội dung', 'content', 'publish', 'Duyệt và xuất bản nội dung'), ('tour.view', 'Xem tour', 'tour', 'view', 'Xem tour'), ('tour.create', 'Tạo tour', 'tour', 'create', 'Tạo tour mới'), ('tour.update', 'Sửa tour', 'tour', 'update', 'Cập nhật tour'), ('tour.delete', 'Xóa tour', 'tour', 'delete', 'Xóa / ẩn tour'), ('tour.publish', 'Xuất bản tour', 'tour', 'publish', 'Kích hoạt tour'), ('schedule.view', 'Xem lịch khởi hành', 'schedule', 'view', 'Xem schedule'), ('schedule.create', 'Tạo lịch khởi hành', 'schedule', 'create', 'Tạo schedule'), ('schedule.update', 'Sửa lịch khởi hành', 'schedule', 'update', 'Cập nhật schedule'), ('schedule.close', 'Đóng / mở lịch khởi hành', 'schedule', 'close', 'Đóng, mở, hủy schedule'), ('guide.assign', 'Phân công hướng dẫn viên', 'guide', 'assign', 'Gán guide cho schedule'), ('booking.view', 'Xem booking', 'booking', 'view', 'Xem booking'), ('booking.create', 'Tạo booking', 'booking', 'create', 'Tạo booking'), ('booking.update', 'Sửa booking', 'booking', 'update', 'Chỉnh sửa booking'), ('booking.cancel', 'Hủy booking', 'booking', 'cancel', 'Thực hiện hủy booking'), ('booking.checkin', 'Check-in booking', 'booking', 'checkin', 'Check-in khách đi tour'), ('payment.view', 'Xem thanh toán', 'payment', 'view', 'Xem thanh toán'), ('payment.create', 'Tạo thanh toán', 'payment', 'create', 'Ghi nhận thanh toán'), ('payment.update', 'Sửa thanh toán', 'payment', 'update', 'Cập nhật trạng thái thanh toán'), ('refund.view', 'Xem hoàn tiền', 'refund', 'view', 'Xem refund request'), ('refund.create', 'Tạo yêu cầu hoàn tiền', 'refund', 'create', 'Tạo refund request'), ('refund.approve', 'Duyệt hoàn tiền', 'refund', 'approve', 'Duyệt hoàn tiền'), ('refund.reject', 'Từ chối hoàn tiền', 'refund', 'reject', 'Từ chối hoàn tiền'), ('refund.process', 'Xử lý hoàn tiền', 'refund', 'process', 'Xử lý hoàn tiền thực tế'), ('voucher.view', 'Xem voucher', 'voucher', 'view', 'Xem voucher'), ('voucher.create', 'Tạo voucher', 'voucher', 'create', 'Tạo voucher / campaign'), ('voucher.update', 'Sửa voucher', 'voucher', 'update', 'Cập nhật voucher / campaign'), ('voucher.delete', 'Xóa voucher', 'voucher', 'delete', 'Xóa voucher'), ('review.view', 'Xem review', 'review', 'view', 'Xem review'), ('review.reply', 'Phản hồi review', 'review', 'reply', 'Phản hồi đánh giá'), ('review.moderate', 'Kiểm duyệt review', 'review', 'moderate', 'Ẩn / duyệt review'), ('support.view', 'Xem support', 'support', 'view', 'Xem phiên hỗ trợ'), ('support.reply', 'Trả lời support', 'support', 'reply', 'Nhắn tin hỗ trợ khách hàng'), ('support.assign', 'Phân công support', 'support', 'assign', 'Gán staff xử lý hội thoại'), ('notification.view', 'Xem thông báo', 'notification', 'view', 'Xem thông báo hệ thống'), ('notification.send', 'Gửi thông báo', 'notification', 'send', 'Gửi push / email / sms'), ('report.view', 'Xem báo cáo', 'report', 'view', 'Xem thống kê / báo cáo'), ('audit.view', 'Xem audit log', 'audit', 'view', 'Xem lịch sử thao tác hệ thống'); 
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'SUPER_ADMIN'; 
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'ADMIN' AND p.code IN ('dashboard.view','user.view','user.create','user.update','user.delete','user.block','role.view','role.assign','permission.view','destination.view','destination.create','destination.update','destination.delete','destination.publish','content.view','content.create','content.update','content.delete','content.publish','tour.view','tour.create','tour.update','tour.delete','tour.publish','schedule.view','schedule.create','schedule.update','schedule.close','guide.assign','booking.view','booking.create','booking.update','booking.cancel','booking.checkin','payment.view','payment.create','payment.update','refund.view','refund.create','refund.approve','refund.reject','refund.process','voucher.view','voucher.create','voucher.update','voucher.delete','review.view','review.reply','review.moderate','support.view','support.reply','support.assign','notification.view','notification.send','report.view','audit.view'); 
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'CONTENT_EDITOR' AND p.code IN ('dashboard.view','destination.view','destination.create','destination.update','destination.publish','content.view','content.create','content.update','content.delete','content.publish','tour.view','tour.create','tour.update','tour.publish','schedule.view','review.view','notification.view'); 
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'FIELD_STAFF' AND p.code IN ('dashboard.view','destination.view','destination.create','destination.update','content.view','content.create','content.update','tour.view','schedule.view','schedule.update','booking.view','booking.checkin'); 
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'OPERATOR' AND p.code IN ('dashboard.view','user.view','destination.view','tour.view','schedule.view','schedule.create','schedule.update','schedule.close','guide.assign','booking.view','booking.create','booking.update','booking.cancel','booking.checkin','payment.view','payment.create','payment.update','refund.view','refund.create','refund.approve','refund.reject','refund.process','review.view','review.reply','support.view','support.reply','support.assign','notification.view','notification.send','report.view'); 
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'USER' AND p.code IN ('destination.view','content.view','tour.view','schedule.view','booking.view','booking.create','booking.cancel','payment.view','payment.create','refund.view','refund.create','review.view','notification.view','support.view','support.reply'); 
+
 INSERT IGNORE INTO cancellation_policies ( id, name, description, voucher_bonus_percent, is_default, is_active ) 
 VALUES (1, 'CHINH_SACH_MAC_DINH', 'Chính sách hoàn hủy mặc định của TravelViet', 10, TRUE, TRUE); 
 INSERT IGNORE INTO cancellation_policy_rules ( id, policy_id, min_hours_before, max_hours_before, refund_percent, voucher_percent, fee_percent, allow_reschedule, notes ) 
