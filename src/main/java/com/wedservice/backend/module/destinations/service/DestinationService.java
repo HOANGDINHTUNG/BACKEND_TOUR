@@ -29,6 +29,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class DestinationService {
 
     private final DestinationRepository destinationRepository;
@@ -96,18 +97,26 @@ public class DestinationService {
             throw new BadRequestException("Destination slug already exists: " + request.getSlug());
         }
 
-        Destination destination = destinationMapper.toEntity(request);
+        log.info("Proposing new destination: code={}, name={}", request.getCode(), request.getName());
+        try {
+            Destination destination = destinationMapper.toEntity(request);
 
-        if (authenticatedUserProvider.isCurrentUserAdmin()) {
-            destination.setStatus(DestinationStatus.APPROVED);
-            destination.setIsOfficial(true);
-            destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
-        } else {
-            destination.setStatus(DestinationStatus.PENDING);
-            destination.setIsOfficial(false);
-            destination.setProposedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+            if (authenticatedUserProvider.isCurrentUserAdmin()) {
+                destination.setStatus(DestinationStatus.APPROVED);
+                destination.setIsOfficial(true);
+                destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+            } else {
+                destination.setStatus(DestinationStatus.PENDING);
+                destination.setIsOfficial(false);
+                destination.setProposedBy(authenticatedUserProvider.getRequiredCurrentUserId());
+            }
+
+            Destination saved = destinationRepository.save(destination);
+            log.info("Destination saved successfully: uuid={}", saved.getUuid());
+            return destinationMapper.toDetailResponse(saved);
+        } catch (Exception e) {
+            log.error("CRITICAL: Failed to propose destination. Error: {}", e.getMessage(), e);
+            throw e;
         }
-
-        return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
 }

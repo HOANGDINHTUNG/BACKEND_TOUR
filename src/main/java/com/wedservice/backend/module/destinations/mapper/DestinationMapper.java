@@ -52,6 +52,7 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     @Mapping(target = "shortDescription", expression = "java(DataNormalizer.normalize(request.getShortDescription()))")
     @Mapping(target = "description", expression = "java(DataNormalizer.normalize(request.getDescription()))")
     @Mapping(target = "crowdLevelDefault", expression = "java(request.getCrowdLevelDefault() != null ? request.getCrowdLevelDefault() : CrowdLevel.MEDIUM)")
+    @Mapping(target = "isActive", expression = "java(request.getIsActive() != null ? request.getIsActive() : true)")
     @Mapping(target = "status", expression = "java(DestinationStatus.APPROVED)")
     Destination toEntity(DestinationRequest request);
 
@@ -65,8 +66,10 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     @Mapping(target = "address", expression = "java(DataNormalizer.normalize(request.getAddress()))")
     @Mapping(target = "shortDescription", expression = "java(DataNormalizer.normalize(request.getShortDescription()))")
     @Mapping(target = "description", expression = "java(DataNormalizer.normalize(request.getDescription()))")
+    @Mapping(target = "isActive", expression = "java(request.getIsActive() != null ? request.getIsActive() : destination.getIsActive())")
     void updateEntity(@MappingTarget Destination destination, DestinationRequest request);
 
+    @Mapping(target = "uuid", source = "uuid")
     DestinationDetailResponse toDetailResponse(Destination destination);
 
     @Mapping(target = "id", ignore = true)

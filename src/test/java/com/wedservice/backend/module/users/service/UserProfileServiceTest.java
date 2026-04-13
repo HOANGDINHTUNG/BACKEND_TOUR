@@ -128,6 +128,24 @@ class UserProfileServiceTest {
     }
 
     @Test
+    void getMyProfile_throwsUnauthorized_whenUserIsSuspended() {
+        UUID id = UUID.randomUUID();
+        User suspendedUser = User.builder()
+                .id(id)
+                .fullName("Suspended User")
+                .status(Status.SUSPENDED)
+                .role(Role.CUSTOMER)
+                .build();
+
+        when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(id);
+        when(userRepository.findById(id)).thenReturn(Optional.of(suspendedUser));
+
+        assertThatThrownBy(() -> userProfileService.getMyProfile())
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessageContaining("Your account is suspended");
+    }
+
+    @Test
     void getMyProfile_throwsUnauthorized_whenNoAuthenticatedUserExists() {
         when(authenticatedUserProvider.getRequiredCurrentUserId())
                 .thenThrow(new UnauthorizedException("Unauthorized"));

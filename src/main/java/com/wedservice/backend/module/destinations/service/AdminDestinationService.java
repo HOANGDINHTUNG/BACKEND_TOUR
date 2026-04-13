@@ -126,6 +126,10 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
         Destination destination = destinationRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
 
+        if (destination.getStatus() != DestinationStatus.APPROVED) {
+            throw new BadRequestException("Only approved destinations can be updated");
+        }
+
         if (destinationRepository.existsByCodeIgnoreCaseAndIdNot(request.getCode(), destination.getId())) {
             throw new BadRequestException("Destination code already exists: " + request.getCode());
         }

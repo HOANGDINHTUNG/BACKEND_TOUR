@@ -64,7 +64,7 @@ GET http://localhost:8080/api/system/health
 
 **Body mẫu:**
 
-````json
+```json
 {
   "fullName": "Nguyễn Văn An",
   "email": "an.nguyen@gmail.com",
@@ -72,7 +72,10 @@ GET http://localhost:8080/api/system/health
   "passwordHash": "Password@123",
   "displayName": "An Nguyen",
   "gender": "MALE",
-  "dateOfBirth": "1995-06-15",
+  "dateOfBirth": "1995-06-15"
+}
+```
+
 **Response mẫu:**
 
 ```json
@@ -80,7 +83,7 @@ GET http://localhost:8080/api/system/health
   "success": true,
   "message": "Register successfully",
   "data": {
-    "user": { ... },
+    "user": { },
     "tokenType": "Bearer",
     "accessToken": "eyJhbG...",
     "expiresIn": 3600000,
@@ -88,7 +91,8 @@ GET http://localhost:8080/api/system/health
     "refreshExpiresIn": 2592000000
   }
 }
-````
+```
+
 
 ---
 
@@ -120,7 +124,7 @@ GET http://localhost:8080/api/system/health
   "success": true,
   "message": "Login successfully",
   "data": {
-    "user": { ... },
+    "user": { },
     "tokenType": "Bearer",
     "accessToken": "eyJhbG...",
     "expiresIn": 3600000,
@@ -381,59 +385,74 @@ GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
 
 ```json
 {
-  "code": "HN-001",
-  "name": "Hồ Hoàn Kiếm",
-  "slug": "ho-hoan-kiem",
+  "code": "HA-LONG-BAY",
+  "name": "Vịnh Hạ Long",
+  "slug": "vinh-ha-long",
   "countryCode": "VN",
-  "province": "Hà Nội",
-  "district": "Hoàn Kiếm",
-  "region": "Miền Bắc",
-  "address": "Đinh Tiên Hoàng, Hoàn Kiếm, Hà Nội",
-  "latitude": 21.0285,
-  "longitude": 105.8542,
-  "shortDescription": "Hồ Hoàn Kiếm là trái tim của Hà Nội",
-  "description": "Hồ Hoàn Kiếm (Hồ Gươm) là hồ nước ngọt nằm giữa lòng Hà Nội...",
+  "province": "Quảng Ninh",
+  "district": "TP. Hạ Long",
+  "region": "Đông Bắc Bộ",
+  "address": "Vịnh Hạ Long, tỉnh Quảng Ninh, Việt Nam",
+  "latitude": 20.9101,
+  "longitude": 107.1839,
+  "shortDescription": "Di sản thiên nhiên thế giới UNESCO với hàng ngàn đảo đá vôi kỳ vĩ.",
+  "description": "Vịnh Hạ Long là một trong những điểm đến du lịch nổi tiếng nhất Việt Nam, được UNESCO công nhận là Di sản thiên nhiên thế giới. Vịnh bao gồm hàng ngàn hòn đảo đá vôi và các hang động kỳ thú như hang Sửng Sốt, động Thiên Cung...",
   "bestTimeFromMonth": 3,
   "bestTimeToMonth": 5,
-  "crowdLevelDefault": "HIGH",
+  "crowdLevelDefault": "MEDIUM",
   "isFeatured": true,
   "isActive": true,
   "isOfficial": false,
   "mediaList": [
     {
-      "mediaUrl": "https://example.com/hoan-kiem.jpg",
       "mediaType": "IMAGE",
-      "caption": "Hồ Hoàn Kiếm nhìn từ trên cao",
-      "isPrimary": true
+      "mediaUrl": "https://example.com/halong1.jpg",
+      "altText": "Toàn cảnh Vịnh Hạ Long từ trên cao",
+      "sortOrder": 1,
+      "isActive": true
     }
   ],
   "foods": [
     {
-      "name": "Phở Hà Nội",
-      "description": "Phở bò truyền thống Hà Nội",
-      "priceRange": "30.000-60.000 VNĐ",
-      "imageUrl": "https://example.com/pho.jpg"
+      "foodName": "Chả mực Hạ Long",
+      "description": "Món chả đặc sản làm từ mực tươi xay nhuyễn, giòn dai và thơm ngon.",
+      "isFeatured": true
+    }
+  ],
+  "specialties": [
+    {
+      "specialtyName": "Sá sùng khô",
+      "description": "Sản vật quý hiếm thường được dùng để nấu nước dùng phở hoặc ngâm rượu."
     }
   ],
   "activities": [
     {
-      "name": "Dạo quanh hồ",
-      "description": "Tản bộ quanh Hồ Gươm vào buổi sáng",
-      "durationHours": 1,
-      "isFree": true
+      "activityName": "Chèo thuyền Kayak",
+      "description": "Khám phá các hang động và lách qua các hòn đảo nhỏ trên vịnh.",
+      "activityScore": 4.8
+    },
+    {
+      "activityName": "Ngủ đêm trên du thuyền",
+      "description": "Trải nghiệm cảm giác lênh đênh trên biển và ngắm bình minh trên vịnh.",
+      "activityScore": 5.0
     }
   ],
   "tips": [
     {
-      "content": "Nên đến vào buổi sáng sớm để tránh đông đúc",
-      "category": "TIME"
+      "tipTitle": "Trang phục",
+      "tipContent": "Nên mang theo kem chống nắng, mũ rộng vành và giày thể thao để leo hang.",
+      "sortOrder": 1
     }
   ],
   "events": [
     {
-      "name": "Lễ hội phố đi bộ",
-      "description": "Phố đi bộ Hoàn Kiếm mở cuối tuần",
-      "month": 12
+      "eventName": "Carnaval Hạ Long",
+      "eventType": "FESTIVAL",
+      "description": "Lễ hội đường phố sôi động diễn ra vào dịp 30/4 - 1/5 hàng năm.",
+      "startsAt": "2026-04-30T19:00:00",
+      "endsAt": "2026-05-01T22:00:00",
+      "notifyAllFollowers": true,
+      "isActive": true
     }
   ]
 }

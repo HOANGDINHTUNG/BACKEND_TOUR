@@ -43,8 +43,14 @@ public class UserProfileService {
 
     private User findCurrentUser() {
         UUID userId = authenticatedUserProvider.getRequiredCurrentUserId();
-        return userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        if (user.getStatus() != com.wedservice.backend.module.users.entity.Status.ACTIVE) {
+            throw new com.wedservice.backend.common.exception.UnauthorizedException("Your account is " + user.getStatus().getValue() + ". Please contact support.");
+        }
+
+        return user;
     }
 
     private void validateRequiredContact(String email, String phone) {

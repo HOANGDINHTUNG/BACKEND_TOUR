@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +38,7 @@ public class Destination extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "uuid", unique = true, nullable = false, updatable = false, length = 36)
     private UUID uuid;
 
@@ -91,14 +94,20 @@ public class Destination extends AuditableEntity {
     @Builder.Default
     private Boolean isFeatured = false;
 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private DestinationStatus status = DestinationStatus.APPROVED;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "proposed_by", length = 36)
     private UUID proposedBy;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "verified_by", length = 36)
     private UUID verifiedBy;
 
