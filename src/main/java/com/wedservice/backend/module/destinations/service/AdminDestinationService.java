@@ -16,6 +16,7 @@ import com.wedservice.backend.module.destinations.mapper.DestinationMapper;
 import com.wedservice.backend.module.destinations.repository.DestinationRepository;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.common.util.DataNormalizer;
+import com.wedservice.backend.common.util.SlugUtils;
 
 
 import lombok.RequiredArgsConstructor;
@@ -103,9 +104,7 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
 
     @Transactional(readOnly = true)
     public DestinationDetailResponse getDestinationByUuid(UUID uuid) {
-        Destination destination = destinationRepository.findByUuid(uuid)
-                .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
-        return destinationMapper.toDetailResponse(destination);
+        return destinationMapper.toDetailResponse(findDestinationByUuid(uuid));
     }
 
     @Transactional
@@ -123,28 +122,40 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
 
     @Transactional
     public DestinationDetailResponse updateDestination(UUID uuid, DestinationRequest request) {
-        Destination destination = destinationRepository.findByUuid(uuid)
-                .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
+        Destination destination = findDestinationByUuid(uuid);
 
         if (destination.getStatus() != DestinationStatus.APPROVED) {
             throw new BadRequestException("Only approved destinations can be updated");
         }
 
-        if (destinationRepository.existsByCodeIgnoreCaseAndIdNot(request.getCode(), destination.getId())) {
-            throw new BadRequestException("Destination code already exists: " + request.getCode());
-        }
-        if (destinationRepository.existsBySlugIgnoreCaseAndIdNot(request.getSlug(), destination.getId())) {
-            throw new BadRequestException("Destination slug already exists: " + request.getSlug());
-        }
+        String normalizedCode = DataNormalizer.normalize(request.getCode());
+        String normalizedSlug = StringUtils.hasText(request.getSlug()) 
+                ? DataNormalizer.normalize(request.getSlug()) 
+                : SlugUtils.toSlug(DataNormalizer.normalize(request.getName()));
 
-        destinationMapper.updateEntity(destination, request);
+        validateUniqueDestination(normalizedCode, normalizedSlug, destination.getId());
+
+        destinationMapper.applyAdminUpdate(destination, request, normalizedCode, normalizedSlug);
         return destinationMapper.toDetailResponse(destinationRepository.save(destination));
+    }
+
+    private Destination findDestinationByUuid(UUID uuid) {
+        return destinationRepository.findByUuid(uuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
+    }
+
+    private void validateUniqueDestination(String code, String slug, Long currentId) {
+        if (StringUtils.hasText(code) && destinationRepository.existsByCodeIgnoreCaseAndIdNot(code, currentId)) {
+            throw new BadRequestException("Destination code already exists: " + code);
+        }
+        if (StringUtils.hasText(slug) && destinationRepository.existsBySlugIgnoreCaseAndIdNot(slug, currentId)) {
+            throw new BadRequestException("Destination slug already exists: " + slug);
+        }
     }
 
     @Transactional
     public void deleteDestination(UUID uuid) {
-        Destination destination = destinationRepository.findByUuid(uuid)
-                .orElseThrow(() -> new ResourceNotFoundException("Destination not found with uuid: " + uuid));
+        Destination destination = findDestinationByUuid(uuid);
         destination.setDeletedAt(java.time.LocalDateTime.now());
         destinationRepository.save(destination);
     }

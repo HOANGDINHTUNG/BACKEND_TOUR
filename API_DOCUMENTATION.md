@@ -505,18 +505,18 @@ GET http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f6
 
 ```json
 {
-  "code": "DN-001",
-  "name": "Bà Nà Hills",
-  "slug": "ba-na-hills",
+  "code": "DN-003",
+  "name": "Ngũ Hành Sơn",
+  "slug": "ngu-hanh-son",
   "countryCode": "VN",
   "province": "Đà Nẵng",
-  "district": "Hòa Vang",
+  "district": "Quận Ngũ Hành Sơn",
   "region": "Miền Trung",
-  "address": "Thôn An Sơn, xã Hòa Ninh, Hòa Vang, Đà Nẵng",
-  "latitude": 15.9994,
-  "longitude": 107.9884,
-  "shortDescription": "Khu du lịch nổi tiếng trên đỉnh núi Bà Nà",
-  "description": "Bà Nà Hills (núi Chúa) là khu du lịch chủ đề lớn nhất Đà Nẵng...",
+  "address": "81 Huyền Trân Công Chúa, Quận Ngũ Hành Sơn, Đà Nẵng, Việt Nam",
+  "latitude": 16.0037,
+  "longitude": 108.2640,
+  "shortDescription": "Danh thắng nổi tiếng gồm quần thể núi đá vôi và chùa linh thiêng tại Đà Nẵng.",
+  "description": "Ngũ Hành Sơn là quần thể gồm năm ngọn núi đá vôi nằm ven biển Đà Nẵng, nổi tiếng với hang động kỳ bí, chùa chiền cổ kính và các điểm ngắm toàn cảnh thành phố tuyệt đẹp. Đây là địa điểm du lịch tâm linh và khám phá thiên nhiên được nhiều du khách yêu thích.",
   "bestTimeFromMonth": 2,
   "bestTimeToMonth": 8,
   "crowdLevelDefault": "HIGH",
@@ -525,10 +525,75 @@ GET http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f6
   "isOfficial": true,
   "mediaList": [
     {
-      "mediaUrl": "https://example.com/ba-na.jpg",
       "mediaType": "IMAGE",
-      "caption": "Cầu vàng Bà Nà Hills",
-      "isPrimary": true
+      "mediaUrl": "https://example.com/ngu-hanh-son-1.jpg",
+      "altText": "Toàn cảnh Ngũ Hành Sơn nhìn từ trên cao",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "mediaType": "IMAGE",
+      "mediaUrl": "https://example.com/ngu-hanh-son-2.jpg",
+      "altText": "Du khách tham quan động Huyền Không",
+      "sortOrder": 2,
+      "isActive": true
+    }
+  ],
+  "foods": [
+    {
+      "foodName": "Mì Quảng",
+      "description": "Món mì đặc sản nổi tiếng của miền Trung với nước dùng đậm vị.",
+      "isFeatured": true
+    },
+    {
+      "foodName": "Bánh tráng cuốn thịt heo",
+      "description": "Đặc sản Đà Nẵng với rau sống phong phú và nước chấm đặc biệt.",
+      "isFeatured": false
+    }
+  ],
+  "specialties": [
+    {
+      "specialtyName": "Đá mỹ nghệ Non Nước",
+      "description": "Sản phẩm thủ công mỹ nghệ được chạm khắc tinh xảo từ đá."
+    },
+    {
+      "specialtyName": "Chả bò Đà Nẵng",
+      "description": "Món đặc sản nổi tiếng làm quà của thành phố biển."
+    }
+  ],
+  "activities": [
+    {
+      "activityName": "Khám phá hang động",
+      "description": "Tham quan các hang động tự nhiên kỳ bí bên trong núi.",
+      "activityScore": 4.9
+    },
+    {
+      "activityName": "Leo núi ngắm cảnh",
+      "description": "Ngắm toàn cảnh biển Đà Nẵng và thành phố từ đỉnh núi.",
+      "activityScore": 4.8
+    }
+  ],
+  "tips": [
+    {
+      "tipTitle": "Mang giày thể thao",
+      "tipContent": "Địa hình nhiều bậc thang và đá nên cần giày dễ di chuyển.",
+      "sortOrder": 1
+    },
+    {
+      "tipTitle": "Đi buổi sáng",
+      "tipContent": "Nên đi sớm để tránh nắng gắt và đông khách.",
+      "sortOrder": 2
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Lễ hội Quán Thế Âm",
+      "eventType": "FESTIVAL",
+      "description": "Lễ hội văn hóa tâm linh lớn tổ chức hằng năm tại Ngũ Hành Sơn.",
+      "startsAt": "2026-03-15T08:00:00",
+      "endsAt": "2026-03-17T22:00:00",
+      "notifyAllFollowers": true,
+      "isActive": true
     }
   ]
 }

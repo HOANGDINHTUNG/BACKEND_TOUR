@@ -54,11 +54,17 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     @Mapping(target = "crowdLevelDefault", expression = "java(request.getCrowdLevelDefault() != null ? request.getCrowdLevelDefault() : CrowdLevel.MEDIUM)")
     @Mapping(target = "isActive", expression = "java(request.getIsActive() != null ? request.getIsActive() : true)")
     @Mapping(target = "status", expression = "java(DestinationStatus.APPROVED)")
+    @Mapping(target = "mediaList", ignore = true)
+    @Mapping(target = "foods", ignore = true)
+    @Mapping(target = "specialties", ignore = true)
+    @Mapping(target = "activities", ignore = true)
+    @Mapping(target = "tips", ignore = true)
+    @Mapping(target = "events", ignore = true)
     Destination toEntity(DestinationRequest request);
 
     @Mapping(target = "name", expression = "java(DataNormalizer.normalize(request.getName()))")
-    @Mapping(target = "slug", expression = "java(resolveSlug(request))")
-    @Mapping(target = "code", expression = "java(DataNormalizer.normalize(request.getCode()))")
+    @Mapping(target = "slug", source = "normalizedSlug")
+    @Mapping(target = "code", source = "normalizedCode")
     @Mapping(target = "countryCode", expression = "java(request.getCountryCode() != null ? request.getCountryCode().toUpperCase() : destination.getCountryCode())")
     @Mapping(target = "province", expression = "java(DataNormalizer.normalize(request.getProvince()))")
     @Mapping(target = "district", expression = "java(DataNormalizer.normalize(request.getDistrict()))")
@@ -66,8 +72,24 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     @Mapping(target = "address", expression = "java(DataNormalizer.normalize(request.getAddress()))")
     @Mapping(target = "shortDescription", expression = "java(DataNormalizer.normalize(request.getShortDescription()))")
     @Mapping(target = "description", expression = "java(DataNormalizer.normalize(request.getDescription()))")
-    @Mapping(target = "isActive", expression = "java(request.getIsActive() != null ? request.getIsActive() : destination.getIsActive())")
-    void updateEntity(@MappingTarget Destination destination, DestinationRequest request);
+    @Mapping(target = "bestTimeFromMonth", source = "request.bestTimeFromMonth")
+    @Mapping(target = "bestTimeToMonth", source = "request.bestTimeToMonth")
+    @Mapping(target = "crowdLevelDefault", expression = "java(defaultCrowdLevel(request.getCrowdLevelDefault(), destination.getCrowdLevelDefault()))")
+    @Mapping(target = "isFeatured", expression = "java(defaultBoolean(request.getIsFeatured(), destination.getIsFeatured()))")
+    @Mapping(target = "isActive", expression = "java(defaultBoolean(request.getIsActive(), destination.getIsActive()))")
+    @Mapping(target = "isOfficial", expression = "java(defaultBoolean(request.getIsOfficial(), destination.getIsOfficial()))")
+    @Mapping(target = "mediaList", ignore = true)
+    @Mapping(target = "foods", ignore = true)
+    @Mapping(target = "specialties", ignore = true)
+    @Mapping(target = "activities", ignore = true)
+    @Mapping(target = "tips", ignore = true)
+    @Mapping(target = "events", ignore = true)
+    void applyAdminUpdate(
+            @MappingTarget Destination destination,
+            DestinationRequest request,
+            String normalizedCode,
+            String normalizedSlug
+    );
 
     @Mapping(target = "uuid", source = "uuid")
     DestinationDetailResponse toDetailResponse(Destination destination);
@@ -91,7 +113,6 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
     @Mapping(target = "destinationName", source = "destination.name")
     DestinationFollowResponse toFollowResponse(DestinationFollow follow);
 
-
     default String resolveSlug(DestinationRequest request) {
         String name = DataNormalizer.normalize(request.getName());
         String slug = DataNormalizer.normalize(request.getSlug());
@@ -99,6 +120,14 @@ public interface DestinationMapper extends BaseMapper<DestinationResponse, Desti
             return SlugUtils.toSlug(name);
         }
         return slug;
+    }
+
+    default CrowdLevel defaultCrowdLevel(CrowdLevel requestValue, CrowdLevel existingValue) {
+        return requestValue != null ? requestValue : existingValue;
+    }
+
+    default Boolean defaultBoolean(Boolean requestValue, Boolean existingValue) {
+        return requestValue != null ? requestValue : existingValue;
     }
 
     @AfterMapping
