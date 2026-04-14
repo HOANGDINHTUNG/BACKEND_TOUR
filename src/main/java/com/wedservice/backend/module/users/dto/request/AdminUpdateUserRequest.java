@@ -14,8 +14,8 @@ import org.springframework.util.StringUtils;
 
 import com.wedservice.backend.module.users.entity.Gender;
 import com.wedservice.backend.module.users.entity.MemberLevel;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.UserCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,8 +39,10 @@ public class AdminUpdateUserRequest {
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
     private String passwordHash;
 
-    @NotNull(message = "Role is required")
-    private Role role;
+    @NotNull(message = "User category is required")
+    private UserCategory userCategory;
+
+    private java.util.List<String> roleCodes;
 
     @NotNull(message = "Status is required")
     private Status status;

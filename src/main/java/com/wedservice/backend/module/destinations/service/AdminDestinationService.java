@@ -14,6 +14,8 @@ import com.wedservice.backend.module.destinations.entity.Destination;
 import com.wedservice.backend.module.destinations.entity.DestinationStatus;
 import com.wedservice.backend.module.destinations.mapper.DestinationMapper;
 import com.wedservice.backend.module.destinations.repository.DestinationRepository;
+import com.wedservice.backend.module.destinations.service.command.AdminDestinationCommandService;
+import com.wedservice.backend.module.destinations.service.query.AdminDestinationQueryService;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.common.util.DataNormalizer;
 import com.wedservice.backend.common.util.SlugUtils;
@@ -35,7 +37,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AdminDestinationService extends BaseService<Destination, Long> {
+public class AdminDestinationService extends BaseService<Destination, Long>
+        implements AdminDestinationCommandService, AdminDestinationQueryService {
 
     private final DestinationRepository destinationRepository;
     private final DestinationMapper destinationMapper;
@@ -171,6 +174,7 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
 
         destination.setStatus(DestinationStatus.APPROVED);
         destination.setIsOfficial(true);
+        destination.setRejectionReason(null);
         destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
         return destinationMapper.toDetailResponse(destinationRepository.save(destination));
     }
@@ -185,6 +189,7 @@ public class AdminDestinationService extends BaseService<Destination, Long> {
         }
 
         destination.setStatus(DestinationStatus.REJECTED);
+        destination.setIsOfficial(false);
         destination.setRejectionReason(request.getReason());
         destination.setVerifiedBy(authenticatedUserProvider.getRequiredCurrentUserId());
         return destinationMapper.toDetailResponse(destinationRepository.save(destination));

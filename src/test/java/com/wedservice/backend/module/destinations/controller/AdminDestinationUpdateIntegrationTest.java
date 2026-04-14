@@ -7,6 +7,7 @@ import com.wedservice.backend.module.destinations.repository.DestinationReposito
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.support.TestAuthenticationFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,9 +58,15 @@ class AdminDestinationUpdateIntegrationTest {
                 .fullName("Admin User")
                 .email("admin@example.com")
                 .passwordHash("password")
-                .role(Role.ADMIN)
                 .status(Status.ACTIVE)
                 .build();
+        
+        adminUser.getUserRoles().add(UserRole.builder()
+                .user(adminUser)
+                .role(Role.builder().code("ADMIN").build())
+                .isPrimary(true)
+                .build());
+
         userRepository.save(adminUser);
 
         // Setup Test Destination
@@ -118,7 +125,7 @@ class AdminDestinationUpdateIntegrationTest {
         """;
 
         mockMvc.perform(put("/admin/destinations/" + testDestination.getUuid())
-                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), Role.ADMIN))
+                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk())
@@ -143,7 +150,7 @@ class AdminDestinationUpdateIntegrationTest {
         """;
 
         mockMvc.perform(put("/admin/destinations/" + testDestination.getUuid())
-                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), Role.ADMIN))
+                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk())
@@ -177,7 +184,7 @@ class AdminDestinationUpdateIntegrationTest {
         """;
 
         mockMvc.perform(put("/admin/destinations/" + testDestination.getUuid())
-                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), Role.ADMIN))
+                        .with(TestAuthenticationFactory.customUser(adminUser.getId(), adminUser.getEmail(), "ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());

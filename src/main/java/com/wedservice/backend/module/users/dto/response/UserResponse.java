@@ -10,8 +10,8 @@ import java.util.UUID;
 
 import com.wedservice.backend.module.users.entity.Gender;
 import com.wedservice.backend.module.users.entity.MemberLevel;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.UserCategory;
 
 @Data
 @Builder
@@ -24,7 +24,9 @@ public class UserResponse {
     private Gender gender;
     private LocalDate dateOfBirth;
     private String avatarUrl;
-    private Role role;
+    private UserCategory userCategory;
+    private String role; // Primary role code
+    private java.util.List<String> roles; // All role codes
     private Status status;
     private MemberLevel memberLevel;
     private Integer loyaltyPoints;

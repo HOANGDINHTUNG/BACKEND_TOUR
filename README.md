@@ -1,346 +1,927 @@
-# WedService Backend 
-run vsocde: 
-./mvnw spring-boot:run
-install: 
-./mvnw clean install
+# TravelViet Backend Tour
 
-## 1. Tôi đã chỉnh gì để project chạy ổn hơn
+Backend cho hệ thống đặt tour / quản lý nội dung du lịch của TravelViet.
 
-Bản bạn gửi lên mới có thư mục `src`, nên tôi đã hoàn thiện lại project theo hướng có thể mở bằng IntelliJ rồi chạy Maven bình thường.
+README này không đi sâu giải thích logic từng hàm, mà tập trung mô tả:
 
-Các điểm tôi đã xử lý:
+- dự án được xây theo hướng nào
+- dùng framework / thư viện gì
+- cấu trúc mã nguồn ra sao
+- các quyết định kỹ thuật quan trọng
+- các chi tiết nhỏ nhưng đáng giá trong cách tổ chức code
+- hiện trạng mạnh, yếu, điểm cần lưu ý khi tiếp tục phát triển
 
-- Thêm `pom.xml` để project có thể build/test bằng Maven.
-- Thêm `.gitignore` và xóa các file IDE như `.iml`.
-- Xóa toàn bộ `readme.md` rải trong source và các comment cũ trong code để source sạch hơn.
-- Gom DTO về một chuẩn duy nhất:
-  - `module.user.dto.request`
-  - `module.user.dto.response`
-- Xóa tình trạng trùng class DTO cũ/mới gây dễ lỗi import và lỗi compile.
-- Sửa các import Jackson sai từ `tools.jackson...` sang `com.fasterxml.jackson...`.
-- Sửa `SecurityConfig` để matcher dùng đúng path thực tế của controller khi có `context-path=/api/v1`.
-- Tách rõ trách nhiệm giữa auth và user profile:
-  - `AuthController`: register/login
-  - `UserController`: CRUD user + `/users/me`
-- Bổ sung `UserMapper` vào luồng xử lý chính để map entity -> response nhất quán.
-- Bổ sung test theo từng nhóm: service, repository, controller, security, context load.
-- Thêm `application-test.yaml` dùng H2 để test không phụ thuộc MySQL local.
+---
 
-## 2. Các lỗi gốc trong bản bạn gửi
+## 1. Tổng Quan Kỹ Thuật
 
-Đây là các vấn đề quan trọng khiến project rất dễ không chạy được hoặc chạy nhưng không ổn:
+### 1.1 Mục tiêu của backend
 
-1. **Thiếu file build**  
-   Không có `pom.xml`, nên project chưa đủ để Maven build/test.
+Dự án hiện tại hướng đến một backend dạng nghiệp vụ cho du lịch với các nhóm chức năng:
 
-2. **Bị lẫn 2 bộ DTO user**  
-   Bạn đang có cả:
-   - `module.user.dto.*`
-   - `module.user.dto.request/*` và `module.user.dto.response/*`
+- xác thực người dùng
+- quản lý người dùng và phân quyền
+- quản lý destination
+- quản lý tour
+- booking
+- payment / refund
+- review
+- health check và quan sát hệ thống
 
-   Đây là dấu hiệu đang refactor dở. Khi controller/service vẫn import DTO cũ còn mapper/import nơi khác dùng DTO mới thì rất dễ lệch kiểu dữ liệu.
+### 1.2 Kiểu kiến trúc đang dùng
 
-3. **Sai import ObjectMapper/TypeReference**  
-   Một số file đang dùng `tools.jackson...`, cái này sẽ lỗi compile trong project Spring Boot thông thường.
+Codebase đang đi theo hướng chia lớp rõ ràng:
 
-4. **Security matcher dễ sai khi có context-path**  
-   Với `server.servlet.context-path=/api/v1`, controller vẫn khai báo `/auth`, `/users`, `/system/...`. Ở lớp security thì matcher nên khớp theo path của handler, không nên trộn cứng `/api/v1/...` như bản cũ.
+- `controller`: nhận request, khai báo endpoint, đặt `@PreAuthorize`
+- `facade`: lớp điều phối ngắn giữa controller và service
+- `service`: xử lý nghiệp vụ
+- `repository`: truy cập dữ liệu
+- `dto`: request/response contract
+- `entity`: mô hình JPA
+- `mapper`: map entity <-> dto bằng MapStruct
+- `validator`: giữ các rule validation nghiệp vụ riêng
+- `common`: phần dùng chung toàn hệ thống
 
-5. **Code sạch chưa đồng nhất**  
-   Có comment học tập cũ, readme rải trong package Java, file `.iml`, class đang dùng dở nhưng chưa nối vào luồng chính.
+Điểm đáng chú ý là dự án không gom tất cả vào một service lớn, mà đang tách dần theo flow:
 
-6. **Phần test gần như chưa có**  
-   Mới chỉ có `contextLoads()` nên chưa đủ bảo vệ logic service/controller/security.
+- `service/command`
+- `service/query`
+- `service/impl`
 
-## 3. Cấu trúc sau khi dọn lại
+Mức độ đồng đều giữa các module chưa hoàn toàn giống nhau, nhưng xu hướng kiến trúc là rõ.
+
+### 1.3 Triết lý kỹ thuật đang thể hiện qua code
+
+- ưu tiên Spring MVC truyền thống, không dùng reactive
+- ưu tiên RBAC + permission chi tiết thay vì chỉ role cứng
+- ưu tiên DTO rõ ràng thay vì trả entity trực tiếp
+- ưu tiên mapper riêng thay vì map tay rải rác
+- ưu tiên filter / utility / common layer cho các concern dùng chung
+- ưu tiên test theo nhóm: controller, security, service, repository, integration
+
+---
+
+## 2. Stack, Framework Và Thư Viện Đang Dùng
+
+### 2.1 Nền tảng chính
+
+| Thành phần | Giá trị hiện tại |
+| --- | --- |
+| Java | `21` |
+| Spring Boot | `4.0.5` |
+| Build tool | Maven |
+| Web stack | Spring Web MVC |
+| ORM | Spring Data JPA + Hibernate |
+| Database dev | MySQL |
+| Database test | H2 |
+
+### 2.2 Các starter và thư viện chính trong `pom.xml`
+
+| Nhóm | Thư viện |
+| --- | --- |
+| Web API | `spring-boot-starter-webmvc` |
+| Security | `spring-boot-starter-security` |
+| Validation | `spring-boot-starter-validation` |
+| Persistence | `spring-boot-starter-data-jpa` |
+| Monitoring | `spring-boot-starter-actuator` |
+| Cache | `spring-boot-starter-cache`, `caffeine` |
+| Migration | `flyway-mysql` |
+| Mapping | `mapstruct` |
+| Dynamic query | `querydsl-jpa`, `querydsl-apt` |
+| Rate limit | `bucket4j-core` |
+| DB driver | `mysql-connector-j` |
+| Test DB | `h2` |
+| Test support | `spring-boot-starter-*-test` |
+| Boilerplate reduction | `lombok` |
+
+### 2.3 Điểm hay trong lựa chọn stack
+
+- chọn `spring-boot-starter-webmvc` thay vì một stack nặng hoặc quá rộng
+- có `validation`, `security`, `jpa` ngay từ đầu nên nền khá chắc
+- dùng `MapStruct` cho mapping thay vì lạm dụng map tay
+- dùng `QueryDSL` cho filter động thay vì viết query string thủ công
+- có `Actuator` để observability
+- có `Bucket4j` cho rate limit auth endpoints
+- có `Caffeine` cho cache nội bộ
+- có `Flyway` để quản lý schema bằng migration
+
+### 2.4 Điểm rất đáng chú ý
+
+Dự án này **không đi theo kiểu "crud demo tối giản"**.
+Nó đã chứa nhiều mảnh ghép thường thấy ở backend thật:
+
+- permission-based authorization
+- cache
+- audit timestamps
+- rate limit
+- correlation id cho log
+- stored procedure cho quote refund
+- test profile H2
+
+---
+
+## 3. Cách Dự Án Được Tổ Chức
+
+### 3.1 Cấu trúc thư mục mức cao
 
 ```text
-wedservice-backend-fixed/
-├── pom.xml
-├── .gitignore
+BACKEND_TOUR/
+├── AGENTS.md
+├── API_DOCUMENTATION.md
+├── ERD.sql
+├── PROJECT_MEMORY.md
 ├── README.md
-└── src
-    ├── main
-    │   ├── java/com/wedservice/backend
-    │   └── resources
-    └── test
-        ├── java/com/wedservice/backend
-        └── resources
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/com/wedservice/backend/
+│   │   │   ├── common/
+│   │   │   ├── config/
+│   │   │   └── module/
+│   │   └── resources/
+│   │       ├── application.yaml
+│   │       ├── application-dev.yaml
+│   │       └── db/migration/
+│   └── test/
+│       ├── java/com/wedservice/backend/
+│       └── resources/application-test.yaml
+└── logs/
 ```
 
-## 4. Cách chạy project
+### 3.2 Ý nghĩa các package chính
 
-### Yêu cầu
+#### `common`
 
-- Java 21 trở lên
-- MySQL đã tạo database `wedservice`
-- Maven
+Chứa phần nền dùng chung:
 
-### Chạy local
+- `controller`
+- `entity`
+- `exception`
+- `logging`
+- `mapper`
+- `response`
+- `security`
+- `service`
+- `util`
 
-```bash
-mvn spring-boot:run
+Đây là dấu hiệu tốt vì dự án có một lớp shared foundation tương đối rõ.
+
+#### `config`
+
+Hiện có:
+
+- `SecurityConfig`
+- `SecurityProperties`
+
+Phần config đang khá tập trung, chưa bị rải khắp repo.
+
+#### `module`
+
+Chứa nghiệp vụ chính:
+
+- `auth`
+- `users`
+- `destinations`
+- `tours`
+- `bookings`
+- `payments`
+- `reviews`
+- `system`
+
+### 3.3 Kiểu tổ chức bên trong module
+
+Phần lớn module đi theo pattern này:
+
+```text
+module/<name>/
+├── controller/
+├── dto/
+│   ├── request/
+│   └── response/
+├── entity/
+├── facade/
+├── mapper/
+├── repository/
+├── service/
+│   ├── command/
+│   ├── query/
+│   └── impl/
+└── validator/
 ```
 
-Hoặc:
+Điểm này rất quan trọng vì nó cho thấy dự án đang hướng tới:
 
-```bash
-mvn clean package
-java -jar target/backend-0.0.1-SNAPSHOT.jar
-```
+- tách input/output khỏi persistence model
+- tách read/write flow
+- giảm coupling giữa controller với service chi tiết
 
-### Test
+### 3.4 Đánh giá về cấu trúc
 
-```bash
-mvn test
-```
+**Điểm mạnh**
 
-## 5. Cấu hình môi trường
+- rõ module
+- rõ layer
+- dễ mở rộng thêm API theo module
+- dễ test theo tầng
+- dễ onboarding hơn một codebase gom tất cả vào `service` / `controller`
 
-### `application.yaml`
-- set app name
-- bật profile `dev`
-- set port `8080`
-- set context path `/api/v1`
+**Điểm cần lưu ý**
 
-### `application-dev.yaml`
-- cấu hình MySQL dev
-- `ddl-auto=update`
-- cấu hình JWT secret/expiration
+- các facade nghiệp vụ chính đã chuyển sang phụ thuộc `command/query` thay vì gọi trực tiếp các service kiểu cũ
+- các lớp `Service` trung gian chỉ dùng để chuyển tiếp đã được dọn bớt để giảm chồng chéo kiến trúc
 
-### `application-test.yaml`
-- dùng H2 in-memory để test
+---
+
+## 4. Điểm Khởi Động Và Năng Lực Nền
+
+File khởi động: `BackendApplication.java`
+
+Project hiện bật:
+
+- `@SpringBootApplication`
+- `@EnableJpaAuditing`
+- `@EnableCaching`
+- `@EnableAsync`
+
+### Ý nghĩa thực tế
+
+- `@EnableJpaAuditing`: dùng được `createdAt`, `updatedAt` ở entity base
+- `@EnableCaching`: destination / tour query có thể cache
+- `@EnableAsync`: dự án đã sẵn nền cho các tác vụ bất đồng bộ nếu cần mở rộng sau này
+
+### Đánh giá
+
+Đây là một dấu hiệu tốt vì nền hệ thống được chuẩn bị không chỉ để “chạy được”, mà để phục vụ hệ thống thật:
+
+- theo dõi thời gian tạo / cập nhật
+- tối ưu truy vấn hot
+- chuẩn bị cho tác vụ nền
+
+---
+
+## 5. Cấu Hình Runtime Và Môi Trường
+
+### 5.1 `application.yaml`
+
+Các cấu hình nền đáng chú ý:
+
+- application name: `wedservice-backend`
+- profile mặc định: `dev`
+- flyway enabled
+- actuator health/info/metrics/prometheus
+- log pattern có `traceId`
+- port: `8088`
+- context-path: `/api/v1`
+
+### 5.2 `application-dev.yaml`
+
+Các điểm rất đáng chú ý:
+
+- datasource dev trỏ vào MySQL local
+- username/password lấy qua env:
+  - `DB_USERNAME`
+  - `DB_PASSWORD`
+- default hiện tại:
+  - `wed_user`
+  - `123456`
+- timezone: `Asia/Ho_Chi_Minh`
+- file log: `logs/backend.log`
+- SQL debug bật ở dev
+
+### 5.3 `application-test.yaml`
+
+Test profile đang dùng:
+
+- H2 in-memory
+- mode MySQL
+- `ddl-auto=create-drop`
 - không phụ thuộc MySQL local
 
-## 6. API chính sau khi sửa
+### 5.4 Quyết định kỹ thuật nhỏ nhưng tốt: không dùng root DB trực tiếp
 
-### Auth
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
+Đây là một chi tiết rất đáng ghi nhận trong cách xây dựng:
 
-### System
-- `GET /api/v1/system/health`
+- runtime config không mặc định đăng nhập database bằng `root`
+- thay vào đó dùng user riêng của ứng dụng qua:
+  - `DB_USERNAME`
+  - `DB_PASSWORD`
 
-### User
-- `POST /api/v1/users`
-- `GET /api/v1/users`
-- `GET /api/v1/users/{id}`
-- `PUT /api/v1/users/{id}`
-- `PATCH /api/v1/users/{id}/deactivate`
-- `GET /api/v1/users/me`
-- `PUT /api/v1/users/me`
+### Vì sao lựa chọn này tốt
 
-## 7. Test đã thêm
+- giảm rủi ro bảo mật
+- tách quyền vận hành ứng dụng khỏi quyền quản trị database
+- dễ giới hạn quyền cho app user
+- thuận lợi khi deploy sang server thật
+- đúng tinh thần least privilege
 
-### Service tests
-- `AuthServiceTest`
-- `UserServiceTest`
+### Khuyến nghị thực tế cho môi trường dev/prod
 
-### Security/unit tests
-- `JwtServiceTest`
+Nên duy trì mô hình:
 
-### Repository tests
-- `UserRepositoryTest`
+- 1 user quản trị DB để tạo schema / cấp quyền
+- 1 user ứng dụng chỉ có quyền cần thiết để app chạy
 
-### Controller tests
-- `AuthControllerTest`
-- `UserControllerTest`
-- `SystemControllerTest`
+Ví dụ README nên xem đây là một chủ đích kỹ thuật của dự án, không phải chi tiết phụ.
 
-### Context test
+### 5.5 Điểm cần lưu ý về tên database
+
+Hiện đang có một điểm cần ghi nhận:
+
+- `application-dev.yaml` trỏ vào database `wedservice`
+- nhưng migration `V1__init_schema.sql` lại `CREATE DATABASE travelviet` và `USE travelviet`
+- `ERD.sql` cũng đang theo `travelviet`
+
+Điều này không phải lỗi README, mà là một **điểm cấu hình cần thống nhất** của codebase.
+
+Nếu tiếp tục phát triển dự án, nên quyết định rõ:
+
+- dùng `wedservice`
+hoặc
+- dùng `travelviet`
+
+và đồng bộ giữa:
+
+- datasource config
+- flyway migration
+- ERD
+- tài liệu
+
+---
+
+## 6. Database, Schema Và Cách Mô Hình Hóa Dữ Liệu
+
+### 6.1 Cách tiếp cận dữ liệu
+
+Project không chỉ có bảng tối thiểu cho auth, mà đang mô hình domain khá rộng:
+
+- users
+- roles
+- permissions
+- user_roles
+- user_preferences
+- user_devices
+- user_addresses
+- destinations và các bảng con
+- tours và các bảng con
+- bookings
+- payments
+- refund_requests
+- reviews
+
+### 6.2 Điều này nói lên điều gì
+
+- dự án đang được xây theo hướng hệ thống thực tế, không phải demo CRUD đơn giản
+- domain model đã nghĩ tới:
+  - phân quyền
+  - thói quen người dùng
+  - thiết bị
+  - địa chỉ
+  - nội dung điểm đến
+  - lịch khởi hành / pickup / guide
+  - thanh toán / hoàn tiền / review
+
+### 6.3 Một số quyết định mô hình hóa đáng chú ý
+
+- dùng UUID cho user
+- role và permission tách bảng riêng
+- user có nhiều role qua `user_roles`
+- dùng nhiều enum ở mức schema để khóa chặt dữ liệu
+- có soft-delete timestamp `deleted_at`
+- có các cột audit thời gian đầy đủ
+
+### 6.4 Stored procedure
+
+Refund flow hiện đang dùng stored procedure:
+
+- `sp_get_refund_quote`
+
+Điều này cho thấy một phần nghiệp vụ pricing / refund policy được đẩy xuống DB layer.
+
+### 6.5 Đánh giá
+
+**Điểm mạnh**
+
+- schema đủ giàu để đi tiếp lâu dài
+- role/permission model làm nền tốt cho backoffice
+- domain chi tiết, không bị “mỏng”
+
+**Điểm cần chú ý**
+
+- khi schema rộng như vậy, README phải rất rõ để người mới không lạc
+- migration và runtime config phải được giữ đồng bộ chặt
+
+---
+
+## 7. Security Và Kiểm Soát Truy Cập
+
+### 7.1 Security model đang dùng
+
+Project đang dùng:
+
+- stateless JWT
+- permission-based authorization
+- method security qua `@PreAuthorize`
+- custom authentication entry point / access denied handler
+
+### 7.2 `SecurityConfig` hiện đang làm gì
+
+- tắt CSRF
+- tắt form login
+- tắt basic auth
+- dùng session stateless
+- whitelist một số endpoint public
+- public GET cho destination public
+- còn lại yêu cầu authenticated
+- quyền chi tiết đặt ở controller qua `@PreAuthorize`
+
+### 7.3 Đây là một lựa chọn tốt vì
+
+- controller nào cần quyền gì nhìn thấy ngay ở endpoint đó
+- tránh dồn toàn bộ rule vào một file security quá lớn
+- dễ kiểm tra blast radius khi thêm API mới
+
+### 7.4 JWT được triển khai thế nào
+
+Điểm đặc biệt của dự án này:
+
+- JWT đang được tự triển khai bằng HMAC SHA-256
+- không phụ thuộc một thư viện JWT chuyên dụng bên ngoài
+
+### Điều này thể hiện gì
+
+- người xây dự án muốn kiểm soát rõ cấu trúc token
+- hiểu được flow header / payload / signature
+- có thể dễ custom claim
+
+### Đồng thời cũng cần nhớ
+
+- tự triển khai JWT đòi hỏi kỷ luật kiểm thử và review bảo mật tốt hơn
+- với production lớn, đây là khu vực cần được giữ rất chặt
+
+### 7.5 `CustomUserDetails`
+
+Project không chỉ nạp một role string đơn lẻ, mà đang nạp:
+
+- `ROLE_<code>`
+- toàn bộ permission từ role
+
+Điểm này rất quan trọng vì:
+
+- role dùng để nhóm
+- permission mới là thứ authorize trực tiếp nhiều API
+
+### 7.6 `AuthenticatedUserProvider`
+
+Đây là một utility có giá trị thực tế cao trong codebase:
+
+- gom logic lấy current user từ `SecurityContextHolder`
+- phân biệt admin / backoffice
+- tránh lặp code lấy user hiện tại ở nhiều service
+
+### 7.7 Các lớp bảo vệ phụ thêm
+
+#### Correlation ID
+
+`CorrelationIdFilter`:
+
+- đọc hoặc tạo `X-Request-ID`
+- nhét vào MDC với key `traceId`
+- trả lại header đó ở response
+
+Đây là chi tiết nhỏ nhưng rất tốt cho debug và tracing.
+
+#### Rate limit
+
+`RateLimitFilter`:
+
+- áp dụng cho `/auth/login` và `/auth/register`
+- giới hạn theo IP
+- hiện tại là in-memory
+- dùng `Bucket4j`
+
+Đây là dấu hiệu của tư duy production-minded.
+
+### 7.8 Access control của dự án hiện tại
+
+Không nên mô tả dự án theo kiểu:
+
+- API này là USER
+- API kia là ADMIN
+
+Mà nên mô tả theo:
+
+- `booking.create`
+- `payment.view`
+- `review.moderate`
+- `destination.review`
+
+vì code thực tế authorize theo authority.
+
+---
+
+## 8. Mapping, Querying, Utility Và Dùng Chung
+
+### 8.1 MapStruct
+
+Project dùng MapStruct qua:
+
+- `BaseMapper`
+- các mapper cụ thể:
+  - `UserMapper`
+  - `BookingMapper`
+  - `PaymentMapper`
+  - `TourMapper`
+  - `DestinationMapper`
+  - `AuthMapper`
+
+### Lợi ích thực tế
+
+- giảm lặp code map entity -> response
+- giữ mapper tập trung
+- dễ review data contract
+- tránh controller / service phải map tay quá nhiều
+
+### 8.2 `UserMapper` là một ví dụ đáng chú ý
+
+Mapper không chỉ map field đơn giản, mà còn:
+
+- normalize dữ liệu
+- set default value
+- map primary role và toàn bộ roles
+- hỗ trợ cả create/update/profile update
+
+Điều này cho thấy mapper đang được dùng như một lớp chuyển đổi thực thụ, không chỉ là trang trí.
+
+### 8.3 QueryDSL
+
+Project đã đưa QueryDSL vào nhiều chỗ:
+
+- `UserRepository`
+- `DestinationRepository`
+- `TourRepository`
+- service filter động cho user / destination / tour
+
+Đây là một lựa chọn tốt hơn nhiều so với:
+
+- if-else query string thủ công
+- hoặc explosion của method name query trong repository
+
+### 8.4 Utility dùng chung
+
+Các utility đáng chú ý:
+
+- `DataNormalizer`
+- `SlugUtils`
+- `CurrencyUtils`
+- `DateUtils`
+
+Ý nghĩa:
+
+- chuẩn hóa dữ liệu đầu vào
+- tránh logic normalize bị rải trong nhiều service
+- giúp code thống nhất hơn
+
+### 8.5 Base classes
+
+#### `AuditableEntity`
+
+Các entity chính kế thừa `AuditableEntity`, nên có:
+
+- `createdAt`
+- `updatedAt`
+- `deletedAt`
+
+#### `BaseService`
+
+Đã có nền service base để dùng cho các thao tác CRUD chuẩn hóa.
+
+---
+
+## 9. Cache, Observability Và Operational Readiness
+
+### 9.1 Cache
+
+Project bật cache và hiện đang dùng Caffeine.
+
+Các luồng đã có cache:
+
+- search destination public
+- destination detail public
+- search tours
+- tour detail
+
+### Đây là một quyết định tốt vì
+
+- destination và tour là dữ liệu đọc nhiều
+- phù hợp với read-heavy endpoint public
+- giảm tải query lặp lại
+
+### 9.2 Observability
+
+Project đã có:
+
+- Actuator
+- health/info/metrics/prometheus
+- trace id trong log
+- file log riêng `logs/backend.log`
+
+### 9.3 Logging
+
+Pattern log đã có:
+
+- timestamp
+- thread
+- level
+- logger
+- traceId từ MDC
+
+Chi tiết này giúp backend trông “vào việc” hơn nhiều so với log mặc định.
+
+---
+
+## 10. Cách Chia Nghiệp Vụ Theo Module
+
+### 10.1 Auth
+
+Module auth hiện có:
+
+- controller
+- dto
+- facade
+- mapper
+- security
+- validator
+- service command/query
+
+Điều này cho thấy auth không bị xem là phần phụ, mà được tách khá rõ.
+
+### 10.2 Users
+
+Module users đang khá giàu:
+
+- entity role / permission / user / user-role
+- service admin và profile tách riêng
+- repository có QueryDSL
+- mapper khá đầy đủ
+- có test service, controller, repository
+
+### 10.3 Destinations
+
+Đây là một module đậm domain:
+
+- destination public
+- destination admin
+- proposal flow
+- follow flow
+- content con: media, food, specialty, activity, tip, event
+
+Đây là module có độ sâu nghiệp vụ tốt và thể hiện rõ ý tưởng sản phẩm.
+
+### 10.4 Tours
+
+Tours không chỉ là một bảng `tour`, mà domain đã nghĩ tới:
+
+- media
+- itinerary day / item
+- checklist
+- seasonality
+- schedule
+- pickup point
+- guide
+
+Điều này rất đáng cho README vì nó cho thấy dự án có chiều sâu dữ liệu.
+
+### 10.5 Bookings
+
+Booking flow hiện có:
+
+- create booking
+- get booking
+- passenger list riêng
+
+Booking đang là điểm nối giữa:
+
+- user
+- tour
+- schedule
+- payment
+- refund
+- review
+
+### 10.6 Payments / Refunds
+
+Payment module có:
+
+- payment record
+- refund request
+- refund approval flow
+- quote từ stored procedure
+
+Đây là điểm cho thấy hệ thống không chỉ ghi nhận tiền, mà đã có tư duy policy flow.
+
+### 10.7 Reviews
+
+Review module đã có:
+
+- create review
+- get review
+- list review theo tour
+- list review của tôi
+- reply review
+- moderation sentiment
+
+Không chỉ là bảng comment đơn giản.
+
+---
+
+## 11. Các Chi Tiết Nhỏ Nhưng Đáng Giá Trong Cách Xây Dựng
+
+Đây là phần rất nên xuất hiện trong README vì nó phản ánh “chất kỹ thuật” của dự án:
+
+### 11.1 Không mặc định dùng root để app truy cập database
+
+- app dùng `DB_USERNAME` / `DB_PASSWORD`
+- default local là `wed_user`
+- đây là thói quen tốt về bảo mật và vận hành
+
+### 11.2 Có correlation id ngay từ đầu
+
+- giúp debug request chain dễ hơn
+- tốt cho log aggregation
+
+### 11.3 Có rate limit cho auth
+
+- tránh brute-force quá thô ở login/register
+
+### 11.4 Có base response riêng
+
+- frontend nhận format đồng nhất
+
+### 11.5 Có test profile H2
+
+- không phụ thuộc MySQL local để chạy test
+
+### 11.6 Có soft-delete timestamp
+
+- không phải chỗ nào cũng đã khai thác hết
+- nhưng nền dữ liệu đã nghĩ tới vòng đời record
+
+### 11.7 Có permission granularity khá tốt
+
+Ví dụ:
+
+- `destination.review`
+- `destination.publish`
+- `refund.process`
+- `review.moderate`
+
+Đây là mức chia quyền tốt hơn nhiều so với role coarse-grained.
+
+### 11.8 Có cache đúng nơi
+
+- destination public
+- tour public
+
+Không bật cache bừa toàn hệ thống.
+
+### 11.9 Có command/query split trong nhiều module
+
+Đây là dấu hiệu dự án đang đi theo một hướng có chủ đích, không phải code tăng trưởng vô tổ chức.
+
+---
+
+## 12. Test Landscape
+
+### 12.1 Nhóm test hiện có
+
+Các test đang thấy trong dự án:
+
 - `BackendApplicationTests`
+- `CorrelationIdFilterTest`
+- `AuthenticatedUserProviderTest`
+- `RateLimitFilterTest`
+- `SecurityIntegrationTest`
+- `AuthControllerTest`
+- `JwtServiceTest`
+- `AdminDestinationUpdateIntegrationTest`
+- `DestinationProposalIntegrationTest`
+- `AdminUserControllerTest`
+- `UserProfileControllerTest`
+- `UserRepositoryTest`
+- `AdminUserServiceTest`
+- `UserProfileServiceTest`
 
-## 8. Đánh giá từng file
+### 12.2 Điều này nói lên gì
 
-> Mục này đi theo đúng ý bạn: mỗi file có tác dụng gì, điểm mạnh gì, điểm yếu gì, và nên cải thiện gì tiếp theo.
+- test không chỉ có context load
+- đã test cả security utility
+- đã test cả filter
+- đã có integration test cho một số flow destination
+- đã có controller test và service test cho users/auth
 
-### 8.1 Root files
+### 12.3 Đánh giá
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `pom.xml` | Khai báo dependency, plugin build, phiên bản Java/Spring Boot | Đủ dependency cho web, jpa, security, validation, mysql, test, h2 | Chưa tách profile build riêng cho prod; sau này có thể thêm plugin checkstyle/spotbugs/jacoco |
-| `.gitignore` | Chặn file build và file IDE không đẩy lên git | Gọn, đủ cho Maven/IntelliJ cơ bản | Có thể thêm `.env`, coverage report nếu sau này dùng |
-| `README.md` | Tài liệu tổng hợp toàn project | Gom thông tin sửa lỗi, cách chạy, test, mô tả từng file | Dài; sau này có thể tách thành `docs/architecture.md`, `docs/api.md`, `docs/testing.md` |
+**Điểm mạnh**
 
-### 8.2 Application entry
+- nền test tốt hơn nhiều dự án nội bộ nhỏ
+- test chạm được nhiều tầng
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `src/main/java/com/wedservice/backend/BackendApplication.java` | Điểm khởi động Spring Boot | Tối giản, đúng chuẩn, dễ bảo trì | Chưa có bootstrap data hay profile-specific startup logging |
+**Điểm cần phát triển tiếp**
 
-### 8.3 Common exception package
+- booking / payment / refund / review nên có thêm integration test riêng
+- các flow permission nên có thêm test phủ rộng hơn
+- các rule domain quan trọng nên có test regression riêng
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `common/exception/BadRequestException.java` | Ném lỗi 400 cho dữ liệu/luồng nghiệp vụ không hợp lệ | Đơn giản, dễ đọc | Có thể chuẩn hóa constructor nhiều dạng hơn nếu sau này cần error metadata |
-| `common/exception/ResourceNotFoundException.java` | Ném lỗi 404 khi không tìm thấy dữ liệu | Thẳng, rõ, đúng ngữ nghĩa | Có thể gắn thêm resource type/id riêng |
-| `common/exception/UnauthorizedException.java` | Ném lỗi 401 cho trường hợp chưa xác thực | Gọn | Chưa có constructor mặc định/message chuẩn hệ thống |
-| `common/exception/ErrorResponse.java` | DTO chuẩn cho phản hồi lỗi | Format lỗi nhất quán, dễ dùng cho frontend | Chưa có traceId/path để debug production |
-| `common/exception/GlobalExceptionHandler.java` | Gom xử lý exception toàn hệ thống | Tách lỗi 400/401/404/500 rõ ràng, có validation map | Chưa xử lý riêng `IllegalArgumentException`, `DataIntegrityViolationException`, lỗi JWT chi tiết |
+---
 
-### 8.4 Common response package
+## 13. Đánh Giá Hiện Trạng Codebase
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `common/response/ApiResponse.java` | Wrapper chuẩn cho mọi response thành công | Frontend nhận format thống nhất | Chưa có field `meta` hoặc `code` nếu sau này cần mở rộng |
-| `common/response/PageResponse.java` | Chuẩn hóa dữ liệu phân trang trả ra cho client | Không lộ trực tiếp `Page<?>` của Spring | Chưa có sort info; có thể thêm `sort`, `hasNext`, `hasPrevious` |
+### 13.1 Điểm mạnh nổi bật
 
-### 8.5 Common security package
+1. Domain model có chiều sâu
+2. Security model tốt hơn mức CRUD cơ bản
+3. Có caching, rate limiting, tracing
+4. Có nền test thật sự
+5. Có separation of concerns rõ
+6. Có utility / mapper / response / exception layer đủ sạch
+7. Có tài liệu API riêng và file memory riêng
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `common/security/RestAuthenticationEntryPoint.java` | Trả JSON khi chưa đăng nhập mà gọi API bảo vệ | Không bị trả HTML mặc định của Spring Security | Message hiện còn chung, sau này có thể phân biệt token thiếu/token sai/token hết hạn |
-| `common/security/RestAccessDeniedHandler.java` | Trả JSON khi đã login nhưng không đủ quyền | Giúp frontend xử lý 403 thống nhất | Chưa có path hoặc permission detail để debug |
+### 13.2 Điểm cần lưu ý
 
-### 8.6 Config package
+1. Runtime DB name và migration DB name đang chưa thống nhất
+2. Kiến trúc giữa các module chưa đồng đều hoàn toàn
+3. Một số comment / file cũ vẫn còn dấu vết encoding hoặc phong cách học tập
+4. Có khu vực quan trọng như JWT cần giữ review rất chặt nếu tiếp tục dùng custom implementation
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `config/SecurityConfig.java` | Cấu hình security toàn app | Đã sửa matcher đúng, stateless JWT, phân quyền rõ auth/me/users/admin | Rule vẫn còn khá thủ công; sau này nên tách constants hoặc method riêng để dễ đọc |
+### 13.3 Đánh giá tổng thể
 
-### 8.7 Auth module - controller/dto/service
+Đây là một codebase **đã vượt khỏi mức project học CRUD thông thường**.
+Nó đã có nhiều quyết định mang tính hệ thống thật:
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `module/auth/controller/AuthController.java` | Nhận request register/login | Controller mỏng, chỉ điều phối | Chưa có refresh token / logout |
-| `module/auth/dto/RegisterRequest.java` | Input cho đăng ký | Có validation cơ bản, dễ dùng | Chưa có rule mạnh cho password |
-| `module/auth/dto/LoginRequest.java` | Input cho đăng nhập | Gọn, đủ | Chưa có remember-me / login by phone |
-| `module/auth/dto/AuthResponse.java` | Kết quả trả về sau login/register | Gom user + token + expiration rõ ràng | Chưa có refresh token hoặc scope |
-| `module/auth/service/AuthService.java` | Xử lý register/login | Tách rõ nghiệp vụ, normalize email, encode password, tạo token | Chưa tách helper validate reusable; chưa có refresh token và audit login |
+- permission model
+- migration
+- cache
+- filter cross-cutting
+- observability
+- test profile
+- module hóa theo domain
 
-### 8.8 Auth module - security
+Nếu tiếp tục phát triển có kỷ luật, dự án này đủ nền để mở rộng lâu dài.
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `module/auth/security/CustomUserDetails.java` | Adapter từ `User` sang `UserDetails` | Gói đủ thông tin userId/fullName/role | Chưa có account locked / expired thật sự |
-| `module/auth/security/CustomUserDetailsService.java` | Load user theo email cho Spring Security | Ngắn, đúng vai trò, có normalize email | Chưa cache user; chưa phân tách logic inactive trước khi auth |
-| `module/auth/security/JwtProperties.java` | Bind config JWT từ yaml | Đơn giản, dễ đổi bằng env | Nên thêm validation cho secret/expiration |
-| `module/auth/security/JwtService.java` | Tạo/đọc/verify JWT thủ công | Chủ động, không phụ thuộc thư viện JWT ngoài, dễ học flow | Tự viết JWT sẽ phải tự chịu trách nhiệm bảo mật; production thường nên dùng thư viện battle-tested |
-| `module/auth/security/JwtAuthenticationFilter.java` | Đọc Bearer token ở mỗi request và nạp SecurityContext | Flow rõ, fail-safe bằng clear context | Hiện nuốt exception khá im lặng; production nên log mức debug hoặc phân loại lỗi token |
+---
 
-### 8.9 User module
+## 14. Cách Chạy Dự Án
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `module/user/entity/Role.java` | Enum role hệ thống | Rõ ràng, đủ cho giai đoạn đầu | Chưa phù hợp nếu sau này có nhiều permission chi tiết |
-| `module/user/entity/User.java` | Entity ánh xạ bảng `users` | Có unique email, active, role, timestamp tự set | Chưa có soft-delete đầy đủ, chưa có audit actor |
-| `module/user/repository/UserRepository.java` | Tầng truy cập DB cho user | Query method gọn, đủ cho CRUD + filter cơ bản | Khi filter phức tạp hơn nên chuyển qua Specification/QueryDSL |
-| `module/user/dto/request/CreateUserRequest.java` | Input cho tạo user | Validation đủ dùng | Chưa có regex phone rõ ràng |
-| `module/user/dto/request/UpdateUserRequest.java` | Input cho admin update user | Cho phép cập nhật role rõ ràng | Role đang là string; có thể đổi sang enum + custom validator |
-| `module/user/dto/request/UpdateMyProfileRequest.java` | Input cho user tự sửa profile | Tách riêng khỏi admin update là đúng hướng | Chưa hỗ trợ đổi password/avatar |
-| `module/user/dto/response/UserResponse.java` | Output an toàn cho client | Không lộ password, có timestamp để frontend hiển thị | Nếu API public nhiều, có thể cần nhiều response DTO chuyên biệt hơn |
-| `module/user/mapper/UserMapper.java` | Map entity sang response | Giảm lặp code giữa service/auth | Mới có 1 chiều; nếu sau này map phức tạp có thể dùng MapStruct |
-| `module/user/service/UserService.java` | Nghiệp vụ user CRUD, profile, filter, deactivate | Bao trọn flow admin + profile, normalize email, parse role, dùng mapper chung | Hơi dài; sau này nên tách `AdminUserService` và `ProfileService` |
-| `module/user/controller/UserController.java` | API cho user admin và profile hiện tại | Bao phủ đầy đủ endpoint cơ bản, controller vẫn mỏng | Admin API và self-profile API đang chung controller, sau này có thể tách 2 controller |
+### 14.1 Yêu cầu
 
-### 8.10 System module
+- Java 21
+- MySQL local
+- Maven wrapper
 
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `module/system/controller/SystemController.java` | API health check | Rất hữu ích để kiểm tra app sống | Mới là health logic đơn giản, chưa có DB check/redis/external dependency check |
+### 14.2 Chạy local
 
-### 8.11 Resource files
-
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `src/main/resources/application.yaml` | Cấu hình base toàn app | Có context path rõ, dễ quản lý endpoint | Hiện đang cố định active profile là `dev`; production nên set qua env/runtime |
-| `src/main/resources/application-dev.yaml` | Cấu hình môi trường dev | Đủ datasource, JPA, JWT, timezone | Secret mặc định chỉ nên dùng local; production phải bắt buộc truyền env |
-
-### 8.12 Test files
-
-| File | Tác dụng | Điểm mạnh | Điểm yếu / hướng cải thiện |
-|---|---|---|---|
-| `src/test/resources/application-test.yaml` | Cấu hình test bằng H2 | Giúp test không phụ thuộc MySQL local | Chưa mô phỏng hết behavior MySQL thật |
-| `BackendApplicationTests.java` | Kiểm tra context Spring boot được lên | Bắt lỗi wiring cơ bản | Test khá chung, khó chỉ ra lỗi business cụ thể |
-| `module/auth/security/JwtServiceTest.java` | Test tạo/đọc/verify JWT | Bọc được logic core của JWT | Chưa test token hết hạn |
-| `module/auth/service/AuthServiceTest.java` | Test register/login service | Kiểm tra normalize email, duplicate email, tạo token | Chưa test inactive user/login fail |
-| `module/user/service/UserServiceTest.java` | Test nghiệp vụ user | Có test create, invalid role, paging, unauthorized, deactivate | Chưa test filter keyword/active đầy đủ |
-| `module/user/repository/UserRepositoryTest.java` | Test query repository với H2 | Có kiểm tra ignore case | Chưa test các method tìm kiếm còn lại |
-| `module/auth/controller/AuthControllerTest.java` | Test contract HTTP của auth controller | Kiểm tra response wrapper rõ ràng | Chưa test validation fail |
-| `module/user/controller/UserControllerTest.java` | Test contract HTTP của user controller | Kiểm tra request/response cơ bản | Chưa test các endpoint `/users/me`, update, deactivate |
-| `module/system/controller/SystemControllerTest.java` | Test health endpoint | Rất nhanh, dễ bắt lỗi route | Chưa test context path full integration |
-| `support/TestWebMvcConfig.java` | Config security đơn giản cho controller test | Giúp controller test tập trung vào HTTP contract | Chỉ phù hợp cho test lớp web, không thay thế integration security test |
-
-## 9. Điểm mạnh tổng thể của project hiện tại
-
-- Đã có phân tầng khá đúng: controller -> service -> repository.
-- Đã có DTO, không trả thẳng entity ra ngoài.
-- Đã có xử lý exception tập trung.
-- Đã có JWT auth cơ bản.
-- Đã có phân quyền admin và user profile.
-- Đã bắt đầu có test theo nhóm chứ không dồn một cục.
-- Đã sạch source hơn nhiều sau khi bỏ comment/readme cũ trong package.
-
-## 10. Điểm còn yếu tổng thể và nên làm tiếp
-
-Đây là phần tôi khuyên bạn làm ở vòng tiếp theo:
-
-1. **Tách service lớn**
-   - `UserService` đang gánh cả admin CRUD lẫn self-profile.
-   - Sau này nên tách nhỏ để dễ test và dễ đọc.
-
-2. **Dùng thư viện JWT chuẩn production**
-   - Bản hiện tại tự triển khai JWT để bạn hiểu flow.
-   - Nhưng nếu tiến gần production, nên dùng thư viện battle-tested để giảm rủi ro bảo mật.
-
-3. **Bổ sung integration test thật sự cho security**
-   - Hiện chủ yếu là unit/web test.
-   - Nên có test request với token thật để chắc chắn rule security đang đúng.
-
-4. **Chuẩn hóa validation nâng cao**
-   - Phone nên có regex rõ.
-   - Password nên có rule phức tạp hơn.
-   - Role có thể chuyển sang enum validation.
-
-5. **Tách package rõ hơn theo use-case**
-   - Sau này có thể tách:
-     - `user/admin`
-     - `user/profile`
-     - `auth/token`
-
-6. **Thêm migration**
-   - Nếu dự án đi xa hơn, nên chuyển từ `ddl-auto=update` sang Flyway/Liquibase.
-
-## 11. Lưu ý quan trọng khi bạn chạy ở máy mình
-
-Vì file bạn gửi không có sẵn wrapper Maven và môi trường làm việc hiện tại của tôi cũng không có Maven CLI, tôi đã sửa 
-project theo hướng **đủ cấu trúc để bạn chạy local bằng Maven** nhưng tôi **không thể chạy lệnh `mvn test` trực tiếp trong môi trường hiện tại** để xác nhận runtime 100% tại chỗ.
-
-Điều đó có nghĩa là:
-
-- Về mặt cấu trúc và logic compile, tôi đã dọn và nối lại cho đồng nhất.
-- Nhưng vòng xác nhận cuối cùng bạn nên chạy ở máy của bạn bằng:
-
-```bash
-mvn clean test
-mvn spring-boot:run
+```powershell
+./mvnw spring-boot:run
 ```
 
-Nếu còn lỗi phát sinh do version dependency hoặc môi trường MySQL local, sửa tiếp sẽ rất nhanh vì nền project lúc này đã 
-sạch và rõ hơn nhiều.
+### 14.3 Build
 
-## 12. ý nghĩa tác dụng của từng folder
+```powershell
+./mvnw clean install
+```
 
-1. common : Là thư mục chứa các thành phần dùng chung cho toàn hệ thống, có thể tái sử dụng ở nhiều module khác nhau để tránh lặp code.
-2. common/entity : Chứa các lớp đại diện cho các thực thể chung (base entity), thường được kế thừa bởi các entity khác trong hệ thống.
-3. common/exception : Chứa các xử lý lỗi tập trung, giúp quản lý exception toàn hệ thống một cách thống nhất và rõ ràng.
-4. common/response : Chứa các cấu trúc response chuẩn, giúp thống nhất định dạng dữ liệu trả về từ API.
-5. common/security : Chứa các thành phần bảo mật dùng chung như xử lý xác thực, phân quyền, lấy thông tin user hiện tại.
-6. config : Chứa các  cấu hình của hệ thống như security, bean, filter,... giúp thiết lập cách ứng dụng hoạt động.
-7. module : Là thư mục chứa các chức năng chính của hệ thống, được chia theo từng nghiệp vụ (auth, user, system,...).
-8. module/auth : Chứa toàn bộ logic liên quan đến xác thực và đăng nhập/đăng ký người dùng.
-9. module/auth/controller : Chứa các API endpoint liên quan đến xác thực, nhận request từ client.
-10. module/auth/dto : Chứa các đối tượng truyền dữ liệu vào/ra cho API xác thực.
-11. module/auth/security : Chứa các xử lý liên quan đến JWT, xác thực người dùng và bảo mật trong module auth.
-12. module/auth/service : Chứa logic xử lý nghiệp vụ liên quan đến đăng nhập, đăng ký.
-13. module/user : Chứa các chức năng liên quan đến quản lý người dùng.
-14. module/user/controller : Chứa API liên quan đến user như quản lý hoặc cập nhật thông tin cá nhân.
-15. module/user/dto : Chứa các đối tượng dữ liệu dùng cho request và response của user.
-16. module/user/entity : Chứa các lớp đại diện cho bảng dữ liệu user trong database.
-17. module/user/mapper : Chứa các lớp chuyển đổi dữ liệu giữa entity và DTO.
-18. module/user/repository : Chứa các lớp làm việc với database (truy vấn dữ liệu).
-19. module/user/service : Chứa logic nghiệp vụ liên quan đến user.
-20. module/system : Chứa các chức năng hệ thống chung như kiểm tra trạng thái hệ thống.
-21. resources : Chứa các file cấu hình và tài nguyên của ứng dụng như file yaml, static, template.
-22. test : Chứa các mã kiểm thử để đảm bảo hệ thống hoạt động đúng.
-23. test/resources : Chứa cấu hình riêng phục vụ cho môi trường test.
+### 14.4 Test
+
+```powershell
+./mvnw test
+```
+
+---
+
+## 15. Tài Liệu Liên Quan
+
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- [PROJECT_MEMORY.md](./PROJECT_MEMORY.md)
+- [ERD.sql](./ERD.sql)
+- [AGENTS.md](./AGENTS.md)
+
+---
+
+## 16. Ghi Chú Duy Trì README
+
+README này nên được cập nhật khi có thay đổi lớn ở các nhóm sau:
+
+- framework / library
+- security model
+- database / migration
+- cấu trúc module
+- test strategy
+- guideline vận hành
+
+README không cần mô tả logic từng hàm.
+README nên giữ vai trò là hồ sơ kỹ thuật cấp dự án:
+
+- cách xây
+- dùng gì
+- vì sao tổ chức như hiện tại
+- hiện trạng tốt / cần lưu ý của codebase

@@ -8,8 +8,11 @@ import com.wedservice.backend.module.auth.validator.AuthValidator;
 import com.wedservice.backend.module.users.entity.Gender;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
+import com.wedservice.backend.module.users.entity.UserCategory;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.mapper.UserMapper;
+import com.wedservice.backend.module.users.repository.RoleRepository;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.module.auth.security.JwtService;
 import com.wedservice.backend.module.users.event.UserRegisteredEvent;
@@ -30,6 +33,7 @@ public class AuthCommandServiceImpl implements AuthCommandService {
     private final UserMapper userMapper;
     private final AuthValidator authValidator;
     private final ApplicationEventPublisher eventPublisher;
+    private final RoleRepository roleRepository;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -45,7 +49,7 @@ public class AuthCommandServiceImpl implements AuthCommandService {
                 .email(email)
                 .phone(phone)
                 .passwordHash(passwordEncoder.encode(request.getPasswordHash()))
-                .role(Role.CUSTOMER)
+                .userCategory(UserCategory.CUSTOMER)
                 .status(Status.ACTIVE)
                 .gender(request.getGender() == null ? Gender.UNKNOWN : request.getGender())
                 .dateOfBirth(request.getDateOfBirth())
@@ -53,6 +57,17 @@ public class AuthCommandServiceImpl implements AuthCommandService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        if (savedUser.getUserRoles().isEmpty()) {
+            Role defaultRole = roleRepository.findByCode("USER").orElse(null);
+            if (defaultRole != null) {
+                savedUser.getUserRoles().add(UserRole.builder()
+                        .user(savedUser)
+                        .role(defaultRole)
+                        .isPrimary(true)
+                        .build());
+                savedUser = userRepository.save(savedUser);
+            }
+        }
 
         // Publish registration event for async processing
         eventPublisher.publishEvent(new UserRegisteredEvent(

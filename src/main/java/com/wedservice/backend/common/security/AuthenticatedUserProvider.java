@@ -2,13 +2,15 @@ package com.wedservice.backend.common.security;
 
 import com.wedservice.backend.common.exception.UnauthorizedException;
 import com.wedservice.backend.module.auth.security.CustomUserDetails;
-import com.wedservice.backend.module.users.entity.Role;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 // Đây là một class Spring dùng để lấy thông tin user đang đăng nhập từ SecurityContextHolder của Spring Security.
@@ -24,6 +26,15 @@ import java.util.UUID;
 
 @Component
 public class AuthenticatedUserProvider {
+    private static final Set<String> ADMIN_ROLE_CODES = Set.of("ADMIN", "SUPER_ADMIN");
+    private static final Set<String> BACKOFFICE_ROLE_CODES = Set.of(
+            "SUPER_ADMIN",
+            "ADMIN",
+            "OPERATOR",
+            "FIELD_STAFF",
+            "CONTENT_EDITOR"
+    );
+
     // Lấy id từ context security
     public UUID getRequiredCurrentUserId() {
         Object principal = getRequiredPrincipal();
@@ -50,15 +61,33 @@ public class AuthenticatedUserProvider {
     }
 
     public boolean isCurrentUserAdmin() {
+        return isCurrentUserInAnyRole(ADMIN_ROLE_CODES);
+    }
+
+    public boolean isCurrentUserBackoffice() {
+        return isCurrentUserInAnyRole(BACKOFFICE_ROLE_CODES);
+    }
+
+    public boolean isCurrentUserInAnyRole(String... roles) {
+        return isCurrentUserInAnyRole(Arrays.stream(roles).filter(role -> role != null && !role.isBlank()).toList());
+    }
+
+    public boolean isCurrentUserInAnyRole(Collection<String> roles) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
+
         Object principal = authentication.getPrincipal();
-        if (principal instanceof CustomUserDetails details) {
-            return details.getRole() == Role.ADMIN;
+        if (!(principal instanceof CustomUserDetails details)) {
+            return false;
         }
-        return false;
+
+        if (roles == null || roles.isEmpty()) {
+            return false;
+        }
+
+        return details.getRoleCodes().stream().anyMatch(roles::contains);
     }
 
     private Object getRequiredPrincipal() {

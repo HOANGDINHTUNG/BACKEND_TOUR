@@ -5,6 +5,7 @@ import com.wedservice.backend.module.auth.security.CustomUserDetails;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -36,8 +37,14 @@ class AuthenticatedUserProviderTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        user.getUserRoles().add(UserRole.builder()
+                .user(user)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
+
         CustomUserDetails details = CustomUserDetails.fromUser(user);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities())

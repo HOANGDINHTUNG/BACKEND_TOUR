@@ -1,35 +1,129 @@
-# 📘 API Documentation — TravelViet Booking System
+# Tài Liệu API - TravelViet Booking System
 
-> **Base URL:** `http://localhost:8080/api`  
-> **Content-Type:** `application/json`  
-> **Authentication:** Bearer JWT Token (`Authorization: Bearer <token>`)
-
----
-
-## 🔐 Quy tắc phân quyền
-
-| Role     | Mô tả                           |
-| -------- | ------------------------------- |
-| `PUBLIC` | Không cần đăng nhập             |
-| `USER`   | Cần đăng nhập (bất kỳ role nào) |
-| `ADMIN`  | Chỉ tài khoản admin             |
+> Base URL: `http://localhost:8088/api/v1`
+> Content-Type: `application/json`
+> Authentication: `Authorization: Bearer <token>`
 
 ---
 
-## 1. 🏥 System — Kiểm tra sức khoẻ hệ thống
+## 1. Mô Hình Phân Quyền
+
+### 1.1 Hệ thống hiện tại đang phân quyền theo permission
+
+Ở source hiện tại, việc phân quyền API không nên đọc theo kiểu "chỉ USER / ADMIN" như tài liệu cũ.
+Hệ thống đang dùng:
+
+- Role để nhóm quyền
+- Permission để kiểm tra truy cập API qua `@PreAuthorize`
+- Một user có thể có nhiều role
+- Một role tùy biến vẫn dùng được nếu role đó có đúng permission
+
+### 1.2 Các role seed hiện có trong migration
+
+| Role code | Scope | Mô tả |
+| --- | --- | --- |
+| `SUPER_ADMIN` | SYSTEM | Toàn quyền hệ thống |
+| `ADMIN` | BACKOFFICE | Quản trị vận hành |
+| `CONTENT_EDITOR` | BACKOFFICE | Quản lý nội dung destination, tour, media |
+| `FIELD_STAFF` | BACKOFFICE | Nhân sự thực địa, cập nhật dữ liệu, check-in |
+| `OPERATOR` | BACKOFFICE | Điều phối schedule, booking, refund, support |
+| `USER` | CUSTOMER | Khách hàng sử dụng ứng dụng |
+
+### 1.3 Lưu ý cho role tùy biến
+
+- Tài liệu này ưu tiên ghi theo `permission` của API.
+- Nếu bạn tạo thêm role mới, role đó vẫn gọi được API nếu được gán đúng permission.
+- Vì vậy không nên đọc tài liệu theo kiểu "API này chỉ ADMIN", mà nên đọc theo cột `Permission`.
+
+### 1.4 Quy ước trong tài liệu này
+
+| Mục | Nghĩa |
+| --- | --- |
+| `PUBLIC` | Không cần token |
+| `AUTHENTICATED` | Chỉ cần đăng nhập |
+| `Permission: xxx.yyy` | Cần đúng authority đó |
+
+---
+
+## 2. Dữ Liệu Test Dùng Chung
+
+### 2.1 Header mẫu
+
+```http
+Authorization: Bearer <ACCESS_TOKEN>
+Content-Type: application/json
+```
+
+### 2.2 Biến test gợi ý
+
+```text
+ACCESS_TOKEN=<jwt_token>
+REFRESH_TOKEN=<refresh_token>
+USER_ID=550e8400-e29b-41d4-a716-446655440000
+DESTINATION_UUID=3fa85f64-5717-4562-b3fc-2c963f66afa6
+TOUR_ID=1
+SCHEDULE_ID=5
+BOOKING_ID=1
+PAYMENT_ID=1
+REFUND_ID=1
+REVIEW_ID=1
+```
+
+### 2.3 User test để dùng lại
+
+```json
+{
+  "fullName": "Nguyễn Văn An",
+  "email": "an.nguyen+api@gmail.com",
+  "phone": "+84901234567",
+  "passwordHash": "Password@123",
+  "displayName": "An Nguyen",
+  "gender": "male",
+  "dateOfBirth": "1995-06-15"
+}
+```
+
+### 2.4 Response wrapper chung
+
+Mọi API đều trả theo `ApiResponse<T>`:
+
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": {}
+}
+```
+
+Nếu là phân trang, `data` thường là `PageResponse<T>`:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 10,
+  "totalElements": 0,
+  "totalPages": 0,
+  "last": true
+}
+```
+
+---
+
+## 3. System
 
 ### `GET /system/health`
 
-**Tác dụng:** Kiểm tra xem backend đang chạy không (health check). Thường dùng bởi DevOps, load balancer, hoặc để test nhanh sau khi deploy.  
-**Phân quyền:** PUBLIC
+- Access: `PUBLIC`
+- Mô tả: Health check backend
 
-**Postman Sample:**
+**Request**
 
+```http
+GET http://localhost:8088/api/v1/system/health
 ```
-GET http://localhost:8080/api/system/health
-```
 
-**Response mẫu:**
+**Response**
 
 ```json
 {
@@ -38,97 +132,108 @@ GET http://localhost:8080/api/system/health
   "data": {
     "service": "wedservice-backend",
     "status": "OK",
-    "time": "2026-04-11T21:00:00"
+    "time": "2026-04-14T23:00:00"
   }
 }
 ```
 
 ---
 
-## 2. 🔑 Auth — Xác thực người dùng
+## 4. Auth
 
 ### `POST /auth/register`
 
-**Tác dụng:** Đăng ký tài khoản mới. Trả về JWT token và thông tin user sau khi đăng ký thành công.  
-**Phân quyền:** PUBLIC
+- Access: `PUBLIC`
+- Mô tả: Đăng ký tài khoản mới
 
-**Điều kiện:**
+**Rules**
 
-- `fullName`: bắt buộc, tối đa 150 ký tự
-- `email` hoặc `phone`: ít nhất một trong hai phải có
-- `email` (nếu có): phải đúng định dạng email
-- `phone` (nếu có): định dạng `+84xxxxxxxxx` hoặc `0xxxxxxxxx` (8–20 số)
-- `passwordHash`: bắt buộc, 8–255 ký tự
-- `gender`: `MALE` | `FEMALE` | `OTHER` | `PREFER_NOT_TO_SAY`
-- `dateOfBirth`: phải là ngày trong quá khứ, định dạng `YYYY-MM-DD`
+- `fullName`: bắt buộc, max 150
+- `email` hoặc `phone`: phải có ít nhất một
+- `email`: đúng định dạng email
+- `phone`: regex `^[+]?[0-9]{8,20}$`
+- `passwordHash`: bắt buộc, 8-255
+- `dateOfBirth`: phải là ngày trong quá khứ
 
-**Body mẫu:**
+**Request**
+
+```http
+POST http://localhost:8088/api/v1/auth/register
+Content-Type: application/json
+```
 
 ```json
 {
   "fullName": "Nguyễn Văn An",
-  "email": "an.nguyen@gmail.com",
+  "email": "an.nguyen+api@gmail.com",
   "phone": "+84901234567",
   "passwordHash": "Password@123",
   "displayName": "An Nguyen",
-  "gender": "MALE",
-  "dateOfBirth": "1995-06-15"
+  "gender": "male",
+  "dateOfBirth": "1995-06-15",
+  "avatarUrl": "https://example.com/avatar.jpg"
 }
 ```
-
-**Response mẫu:**
-
-```json
-{
-  "success": true,
-  "message": "Register successfully",
-  "data": {
-    "user": { },
-    "tokenType": "Bearer",
-    "accessToken": "eyJhbG...",
-    "expiresIn": 3600000,
-    "refreshToken": "eyJhbG...",
-    "refreshExpiresIn": 2592000000
-  }
-}
-```
-
-
----
 
 ### `POST /auth/login`
 
-**Tác dụng:** Đăng nhập bằng email/SĐT và mật khẩu. Trả về JWT token để dùng cho các API cần xác thực.  
-**Phân quyền:** PUBLIC
+- Access: `PUBLIC`
+- Mô tả: Đăng nhập bằng email hoặc phone
 
-**Điều kiện:**
-
-- `login` (hoặc `email`): bắt buộc — email hoặc số điện thoại
-- `passwordHash`: bắt buộc
-
-**Body mẫu:**
+**Request**
 
 ```json
 {
-  "login": "an.nguyen@gmail.com",
+  "login": "an.nguyen+api@gmail.com",
   "passwordHash": "Password@123"
 }
 ```
 
-> 💡 Field `login` cũng chấp nhận alias `email` nhờ `@JsonAlias`.
+`login` cũng nhận alias `email`.
 
-**Response mẫu:**
+### `POST /auth/refresh`
+
+- Access: `PUBLIC`
+- Mô tả: Lấy cặp token mới bằng refresh token
+
+**Request**
+
+```json
+{
+  "refreshToken": "<REFRESH_TOKEN>"
+}
+```
+
+### Auth response shape
+
+`register`, `login`, `refresh` đều trả `AuthResponse`:
 
 ```json
 {
   "success": true,
   "message": "Login successfully",
   "data": {
-    "user": { },
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "an.nguyen+api@gmail.com",
+      "phone": "+84901234567",
+      "fullName": "Nguyễn Văn An",
+      "displayName": "An Nguyen",
+      "gender": "male",
+      "dateOfBirth": "1995-06-15",
+      "avatarUrl": "https://example.com/avatar.jpg",
+      "userCategory": "CUSTOMER",
+      "role": "USER",
+      "roles": ["USER"],
+      "status": "active",
+      "memberLevel": "bronze",
+      "loyaltyPoints": 0,
+      "totalSpent": 0
+    },
     "tokenType": "Bearer",
-    "accessToken": "eyJhbG...",
+    "accessToken": "<ACCESS_TOKEN>",
     "expiresIn": 3600000,
-    "refreshToken": "eyJhbG...",
+    "refreshToken": "<REFRESH_TOKEN>",
     "refreshExpiresIn": 2592000000
   }
 }
@@ -136,89 +241,55 @@ GET http://localhost:8080/api/system/health
 
 ---
 
-### `POST /auth/refresh`
+## 5. Users
 
-**Tác dụng:** Dùng Refresh Token để lấy cặp Access Token và Refresh Token mới (Token Rotation). Khi Access Token hết hạn (401), app client gọi API này để duy trì đăng nhập mà không cần user nhập lại mật khẩu.  
-**Phân quyền:** PUBLIC (Sử dụng Refresh Token trong body)
+### 5.1 User Profile
 
-**Body mẫu:**
+#### `GET /users/me`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+```http
+GET http://localhost:8088/api/v1/users/me
+Authorization: Bearer <ACCESS_TOKEN>
+```
+
+#### `PUT /users/me`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+**Request**
 
 ```json
 {
-  "refreshToken": "eyJhbGci..."
-}
-```
-
-**Response mẫu:** (Giống login — trả về cặp token mới)
-
----
-
-## 3. 👤 User Profile — Hồ sơ cá nhân
-
-### `GET /users/me`
-
-**Tác dụng:** Lấy thông tin hồ sơ của người dùng đang đăng nhập.  
-**Phân quyền:** USER (đã đăng nhập)
-
-**Headers:**
-
-```
-Authorization: Bearer <jwt_token>
-```
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/users/me
-```
-
----
-
-### `PUT /users/me`
-
-**Tác dụng:** Cập nhật thông tin hồ sơ cá nhân (họ tên, email, SĐT, giới tính, ngày sinh, ảnh đại diện).  
-**Phân quyền:** USER (đã đăng nhập)
-
-**Điều kiện:**
-
-- `fullName`: bắt buộc, tối đa 150 ký tự
-- `email` hoặc `phone`: ít nhất một trong hai phải có
-- `dateOfBirth`: phải là ngày trong quá khứ
-
-**Body mẫu:**
-
-```json
-{
-  "fullName": "Nguyễn Văn An",
-  "email": "an.nguyen@gmail.com",
+  "fullName": "Nguyễn Văn An Updated",
+  "email": "an.nguyen+updated@gmail.com",
   "phone": "+84901234567",
-  "displayName": "An Nguyen",
-  "gender": "MALE",
+  "displayName": "An Updated",
+  "gender": "male",
   "dateOfBirth": "1995-06-15",
   "avatarUrl": "https://example.com/avatar-new.jpg"
 }
 ```
 
----
+**Rules**
 
-## 4. 👥 Admin — Quản lý người dùng
+- `fullName`: bắt buộc, max 150
+- `email` hoặc `phone`: phải có ít nhất một
+- `gender`: `male`, `female`, `other`, `unknown`
 
-> ⚠️ Tất cả các API trong phần này đều yêu cầu `ROLE: ADMIN`.
+### 5.2 Admin Users
 
-### `POST /users`
+> Lưu ý: ở code hiện tại, phần này kiểm theo permission, không phải một role cố định.
 
-**Tác dụng:** Admin tạo mới một tài khoản người dùng, có thể gán role và trạng thái ngay khi tạo.  
-**Phân quyền:** ADMIN
+#### `POST /users`
 
-**Điều kiện:**
+- Permission: `user.create`
+- Mô tả: Tạo user mới
 
-- `fullName`, `passwordHash`, `role`: bắt buộc
-- `role`: `USER` | `ADMIN` | `STAFF`
-- `status`: `ACTIVE` | `INACTIVE` | `BANNED` (mặc định `ACTIVE`)
-- `memberLevel`: `BRONZE` | `SILVER` | `GOLD` | `PLATINUM` (mặc định `BRONZE`)
-- `loyaltyPoints`, `totalSpent`: >= 0
-
-**Body mẫu:**
+**Request**
 
 ```json
 {
@@ -226,71 +297,61 @@ GET http://localhost:8080/api/users/me
   "email": "binh.tran@company.com",
   "phone": "+84912345678",
   "passwordHash": "StaffPass@456",
-  "role": "STAFF",
-  "status": "ACTIVE",
-  "displayName": "Bình Staff",
-  "gender": "FEMALE",
+  "userCategory": "INTERNAL",
+  "roleCodes": ["OPERATOR"],
+  "status": "active",
+  "displayName": "Binh Operator",
+  "gender": "female",
   "dateOfBirth": "1992-03-20",
-  "memberLevel": "SILVER",
+  "avatarUrl": "https://example.com/binh.jpg",
+  "memberLevel": "silver",
   "loyaltyPoints": 500,
-  "totalSpent": 5000000
+  "totalSpent": 5000000,
+  "emailVerifiedAt": "2026-04-14T08:00:00",
+  "phoneVerifiedAt": "2026-04-14T08:00:00"
 }
 ```
 
----
+**Điểm cần lưu ý**
 
-### `GET /users`
+- Body dùng `roleCodes`, không dùng `role`
+- `userCategory` bắt buộc
+- `status` của code hiện tại: `pending`, `active`, `suspended`, `blocked`, `deleted`
 
-**Tác dụng:** Admin lấy danh sách người dùng có phân trang và bộ lọc.  
-**Phân quyền:** ADMIN
+#### `GET /users`
 
-**Query Params:**
+- Permission: `user.view`
+- Mô tả: Danh sách user có phân trang và filter
 
-| Param         | Type   | Mặc định    | Mô tả                                     |
-| ------------- | ------ | ----------- | ----------------------------------------- |
-| `page`        | int    | 0           | Trang hiện tại (bắt đầu từ 0)             |
-| `size`        | int    | 10          | Số item/trang (1–100)                     |
-| `keyword`     | string | —           | Tìm theo tên, email, SĐT                  |
-| `status`      | string | —           | `ACTIVE` / `INACTIVE` / `BANNED`          |
-| `role`        | string | —           | `USER` / `ADMIN` / `STAFF`                |
-| `memberLevel` | string | —           | `BRONZE` / `SILVER` / `GOLD` / `PLATINUM` |
-| `sortBy`      | string | `createdAt` | Trường sắp xếp                            |
-| `sortDir`     | string | `desc`      | `asc` hoặc `desc`                         |
+**Query params thực tế**
 
-**Postman Sample:**
+| Param | Type | Default | Ghi chú |
+| --- | --- | --- | --- |
+| `page` | int | `0` | >= 0 |
+| `size` | int | `10` | 1..100 |
+| `keyword` | string | - | max 100 |
+| `status` | enum | - | `pending`, `active`, `suspended`, `blocked`, `deleted` |
+| `roleCode` | string | - | role code cần lọc |
+| `memberLevel` | enum | - | `bronze`, `silver`, `gold`, `platinum`, `diamond` |
+| `sortBy` | string | `createdAt` | `id`, `fullName`, `displayName`, `email`, `phone`, `userCategory`, `status`, `memberLevel`, `createdAt`, `updatedAt`, `lastLoginAt`, `deletedAt` |
+| `sortDir` | string | `desc` | `asc` hoặc `desc` |
 
-```
-GET http://localhost:8080/api/users?page=0&size=10&keyword=nguyen&status=ACTIVE&role=USER&sortBy=createdAt&sortDir=desc
-```
+**Request**
 
----
-
-### `GET /users/{id}`
-
-**Tác dụng:** Admin lấy thông tin chi tiết một người dùng theo UUID.  
-**Phân quyền:** ADMIN
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/users/550e8400-e29b-41d4-a716-446655440000
+```http
+GET http://localhost:8088/api/v1/users?page=0&size=10&keyword=nguyen&status=active&roleCode=USER&sortBy=createdAt&sortDir=desc
+Authorization: Bearer <ACCESS_TOKEN>
 ```
 
----
+#### `GET /users/{id}`
 
-### `PUT /users/{id}`
+- Permission: `user.view`
 
-**Tác dụng:** Admin cập nhật đầy đủ thông tin của một user (kể cả role, status, loyalty points...).  
-**Phân quyền:** ADMIN
+#### `PUT /users/{id}`
 
-**Điều kiện:**
+- Permission: `user.update`
 
-- `fullName`, `role`, `status`, `memberLevel`: bắt buộc
-- `role`: `USER` | `ADMIN` | `STAFF`
-- `status`: `ACTIVE` | `INACTIVE` | `BANNED`
-- `memberLevel`: `BRONZE` | `SILVER` | `GOLD` | `PLATINUM`
-
-**Body mẫu:**
+**Request**
 
 ```json
 {
@@ -298,90 +359,144 @@ GET http://localhost:8080/api/users/550e8400-e29b-41d4-a716-446655440000
   "email": "binh.updated@company.com",
   "phone": "+84912345678",
   "passwordHash": "NewPass@789",
-  "role": "USER",
-  "status": "ACTIVE",
-  "displayName": "Bình Updated",
-  "gender": "FEMALE",
+  "userCategory": "INTERNAL",
+  "roleCodes": ["CONTENT_EDITOR", "OPERATOR"],
+  "status": "active",
+  "displayName": "Binh Updated",
+  "gender": "female",
   "dateOfBirth": "1992-03-20",
-  "memberLevel": "GOLD",
+  "avatarUrl": "https://example.com/binh-new.jpg",
+  "memberLevel": "gold",
   "loyaltyPoints": 1500,
-  "totalSpent": 15000000
+  "totalSpent": 15000000,
+  "emailVerifiedAt": "2026-04-14T08:00:00",
+  "phoneVerifiedAt": "2026-04-14T08:00:00",
+  "lastLoginAt": "2026-04-14T21:30:00",
+  "deletedAt": null
+}
+```
+
+#### `PATCH /users/{id}/deactivate`
+
+- Permission: `user.block` hoặc `user.delete`
+- Mô tả: Vô hiệu hóa user
+
+```http
+PATCH http://localhost:8088/api/v1/users/550e8400-e29b-41d4-a716-446655440000/deactivate
+Authorization: Bearer <ACCESS_TOKEN>
+```
+
+### 5.3 UserResponse shape
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "an.nguyen+api@gmail.com",
+  "phone": "+84901234567",
+  "fullName": "Nguyễn Văn An",
+  "displayName": "An Nguyen",
+  "gender": "male",
+  "dateOfBirth": "1995-06-15",
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "userCategory": "CUSTOMER",
+  "role": "USER",
+  "roles": ["USER"],
+  "status": "active",
+  "memberLevel": "bronze",
+  "loyaltyPoints": 0,
+  "totalSpent": 0,
+  "emailVerifiedAt": null,
+  "phoneVerifiedAt": null,
+  "lastLoginAt": null,
+  "createdAt": "2026-04-14T22:00:00",
+  "updatedAt": "2026-04-14T22:00:00",
+  "deletedAt": null
 }
 ```
 
 ---
 
-### `PATCH /users/{id}/deactivate`
+## 6. Destinations
 
-**Tác dụng:** Admin vô hiệu hóa (deactivate) một tài khoản người dùng.  
-**Phân quyền:** ADMIN
+### 6.1 Public Destinations
 
-**Postman Sample:**
+#### `GET /destinations`
 
-```
-PATCH http://localhost:8080/api/users/550e8400-e29b-41d4-a716-446655440000/deactivate
-```
+- Access: `PUBLIC`
+- Mô tả: Search approved destinations
 
-> Không cần body.
+**Query params**
 
----
+| Param | Type | Default |
+| --- | --- | --- |
+| `keyword` | string | - |
+| `province` | string | - |
+| `region` | string | - |
+| `crowdLevel` | enum | - |
+| `isFeatured` | boolean | - |
+| `page` | int | `0` |
+| `size` | int | `10` |
+| `sortBy` | string | `name` |
+| `sortDir` | string | `asc` |
 
-## 5. 🗺️ Destinations — Điểm đến (Public + User)
+**Request**
 
-### `GET /destinations`
-
-**Tác dụng:** Lấy danh sách các điểm đến đã được phê duyệt (`APPROVED`), hỗ trợ tìm kiếm và lọc.  
-**Phân quyền:** PUBLIC
-
-**Query Params:**
-
-| Param        | Type    | Mặc định | Mô tả                     |
-| ------------ | ------- | -------- | ------------------------- |
-| `keyword`    | string  | —        | Tìm theo tên/mô tả        |
-| `province`   | string  | —        | Lọc theo tỉnh/thành       |
-| `region`     | string  | —        | Lọc theo vùng miền        |
-| `crowdLevel` | string  | —        | `LOW` / `MEDIUM` / `HIGH` |
-| `isFeatured` | boolean | —        | Điểm đến nổi bật          |
-| `page`       | int     | 0        | Trang                     |
-| `size`       | int     | 10       | Kích thước trang          |
-| `sortBy`     | string  | `name`   | Trường sắp xếp            |
-| `sortDir`    | string  | `asc`    | `asc` / `desc`            |
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/destinations?keyword=Hà+Nội&province=Hà Nội&page=0&size=10
+```http
+GET http://localhost:8088/api/v1/destinations?keyword=Ha+Long&province=Quang+Ninh&page=0&size=10
 ```
 
----
+#### `GET /destinations/{uuid}`
 
-### `GET /destinations/{uuid}`
+- Access: `PUBLIC`
 
-**Tác dụng:** Lấy thông tin chi tiết một điểm đến đã được phê duyệt (kèm media, ẩm thực, hoạt động, sự kiện...).  
-**Phân quyền:** PUBLIC
+#### `POST /destinations/propose`
 
-**Postman Sample:**
+- Permission: `destination.propose` hoặc `destination.create`
+- Mô tả: User đề xuất destination
 
+**Request**
+
+```json
+{
+  "name": "Vịnh Hạ Long",
+  "province": "Quảng Ninh",
+  "district": "Hạ Long",
+  "region": "Đông Bắc",
+  "countryCode": "VN",
+  "address": "Hạ Long, Quảng Ninh, Việt Nam",
+  "latitude": 20.9101,
+  "longitude": 107.1839,
+  "shortDescription": "Di sản thiên nhiên thế giới UNESCO",
+  "description": "Điểm đến nổi tiếng với hàng ngàn đảo đá vôi",
+  "bestTimeFromMonth": 3,
+  "bestTimeToMonth": 5,
+  "crowdLevelDefault": "MEDIUM"
+}
 ```
-GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
-```
 
----
+### 6.2 Admin Destinations
 
-### `POST /destinations/propose`
+#### `GET /admin/destinations`
 
-**Tác dụng:** Người dùng đề xuất thêm điểm đến mới. Điểm đến cần được admin phê duyệt trước khi hiển thị.  
-**Phân quyền:** USER (đã đăng nhập)
+- Permission: `destination.view`
 
-**Điều kiện:**
+**Query params thực tế**
 
-- `code`: bắt buộc, tối đa 30 ký tự
-- `name`: bắt buộc, tối đa 200 ký tự
-- `province`: bắt buộc
-- `bestTimeFromMonth` / `bestTimeToMonth`: 1–12
-- `crowdLevelDefault`: `LOW` | `MEDIUM` | `HIGH`
+Thêm các filter sau ngoài bộ public:
 
-**Body mẫu:**
+- `isActive`
+- `isOfficial`
+- `status`: `pending`, `approved`, `rejected`
+
+#### `GET /admin/destinations/{uuid}`
+
+- Permission: `destination.view`
+
+#### `POST /admin/destinations`
+
+- Permission: `destination.create`
+
+**Request sample**
 
 ```json
 {
@@ -390,24 +505,24 @@ GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
   "slug": "vinh-ha-long",
   "countryCode": "VN",
   "province": "Quảng Ninh",
-  "district": "TP. Hạ Long",
-  "region": "Đông Bắc Bộ",
-  "address": "Vịnh Hạ Long, tỉnh Quảng Ninh, Việt Nam",
+  "district": "Hạ Long",
+  "region": "Đông Bắc",
+  "address": "Hạ Long, Quảng Ninh, Việt Nam",
   "latitude": 20.9101,
   "longitude": 107.1839,
-  "shortDescription": "Di sản thiên nhiên thế giới UNESCO với hàng ngàn đảo đá vôi kỳ vĩ.",
-  "description": "Vịnh Hạ Long là một trong những điểm đến du lịch nổi tiếng nhất Việt Nam, được UNESCO công nhận là Di sản thiên nhiên thế giới. Vịnh bao gồm hàng ngàn hòn đảo đá vôi và các hang động kỳ thú như hang Sửng Sốt, động Thiên Cung...",
+  "shortDescription": "Di sản thiên nhiên thế giới UNESCO",
+  "description": "Vịnh Hạ Long là điểm đến du lịch nổi tiếng của Việt Nam",
   "bestTimeFromMonth": 3,
   "bestTimeToMonth": 5,
   "crowdLevelDefault": "MEDIUM",
   "isFeatured": true,
   "isActive": true,
-  "isOfficial": false,
+  "isOfficial": true,
   "mediaList": [
     {
       "mediaType": "IMAGE",
-      "mediaUrl": "https://example.com/halong1.jpg",
-      "altText": "Toàn cảnh Vịnh Hạ Long từ trên cao",
+      "mediaUrl": "https://example.com/halong-1.jpg",
+      "altText": "Ha Long overview",
       "sortOrder": 1,
       "isActive": true
     }
@@ -415,32 +530,27 @@ GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
   "foods": [
     {
       "foodName": "Chả mực Hạ Long",
-      "description": "Món chả đặc sản làm từ mực tươi xay nhuyễn, giòn dai và thơm ngon.",
+      "description": "Món đặc sản nổi tiếng",
       "isFeatured": true
     }
   ],
   "specialties": [
     {
       "specialtyName": "Sá sùng khô",
-      "description": "Sản vật quý hiếm thường được dùng để nấu nước dùng phở hoặc ngâm rượu."
+      "description": "Đặc sản biển"
     }
   ],
   "activities": [
     {
-      "activityName": "Chèo thuyền Kayak",
-      "description": "Khám phá các hang động và lách qua các hòn đảo nhỏ trên vịnh.",
+      "activityName": "Kayak",
+      "description": "Chèo kayak quanh các đảo",
       "activityScore": 4.8
-    },
-    {
-      "activityName": "Ngủ đêm trên du thuyền",
-      "description": "Trải nghiệm cảm giác lênh đênh trên biển và ngắm bình minh trên vịnh.",
-      "activityScore": 5.0
     }
   ],
   "tips": [
     {
       "tipTitle": "Trang phục",
-      "tipContent": "Nên mang theo kem chống nắng, mũ rộng vành và giày thể thao để leo hang.",
+      "tipContent": "Mang giày dễ đi bộ",
       "sortOrder": 1
     }
   ],
@@ -448,7 +558,7 @@ GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
     {
       "eventName": "Carnaval Hạ Long",
       "eventType": "FESTIVAL",
-      "description": "Lễ hội đường phố sôi động diễn ra vào dịp 30/4 - 1/5 hàng năm.",
+      "description": "Sự kiện du lịch lớn",
       "startsAt": "2026-04-30T19:00:00",
       "endsAt": "2026-05-01T22:00:00",
       "notifyAllFollowers": true,
@@ -458,221 +568,39 @@ GET http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
 }
 ```
 
----
+#### `PUT /admin/destinations/{uuid}`
 
-## 6. 🛠️ Admin Destinations — Quản lý điểm đến (Admin)
+- Permission: `destination.update`
+- Body: giống `POST /admin/destinations`
 
-> ⚠️ Tất cả API trong phần này yêu cầu `ROLE: ADMIN`.
+#### `DELETE /admin/destinations/{uuid}`
 
-### `GET /admin/destinations`
+- Permission: `destination.delete`
 
-**Tác dụng:** Admin lấy toàn bộ danh sách điểm đến (bao gồm cả đề xuất chờ duyệt, đã từ chối...).  
-**Phân quyền:** ADMIN
+#### `PATCH /admin/destinations/{uuid}/approve`
 
-**Query Params:** Giống `/destinations` nhưng thêm `status`:
+- Permission: `destination.review` hoặc `destination.publish`
 
-| Param    | Giá trị                             | Mô tả                     |
-| -------- | ----------------------------------- | ------------------------- |
-| `status` | `PENDING` / `APPROVED` / `REJECTED` | Lọc theo trạng thái duyệt |
+#### `PATCH /admin/destinations/{uuid}/reject`
 
-**Postman Sample:**
+- Permission: `destination.review` hoặc `destination.publish`
 
-```
-GET http://localhost:8080/api/admin/destinations?status=PENDING&page=0&size=10
-```
-
----
-
-### `GET /admin/destinations/{uuid}`
-
-**Tác dụng:** Admin xem chi tiết một điểm đến bất kể trạng thái.  
-**Phân quyền:** ADMIN
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
-```
-
----
-
-### `POST /admin/destinations`
-
-**Tác dụng:** Admin tạo mới một điểm đến chính thức (không cần chờ duyệt). Trả HTTP 201.  
-**Phân quyền:** ADMIN
-
-**Body mẫu:** _(Giống body `POST /destinations/propose` nhưng `isOfficial: true`)_
+**Request**
 
 ```json
 {
-  "code": "DN-003",
-  "name": "Ngũ Hành Sơn",
-  "slug": "ngu-hanh-son",
-  "countryCode": "VN",
-  "province": "Đà Nẵng",
-  "district": "Quận Ngũ Hành Sơn",
-  "region": "Miền Trung",
-  "address": "81 Huyền Trân Công Chúa, Quận Ngũ Hành Sơn, Đà Nẵng, Việt Nam",
-  "latitude": 16.0037,
-  "longitude": 108.2640,
-  "shortDescription": "Danh thắng nổi tiếng gồm quần thể núi đá vôi và chùa linh thiêng tại Đà Nẵng.",
-  "description": "Ngũ Hành Sơn là quần thể gồm năm ngọn núi đá vôi nằm ven biển Đà Nẵng, nổi tiếng với hang động kỳ bí, chùa chiền cổ kính và các điểm ngắm toàn cảnh thành phố tuyệt đẹp. Đây là địa điểm du lịch tâm linh và khám phá thiên nhiên được nhiều du khách yêu thích.",
-  "bestTimeFromMonth": 2,
-  "bestTimeToMonth": 8,
-  "crowdLevelDefault": "HIGH",
-  "isFeatured": true,
-  "isActive": true,
-  "isOfficial": true,
-  "mediaList": [
-    {
-      "mediaType": "IMAGE",
-      "mediaUrl": "https://example.com/ngu-hanh-son-1.jpg",
-      "altText": "Toàn cảnh Ngũ Hành Sơn nhìn từ trên cao",
-      "sortOrder": 1,
-      "isActive": true
-    },
-    {
-      "mediaType": "IMAGE",
-      "mediaUrl": "https://example.com/ngu-hanh-son-2.jpg",
-      "altText": "Du khách tham quan động Huyền Không",
-      "sortOrder": 2,
-      "isActive": true
-    }
-  ],
-  "foods": [
-    {
-      "foodName": "Mì Quảng",
-      "description": "Món mì đặc sản nổi tiếng của miền Trung với nước dùng đậm vị.",
-      "isFeatured": true
-    },
-    {
-      "foodName": "Bánh tráng cuốn thịt heo",
-      "description": "Đặc sản Đà Nẵng với rau sống phong phú và nước chấm đặc biệt.",
-      "isFeatured": false
-    }
-  ],
-  "specialties": [
-    {
-      "specialtyName": "Đá mỹ nghệ Non Nước",
-      "description": "Sản phẩm thủ công mỹ nghệ được chạm khắc tinh xảo từ đá."
-    },
-    {
-      "specialtyName": "Chả bò Đà Nẵng",
-      "description": "Món đặc sản nổi tiếng làm quà của thành phố biển."
-    }
-  ],
-  "activities": [
-    {
-      "activityName": "Khám phá hang động",
-      "description": "Tham quan các hang động tự nhiên kỳ bí bên trong núi.",
-      "activityScore": 4.9
-    },
-    {
-      "activityName": "Leo núi ngắm cảnh",
-      "description": "Ngắm toàn cảnh biển Đà Nẵng và thành phố từ đỉnh núi.",
-      "activityScore": 4.8
-    }
-  ],
-  "tips": [
-    {
-      "tipTitle": "Mang giày thể thao",
-      "tipContent": "Địa hình nhiều bậc thang và đá nên cần giày dễ di chuyển.",
-      "sortOrder": 1
-    },
-    {
-      "tipTitle": "Đi buổi sáng",
-      "tipContent": "Nên đi sớm để tránh nắng gắt và đông khách.",
-      "sortOrder": 2
-    }
-  ],
-  "events": [
-    {
-      "eventName": "Lễ hội Quán Thế Âm",
-      "eventType": "FESTIVAL",
-      "description": "Lễ hội văn hóa tâm linh lớn tổ chức hằng năm tại Ngũ Hành Sơn.",
-      "startsAt": "2026-03-15T08:00:00",
-      "endsAt": "2026-03-17T22:00:00",
-      "notifyAllFollowers": true,
-      "isActive": true
-    }
-  ]
+  "reason": "Thông tin chưa đủ để xác minh"
 }
 ```
 
----
+### 6.3 Destination Follow
 
-### `PUT /admin/destinations/{uuid}`
+> Tất cả API phần này chỉ cần đăng nhập, không check permission riêng.
 
-**Tác dụng:** Admin cập nhật toàn bộ thông tin điểm đến.  
-**Phân quyền:** ADMIN
+#### `POST /destinations/{uuid}/follow`
 
-**Postman Sample:** _(Body tương tự POST, gửi lên với uuid trong path)_
-
-```
-PUT http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
-```
-
----
-
-### `DELETE /admin/destinations/{uuid}`
-
-**Tác dụng:** Admin xóa một điểm đến. Trả HTTP 204.  
-**Phân quyền:** ADMIN
-
-**Postman Sample:**
-
-```
-DELETE http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6
-```
-
-> Không cần body. Nếu thành công sẽ không có dữ liệu trả về (204 No Content).
-
----
-
-### `PATCH /admin/destinations/{uuid}/approve`
-
-**Tác dụng:** Admin phê duyệt một đề xuất điểm đến từ người dùng (chuyển trạng thái sang `APPROVED`).  
-**Phân quyền:** ADMIN
-
-**Postman Sample:**
-
-```
-PATCH http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6/approve
-```
-
-> Không cần body.
-
----
-
-### `PATCH /admin/destinations/{uuid}/reject`
-
-**Tác dụng:** Admin từ chối một đề xuất điểm đến, kèm lý do từ chối.  
-**Phân quyền:** ADMIN
-
-**Điều kiện:**
-
-- `reason`: bắt buộc
-
-**Body mẫu:**
-
-```json
-{
-  "reason": "Điểm đến này đã tồn tại trong hệ thống với tên khác. Vui lòng kiểm tra lại trước khi đề xuất."
-}
-```
-
----
-
-## 7. ❤️ Destination Follow — Theo dõi điểm đến
-
-> ⚠️ Tất cả API trong phần này yêu cầu đăng nhập.
-
-### `POST /destinations/{uuid}/follow`
-
-**Tác dụng:** Người dùng theo dõi một điểm đến để nhận thông báo sự kiện, voucher, tour mới, mùa đẹp...  
-**Phân quyền:** USER
-
-**Body mẫu:** _(optional — có thể gửi trống)_
+- Access: `AUTHENTICATED`
+- Body có thể bỏ trống
 
 ```json
 {
@@ -683,104 +611,60 @@ PATCH http://localhost:8080/api/admin/destinations/3fa85f64-5717-4562-b3fc-2c963
 }
 ```
 
----
+#### `DELETE /destinations/{uuid}/follow`
 
-### `DELETE /destinations/{uuid}/follow`
+- Access: `AUTHENTICATED`
 
-**Tác dụng:** Người dùng hủy theo dõi điểm đến.  
-**Phân quyền:** USER
+#### `PUT /destinations/{uuid}/follow/settings`
 
-**Postman Sample:**
-
-```
-DELETE http://localhost:8080/api/destinations/3fa85f64-5717-4562-b3fc-2c963f66afa6/follow
-```
-
-> Không cần body.
-
----
-
-### `PUT /destinations/{uuid}/follow/settings`
-
-**Tác dụng:** Cập nhật tùy chọn thông báo cho điểm đến đang theo dõi.  
-**Phân quyền:** USER
-
-**Body mẫu:**
+- Access: `AUTHENTICATED`
 
 ```json
 {
   "notifyEvent": false,
   "notifyVoucher": true,
-  "notifyNewTour": true,
+  "notifyNewTour": false,
   "notifyBestSeason": true
 }
 ```
 
----
+#### `GET /destinations/me/follows`
 
-### `GET /destinations/me/follows`
-
-**Tác dụng:** Lấy danh sách các điểm đến mà người dùng hiện tại đang theo dõi.  
-**Phân quyền:** USER
-
-**Query Params:**
-
-| Param  | Mặc định | Mô tả            |
-| ------ | -------- | ---------------- |
-| `page` | 0        | Trang            |
-| `size` | 10       | Kích thước trang |
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/destinations/me/follows?page=0&size=10
-```
+- Access: `AUTHENTICATED`
+- Query: `page`, `size`
 
 ---
 
-## 8. 🗓️ Tours — Quản lý tour du lịch
+## 7. Tours
 
 ### `GET /tours`
 
-**Tác dụng:** Lấy danh sách các tour du lịch có phân trang, hỗ trợ tìm kiếm theo tên và điểm đến.  
-**Phân quyền:** PUBLIC
+- Access: `PUBLIC`
 
-**Query Params:**
+**Query params**
 
-| Param           | Type   | Mặc định | Mô tả                |
-| --------------- | ------ | -------- | -------------------- |
-| `keyword`       | string | —        | Tìm theo tên/mã tour |
-| `destinationId` | Long   | —        | Lọc theo ID điểm đến |
-| `page`          | int    | 0        | Trang                |
-| `size`          | int    | 10       | Kích thước trang     |
+| Param | Type | Default |
+| --- | --- | --- |
+| `destinationId` | long | - |
+| `keyword` | string | - |
+| `page` | int | `0` |
+| `size` | int | `10` |
 
-**Postman Sample:**
+**Request**
 
+```http
+GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&size=10
 ```
-GET http://localhost:8080/api/tours?keyword=Đà+Nẵng&page=0&size=10
-```
-
----
 
 ### `GET /tours/{id}`
 
-**Tác dụng:** Lấy thông tin chi tiết một tour theo ID.  
-**Phân quyền:** PUBLIC
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/tours/1
-```
-
----
+- Access: `PUBLIC`
 
 ### `POST /admin/tours`
 
-**Tác dụng:** Admin tạo mới một tour du lịch.  
-**Phân quyền:** ADMIN
+- Permission: `tour.create`
 
-**Body mẫu:**
+**Request**
 
 ```json
 {
@@ -794,60 +678,54 @@ GET http://localhost:8080/api/tours/1
   "durationNights": 1,
   "transportType": "BUS",
   "tripMode": "GROUP",
-  "highlights": "Khám phá Cầu Vàng, Làng Pháp, vui chơi Fantasy Park",
-  "inclusions": "Xe đưa đón, cáp treo, vé vào cửa, ăn sáng",
-  "exclusions": "Chi phí cá nhân, các dịch vụ bổ sung",
-  "notes": "Mang theo giày thể thao, áo ấm",
+  "highlights": "Cầu Vàng, Làng Pháp, Fantasy Park",
+  "inclusions": "Xe đưa đón, cáp treo, vé vào cửa",
+  "exclusions": "Chi phí cá nhân",
+  "notes": "Mang giày thể thao",
   "isFeatured": true,
   "status": "ACTIVE"
 }
 ```
 
----
-
 ### `PUT /admin/tours/{id}`
 
-**Tác dụng:** Admin cập nhật thông tin tour.  
-**Phân quyền:** ADMIN
-
-**Postman Sample:** _(Body tương tự POST)_
-
-```
-PUT http://localhost:8080/api/admin/tours/1
-```
-
----
+- Permission: `tour.update`
+- Body: giống `POST /admin/tours`
 
 ### `DELETE /admin/tours/{id}`
 
-**Tác dụng:** Admin xóa một tour.  
-**Phân quyền:** ADMIN
+- Permission: `tour.delete`
 
-**Postman Sample:**
+### TourResponse shape
 
+```json
+{
+  "id": 1,
+  "code": "TOUR-BNH-2026",
+  "name": "Tour Bà Nà Hills 2 ngày 1 đêm",
+  "slug": "tour-ba-na-hills-2n1d",
+  "destinationId": 1,
+  "basePrice": 1500000,
+  "currency": "VND"
+}
 ```
-DELETE http://localhost:8080/api/admin/tours/1
-```
-
-> Không cần body.
 
 ---
 
-## 9. 📋 Bookings — Đặt tour
+## 8. Bookings
 
 ### `POST /bookings`
 
-**Tác dụng:** Tạo đơn đặt tour mới. Người dùng chọn tour, lịch khởi hành, điền thông tin liên hệ và danh sách hành khách.  
-**Phân quyền:** PUBLIC _(nhưng thực tế nên đăng nhập)_
+- Permission: `booking.create`
 
-**Điều kiện:**
+**Lưu ý nghiệp vụ từ code**
 
-- `userId`, `tourId`, `scheduleId`: bắt buộc
-- `contactName`, `contactPhone`: bắt buộc
-- `adults`: tối thiểu 1
-- `passengerType`: `adult` | `child` | `infant` | `senior`
+- `userId`, `tourId`, `scheduleId`, `contactName`, `contactPhone` là bắt buộc
+- `adults` tối thiểu `1`
+- Nếu user thường gọi API, backend ưu tiên user trong token
+- `passengers[].dateOfBirth` hiện đang không được map xuống entity khi create booking
 
-**Body mẫu:**
+**Request**
 
 ```json
 {
@@ -856,7 +734,7 @@ DELETE http://localhost:8080/api/admin/tours/1
   "scheduleId": 5,
   "contactName": "Nguyễn Văn An",
   "contactPhone": "+84901234567",
-  "contactEmail": "an.nguyen@gmail.com",
+  "contactEmail": "an.nguyen+api@gmail.com",
   "adults": 2,
   "children": 1,
   "infants": 0,
@@ -865,130 +743,143 @@ DELETE http://localhost:8080/api/admin/tours/1
     {
       "fullName": "Nguyễn Văn An",
       "passengerType": "adult",
-      "gender": "MALE",
+      "gender": "male",
       "dateOfBirth": "1995-06-15",
       "identityNo": "001095012345",
       "phone": "+84901234567",
-      "email": "an.nguyen@gmail.com"
+      "email": "an.nguyen+api@gmail.com"
     },
     {
       "fullName": "Trần Thị Bình",
       "passengerType": "adult",
-      "gender": "FEMALE",
+      "gender": "female",
       "dateOfBirth": "1997-09-20",
       "identityNo": "001097067890",
       "phone": "+84912345678"
-    },
-    {
-      "fullName": "Nguyễn An Khang",
-      "passengerType": "child",
-      "gender": "MALE",
-      "dateOfBirth": "2018-03-10"
     }
   ]
 }
 ```
 
----
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Booking created",
+  "data": {
+    "id": 1,
+    "bookingCode": "BK1713115800000",
+    "status": "pending_payment",
+    "finalAmount": 0
+  }
+}
+```
 
 ### `GET /bookings/{id}`
 
-**Tác dụng:** Lấy thông tin chi tiết một booking theo ID.  
-**Phân quyền:** PUBLIC _(thực tế nên kiểm tra quyền)_
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/bookings/1
-```
+- Permission: `booking.view`
 
 ---
 
-## 10. 💳 Payments — Thanh toán
+## 9. Payments
 
 ### `POST /payments`
 
-**Tác dụng:** Tạo giao dịch thanh toán cho một booking. Có thể thanh toán bằng nhiều phương thức (CASH, BANK*TRANSFER, VNPAY, MOMO...).  
-**Phân quyền:** PUBLIC *(thực tế nên đăng nhập)\_
+- Permission: `payment.create`
 
-**Điều kiện:**
+**Lưu ý nghiệp vụ từ code**
 
-- `bookingId`, `paymentMethod`, `amount`: bắt buộc
+- DTO bắt buộc: `bookingId`, `paymentMethod`, `amount`
+- Backend tự set:
+  - `currency = "VND"`
+  - `status = "paid"`
+  - `paidAt = now()`
 
-**Body mẫu:**
+**Request**
 
 ```json
 {
   "bookingId": 1,
   "paymentMethod": "VNPAY",
   "provider": "VNPay",
-  "transactionRef": "VNPAY-TXN-20260411-001",
+  "transactionRef": "VNPAY-TXN-20260414-001",
   "amount": 3000000
 }
 ```
 
-> 💡 Giá trị `paymentMethod` thường gặp: `CASH`, `BANK_TRANSFER`, `VNPAY`, `MOMO`, `ZALOPAY`
+**Response**
 
----
+```json
+{
+  "success": true,
+  "message": "Payment created",
+  "data": {
+    "id": 1,
+    "paymentCode": "PM1713115900000",
+    "bookingId": 1,
+    "amount": 3000000,
+    "status": "paid"
+  }
+}
+```
 
 ### `GET /payments/{id}`
 
-**Tác dụng:** Lấy thông tin chi tiết một giao dịch thanh toán theo ID.  
-**Phân quyền:** PUBLIC _(thực tế nên kiểm tra quyền)_
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/payments/1
-```
+- Permission: `payment.view`
 
 ---
 
-## 11. 💸 Refunds — Hoàn tiền
+## 10. Refunds
 
 ### `POST /refunds`
 
-**Tác dụng:** Người dùng tạo yêu cầu hoàn tiền cho một booking.  
-**Phân quyền:** PUBLIC _(thực tế nên đăng nhập)_
+- Permission: `refund.create`
 
-**Điều kiện:**
+**Lưu ý nghiệp vụ từ code**
 
-- `bookingId`, `requestedAmount`: bắt buộc
-- `reasonType`: loại lý do, ví dụ `CANCEL_BY_USER`, `FORCE_CANCEL`, `DUPLICATE_BOOKING`
+- DTO bắt buộc: `bookingId`, `requestedAmount`
+- `requestedBy` nếu không phải backoffice sẽ bị override bằng user đang login
+- Backend gọi stored procedure `sp_get_refund_quote`
+- Status khởi tạo: `requested`
 
-**Body mẫu:**
+**Request**
 
 ```json
 {
   "bookingId": 1,
   "requestedBy": "550e8400-e29b-41d4-a716-446655440000",
   "reasonType": "CANCEL_BY_USER",
-  "reasonDetail": "Tôi có việc bận đột xuất không thể tham gia tour được",
+  "reasonDetail": "Không thể tham gia tour do thay đổi lịch cá nhân",
   "requestedAmount": 2700000
 }
 ```
 
----
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Refund request created",
+  "data": {
+    "id": 1,
+    "refundCode": "RF1713116000000",
+    "bookingId": 1,
+    "status": "requested",
+    "requestedAmount": 2700000
+  }
+}
+```
 
 ### `GET /refunds/{id}`
 
-**Tác dụng:** Lấy thông tin chi tiết một yêu cầu hoàn tiền theo ID.  
-**Phân quyền:** PUBLIC _(thực tế nên kiểm tra quyền)_
-
-**Postman Sample:**
-
-```
-GET http://localhost:8080/api/refunds/1
-```
-
----
+- Permission: `refund.view`
 
 ### `PATCH /refunds/{id}/approve`
 
-**Tác dụng:** Admin/Staff phê duyệt yêu cầu hoàn tiền, có thể điều chỉnh số tiền hoàn lại.  
-**Phân quyền:** Thực tế nên ADMIN/STAFF
+- Permission: `refund.approve` hoặc `refund.process`
 
-**Body mẫu:**
+**Request**
 
 ```json
 {
@@ -996,61 +887,218 @@ GET http://localhost:8080/api/refunds/1
 }
 ```
 
----
+**Lưu ý nghiệp vụ từ code**
 
-## 📌 Tổng hợp nhanh tất cả API
-
-| #   | Method | Endpoint                               | Auth   | Mô tả                    |
-| --- | ------ | -------------------------------------- | ------ | ------------------------ |
-| 1   | GET    | `/system/health`                       | Public | Health check             |
-| 2   | POST   | `/auth/register`                       | Public | Đăng ký                  |
-| 3   | POST   | `/auth/login`                          | Public | Đăng nhập                |
-| 4   | GET    | `/users/me`                            | User   | Xem hồ sơ cá nhân        |
-| 5   | PUT    | `/users/me`                            | User   | Cập nhật hồ sơ           |
-| 6   | POST   | `/users`                               | Admin  | Tạo user mới             |
-| 7   | GET    | `/users`                               | Admin  | Danh sách users          |
-| 8   | GET    | `/users/{id}`                          | Admin  | Chi tiết user            |
-| 9   | PUT    | `/users/{id}`                          | Admin  | Cập nhật user            |
-| 10  | PATCH  | `/users/{id}/deactivate`               | Admin  | Vô hiệu hóa user         |
-| 11  | GET    | `/destinations`                        | Public | Danh sách điểm đến       |
-| 12  | GET    | `/destinations/{uuid}`                 | Public | Chi tiết điểm đến        |
-| 13  | POST   | `/destinations/propose`                | User   | Đề xuất điểm đến         |
-| 14  | GET    | `/destinations/me/follows`             | User   | Điểm đến đang theo dõi   |
-| 15  | POST   | `/destinations/{uuid}/follow`          | User   | Theo dõi điểm đến        |
-| 16  | DELETE | `/destinations/{uuid}/follow`          | User   | Hủy theo dõi             |
-| 17  | PUT    | `/destinations/{uuid}/follow/settings` | User   | Cài đặt thông báo follow |
-| 18  | GET    | `/admin/destinations`                  | Admin  | DS điểm đến (all status) |
-| 19  | GET    | `/admin/destinations/{uuid}`           | Admin  | Chi tiết điểm đến        |
-| 20  | POST   | `/admin/destinations`                  | Admin  | Tạo điểm đến chính thức  |
-| 21  | PUT    | `/admin/destinations/{uuid}`           | Admin  | Cập nhật điểm đến        |
-| 22  | DELETE | `/admin/destinations/{uuid}`           | Admin  | Xóa điểm đến             |
-| 23  | PATCH  | `/admin/destinations/{uuid}/approve`   | Admin  | Phê duyệt đề xuất        |
-| 24  | PATCH  | `/admin/destinations/{uuid}/reject`    | Admin  | Từ chối đề xuất          |
-| 25  | GET    | `/tours`                               | Public | Danh sách tour           |
-| 26  | GET    | `/tours/{id}`                          | Public | Chi tiết tour            |
-| 27  | POST   | `/admin/tours`                         | Admin  | Tạo tour                 |
-| 28  | PUT    | `/admin/tours/{id}`                    | Admin  | Cập nhật tour            |
-| 29  | DELETE | `/admin/tours/{id}`                    | Admin  | Xóa tour                 |
-| 30  | POST   | `/bookings`                            | Public | Tạo booking              |
-| 31  | GET    | `/bookings/{id}`                       | Public | Chi tiết booking         |
-| 32  | POST   | `/payments`                            | Public | Tạo thanh toán           |
-| 33  | GET    | `/payments/{id}`                       | Public | Chi tiết thanh toán      |
-| 34  | POST   | `/refunds`                             | Public | Tạo yêu cầu hoàn tiền    |
-| 35  | GET    | `/refunds/{id}`                        | Public | Chi tiết hoàn tiền       |
-| 36  | PATCH  | `/refunds/{id}/approve`                | Admin  | Phê duyệt hoàn tiền      |
+- Refund status -> `approved`
+- Hệ thống tạo thêm payment record:
+  - `paymentMethod = "refund"`
+  - `status = "refunded"`
+- Booking payment status được update thành `refunded`
 
 ---
 
-## 🔢 Enum Values tham khảo
+## 11. Reviews
 
-| Enum                | Các giá trị                                           |
-| ------------------- | ----------------------------------------------------- |
-| `Gender`            | `MALE`, `FEMALE`, `OTHER`, `PREFER_NOT_TO_SAY`        |
-| `Role`              | `USER`, `ADMIN`, `STAFF`                              |
-| `Status`            | `ACTIVE`, `INACTIVE`, `BANNED`                        |
-| `MemberLevel`       | `BRONZE`, `SILVER`, `GOLD`, `PLATINUM`                |
-| `CrowdLevel`        | `LOW`, `MEDIUM`, `HIGH`                               |
-| `DestinationStatus` | `PENDING`, `APPROVED`, `REJECTED`                     |
-| `passengerType`     | `adult`, `child`, `infant`, `senior`                  |
-| `paymentMethod`     | `CASH`, `BANK_TRANSFER`, `VNPAY`, `MOMO`, `ZALOPAY`   |
-| `reasonType`        | `CANCEL_BY_USER`, `FORCE_CANCEL`, `DUPLICATE_BOOKING` |
+### `POST /reviews`
+
+- Permission: `review.create`
+
+**Rules từ code**
+
+- `bookingId` bắt buộc
+- `overallRating` phải trong khoảng `1..5`
+- Mỗi booking chỉ được review một lần
+- Chỉ booking có status `checked_in` hoặc `completed` mới được review
+- `wouldRecommend` mặc định `true`
+- `sentiment` ban đầu là `neutral`
+
+**Request**
+
+```json
+{
+  "bookingId": 1,
+  "overallRating": 5,
+  "title": "Tour rất tốt",
+  "content": "Hướng dẫn viên nhiệt tình, lịch trình đúng giờ, đồ ăn ổn.",
+  "wouldRecommend": true,
+  "aspects": [
+    {
+      "aspectName": "guide",
+      "aspectRating": 5,
+      "comment": "Hướng dẫn viên hỗ trợ rất tốt"
+    },
+    {
+      "aspectName": "schedule",
+      "aspectRating": 4,
+      "comment": "Lịch trình hợp lý"
+    }
+  ]
+}
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Review created successfully",
+  "data": {
+    "id": 1,
+    "bookingId": 1,
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "tourId": 1,
+    "scheduleId": 5,
+    "overallRating": 5,
+    "title": "Tour rất tốt",
+    "content": "Hướng dẫn viên nhiệt tình, lịch trình đúng giờ, đồ ăn ổn.",
+    "sentiment": "neutral",
+    "wouldRecommend": true,
+    "createdAt": "2026-04-14T23:45:00",
+    "updatedAt": "2026-04-14T23:45:00",
+    "aspects": [
+      {
+        "id": 1,
+        "aspectName": "guide",
+        "aspectRating": 5,
+        "comment": "Hướng dẫn viên hỗ trợ rất tốt"
+      }
+    ],
+    "replies": []
+  }
+}
+```
+
+### `GET /reviews/{id}`
+
+- Permission: `review.view`
+
+### `GET /reviews/tours/{tourId}`
+
+- Permission: `review.view`
+- Query params: `page`, `size`
+
+### `GET /reviews/me`
+
+- Permission: `review.view`
+- Query params: `page`, `size`
+
+### `POST /reviews/{id}/replies`
+
+- Permission: `review.reply`
+
+**Request**
+
+```json
+{
+  "content": "Cảm ơn bạn đã đánh giá. Chúng tôi sẽ tiếp tục cải thiện chất lượng dịch vụ."
+}
+```
+
+### `PATCH /reviews/{id}/moderation`
+
+- Permission: `review.moderate`
+
+**Request**
+
+```json
+{
+  "sentiment": "positive"
+}
+```
+
+**Sentiment hợp lệ**
+
+- `positive`
+- `neutral`
+- `negative`
+- `mixed`
+
+---
+
+## 12. Bảng Quyền Truy Cập Nhanh Theo API
+
+| Endpoint | Access |
+| --- | --- |
+| `GET /system/health` | `PUBLIC` |
+| `POST /auth/register` | `PUBLIC` |
+| `POST /auth/login` | `PUBLIC` |
+| `POST /auth/refresh` | `PUBLIC` |
+| `GET /users/me` | `AUTHENTICATED` |
+| `PUT /users/me` | `AUTHENTICATED` |
+| `POST /users` | `user.create` |
+| `GET /users` | `user.view` |
+| `GET /users/{id}` | `user.view` |
+| `PUT /users/{id}` | `user.update` |
+| `PATCH /users/{id}/deactivate` | `user.block` or `user.delete` |
+| `GET /destinations` | `PUBLIC` |
+| `GET /destinations/{uuid}` | `PUBLIC` |
+| `POST /destinations/propose` | `destination.propose` or `destination.create` |
+| `GET /admin/destinations` | `destination.view` |
+| `GET /admin/destinations/{uuid}` | `destination.view` |
+| `POST /admin/destinations` | `destination.create` |
+| `PUT /admin/destinations/{uuid}` | `destination.update` |
+| `DELETE /admin/destinations/{uuid}` | `destination.delete` |
+| `PATCH /admin/destinations/{uuid}/approve` | `destination.review` or `destination.publish` |
+| `PATCH /admin/destinations/{uuid}/reject` | `destination.review` or `destination.publish` |
+| `POST /destinations/{uuid}/follow` | `AUTHENTICATED` |
+| `DELETE /destinations/{uuid}/follow` | `AUTHENTICATED` |
+| `PUT /destinations/{uuid}/follow/settings` | `AUTHENTICATED` |
+| `GET /destinations/me/follows` | `AUTHENTICATED` |
+| `GET /tours` | `PUBLIC` |
+| `GET /tours/{id}` | `PUBLIC` |
+| `POST /admin/tours` | `tour.create` |
+| `PUT /admin/tours/{id}` | `tour.update` |
+| `DELETE /admin/tours/{id}` | `tour.delete` |
+| `POST /bookings` | `booking.create` |
+| `GET /bookings/{id}` | `booking.view` |
+| `POST /payments` | `payment.create` |
+| `GET /payments/{id}` | `payment.view` |
+| `POST /refunds` | `refund.create` |
+| `GET /refunds/{id}` | `refund.view` |
+| `PATCH /refunds/{id}/approve` | `refund.approve` or `refund.process` |
+| `POST /reviews` | `review.create` |
+| `GET /reviews/{id}` | `review.view` |
+| `GET /reviews/tours/{tourId}` | `review.view` |
+| `GET /reviews/me` | `review.view` |
+| `POST /reviews/{id}/replies` | `review.reply` |
+| `PATCH /reviews/{id}/moderation` | `review.moderate` |
+
+---
+
+## 13. Bảng Enum Tham Khảo
+
+### User
+
+- `Gender`: `male`, `female`, `other`, `unknown`
+- `Status`: `pending`, `active`, `suspended`, `blocked`, `deleted`
+- `MemberLevel`: `bronze`, `silver`, `gold`, `platinum`, `diamond`
+- `UserCategory`: `INTERNAL`, `CUSTOMER`
+
+### Destinations
+
+- `CrowdLevel`: `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH`
+- `DestinationStatus`: `pending`, `approved`, `rejected`
+
+### Reviews
+
+- `sentiment`: `positive`, `neutral`, `negative`, `mixed`
+
+### Booking / Payment / Refund
+
+- `passengerType`: `adult`, `child`, `infant`, `senior`
+- `paymentMethod`: ví dụ `CASH`, `BANK_TRANSFER`, `VNPAY`, `MOMO`, `ZALOPAY`
+- `reasonType`: ví dụ `CANCEL_BY_USER`, `FORCE_CANCEL`, `DUPLICATE_BOOKING`
+
+---
+
+## 14. Flow Test Đề Xuất
+
+1. `POST /auth/register`
+2. `POST /auth/login`
+3. `GET /users/me`
+4. `POST /bookings`
+5. `POST /payments`
+6. `POST /refunds`
+7. `POST /reviews`
+8. `GET /reviews/me`
+9. `POST /destinations/{uuid}/follow`

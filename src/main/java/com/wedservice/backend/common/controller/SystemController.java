@@ -1,12 +1,13 @@
 package com.wedservice.backend.common.controller;
 
 import com.wedservice.backend.common.response.ApiResponse;
+import com.wedservice.backend.module.system.facade.SystemFacade;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -17,18 +18,17 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/system")
+@RequiredArgsConstructor
 public class SystemController {
 
     @Value("${spring.application.name:wedservice-backend}")
     private String applicationName;
 
+    private final SystemFacade systemFacade;
+
     @GetMapping("/health")
     public ApiResponse<Map<String, Object>> health() {
-        Map<String, Object> data = Map.of(
-                "service", applicationName,
-                "status", "OK",
-                "time", LocalDateTime.now().toString()
-        );
+        Map<String, Object> data = systemFacade.health(applicationName);
         return ApiResponse.success(data, "Application is running");
     }
 }

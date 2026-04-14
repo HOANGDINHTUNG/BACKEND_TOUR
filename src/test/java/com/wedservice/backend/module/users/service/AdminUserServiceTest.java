@@ -9,6 +9,7 @@ import com.wedservice.backend.module.users.dto.response.UserResponse;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import org.mapstruct.factory.Mappers;
@@ -61,7 +62,7 @@ class AdminUserServiceTest {
         request.setEmail(" TEST@EXAMPLE.COM ");
         request.setPasswordHash("123456");
         request.setPhone("0987654321");
-        request.setRole(Role.ADMIN);
+        request.setRoleCodes(List.of("ADMIN"));
 
         UUID id = UUID.randomUUID();
         User savedUser = User.builder()
@@ -71,8 +72,13 @@ class AdminUserServiceTest {
                 .passwordHash("encoded-password")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.ADMIN)
                 .build();
+        
+        savedUser.getUserRoles().add(UserRole.builder()
+                .user(savedUser)
+                .role(Role.builder().code("ADMIN").build())
+                .isPrimary(true)
+                .build());
 
         when(userRepository.existsByEmailIgnoreCase("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("123456")).thenReturn("encoded-password");
@@ -84,7 +90,7 @@ class AdminUserServiceTest {
         verify(userRepository).save(userCaptor.capture());
         User persistedUser = userCaptor.getValue();
 
-        assertThat(response.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(response.getRole()).isEqualTo("ADMIN");
         assertThat(persistedUser.getEmail()).isEqualTo("test@example.com");
         assertThat(persistedUser.getPasswordHash()).isEqualTo("encoded-password");
     }
@@ -93,7 +99,7 @@ class AdminUserServiceTest {
     void createUser_throwsBadRequest_whenEmailAlreadyExists() {
         AdminCreateUserRequest request = new AdminCreateUserRequest();
         request.setEmail("duplicate@example.com");
-        request.setRole(Role.CUSTOMER);
+        request.setRoleCodes(List.of("CUSTOMER"));
 
         when(userRepository.existsByEmailIgnoreCase("duplicate@example.com")).thenReturn(true);
 
@@ -120,8 +126,13 @@ class AdminUserServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        user.getUserRoles().add(UserRole.builder()
+                .user(user)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         Page<User> page = new PageImpl<>(List.of(user), PageRequest.of(1, 5), 6);
         when(userRepository.findAll(any(Predicate.class), any(Pageable.class))).thenReturn(page);
@@ -155,7 +166,7 @@ class AdminUserServiceTest {
         request.setFullName("Nguyen Van A");
         request.setEmail("other@example.com");
         request.setPhone("0987654321");
-        request.setRole(Role.CUSTOMER);
+        request.setRoleCodes(List.of("CUSTOMER"));
 
         UUID id = UUID.randomUUID();
         User existingUser = User.builder()
@@ -165,8 +176,13 @@ class AdminUserServiceTest {
                 .passwordHash("encoded-password")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        existingUser.getUserRoles().add(UserRole.builder()
+                .user(existingUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
         when(userRepository.existsByEmailIgnoreCaseAndIdNot("other@example.com", id)).thenReturn(true);
@@ -186,8 +202,13 @@ class AdminUserServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        existingUser.getUserRoles().add(UserRole.builder()
+                .user(existingUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -205,7 +226,7 @@ class AdminUserServiceTest {
         request.setFullName("Updated Name");
         request.setEmail("updated@example.com");
         request.setPhone("0911222333");
-        request.setRole(Role.ADMIN);
+        request.setRoleCodes(List.of("ADMIN"));
 
         UUID id = UUID.randomUUID();
         User existingUser = User.builder()
@@ -215,8 +236,14 @@ class AdminUserServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        existingUser.getUserRoles().add(UserRole.builder()
+                .user(existingUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
+
         existingUser.setDeletedAt(LocalDateTime.now().minusDays(1));
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
@@ -226,6 +253,6 @@ class AdminUserServiceTest {
         UserResponse response = adminUserService.updateUser(id, request);
 
         assertThat(response.getEmail()).isEqualTo("updated@example.com");
-        assertThat(existingUser.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(existingUser.getRoleName()).isEqualTo("ADMIN");
     }
 }

@@ -14,7 +14,6 @@ import com.wedservice.backend.module.users.dto.request.UpdateMyProfileRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
 import com.wedservice.backend.module.users.entity.Gender;
 import com.wedservice.backend.module.users.entity.MemberLevel;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 
@@ -28,14 +27,22 @@ public interface UserMapper extends BaseMapper<UserResponse, User> {
 
     @Override
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "role", expression = "java(user.getRoleName())")
+    @Mapping(target = "roles", expression = "java(user.getUserRoles().stream().map(ur -> ur.getRole().getCode()).toList())")
     UserResponse toDto(User user);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userRoles", ignore = true)
+    User toEntity(UserResponse dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userRoles", ignore = true)
     @Mapping(target = "fullName", expression = "java(DataNormalizer.normalize(request.getFullName()))")
     @Mapping(target = "displayName", expression = "java(resolveDisplayName(request.getDisplayName(), request.getFullName()))")
     @Mapping(target = "email", source = "normalizedEmail")
     @Mapping(target = "phone", source = "normalizedPhone")
     @Mapping(target = "passwordHash", source = "encodedPassword")
-    @Mapping(target = "role", expression = "java(defaultRole(request.getRole()))")
+    @Mapping(target = "userCategory", source = "request.userCategory")
     @Mapping(target = "status", expression = "java(defaultStatus(request.getStatus()))")
     @Mapping(target = "gender", expression = "java(defaultGender(request.getGender()))")
     @Mapping(target = "avatarUrl", expression = "java(DataNormalizer.normalize(request.getAvatarUrl()))")
@@ -59,6 +66,7 @@ public interface UserMapper extends BaseMapper<UserResponse, User> {
     @Mapping(target = "memberLevel", expression = "java(defaultMemberLevel(request.getMemberLevel()))")
     @Mapping(target = "loyaltyPoints", expression = "java(defaultInteger(request.getLoyaltyPoints()))")
     @Mapping(target = "totalSpent", expression = "java(defaultBigDecimal(request.getTotalSpent()))")
+    @Mapping(target = "userRoles", ignore = true)
     void applyAdminUpdate(
             @MappingTarget User user,
             AdminUpdateUserRequest request,
@@ -82,10 +90,6 @@ public interface UserMapper extends BaseMapper<UserResponse, User> {
 
     default String resolveDisplayName(String displayName, String fullName) {
         return org.springframework.util.StringUtils.hasText(displayName) ? displayName.trim() : DataNormalizer.normalize(fullName);
-    }
-
-    default Role defaultRole(Role role) {
-        return role == null ? Role.CUSTOMER : role;
     }
 
     default Status defaultStatus(Status status) {

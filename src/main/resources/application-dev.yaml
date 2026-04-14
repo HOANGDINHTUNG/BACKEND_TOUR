@@ -13,6 +13,9 @@ spring:
       hibernate:
         format_sql: true
 
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
 logging:
   file:
     name: logs/backend.log
@@ -20,9 +23,6 @@ logging:
     root: INFO
     com.wedservice.backend: DEBUG
     org.hibernate.SQL: DEBUG
-
-  jackson:
-    time-zone: Asia/Ho_Chi_Minh
 
 app:
   security:

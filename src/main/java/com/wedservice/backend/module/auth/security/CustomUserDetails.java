@@ -5,7 +5,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.wedservice.backend.module.users.entity.Permission;
 import com.wedservice.backend.module.users.entity.Role;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 
@@ -22,7 +24,7 @@ public class CustomUserDetails implements UserDetails {
     private final String password;
     private final boolean enabled;
     private final Status status;
-    private final Role role;
+    private final List<String> roleCodes;
     private final List<? extends GrantedAuthority> authorities;
 
     private CustomUserDetails(
@@ -32,7 +34,7 @@ public class CustomUserDetails implements UserDetails {
             String password,
             boolean enabled,
             Status status,
-            Role role,
+            List<String> roleCodes,
             List<? extends GrantedAuthority> authorities
     ) {
         this.userId = userId;
@@ -41,12 +43,24 @@ public class CustomUserDetails implements UserDetails {
         this.password = password;
         this.enabled = enabled;
         this.status = status;
-        this.role = role;
+        this.roleCodes = roleCodes;
         this.authorities = authorities;
     }
 
     public static CustomUserDetails fromUser(User user) {
         String principal = user.getEmail() != null ? user.getEmail() : user.getPhone();
+
+        List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+        List<String> roleCodes = new java.util.ArrayList<>();
+
+        for (UserRole userRole : user.getUserRoles()) {
+            Role role = userRole.getRole();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getCode()));
+            roleCodes.add(role.getCode());
+            for (Permission perm : role.getPermissions()) {
+                authorities.add(new SimpleGrantedAuthority(perm.getCode()));
+            }
+        }
 
         return new CustomUserDetails(
                 user.getId(),
@@ -55,8 +69,8 @@ public class CustomUserDetails implements UserDetails {
                 user.getPasswordHash(),
                 user.getStatus() == Status.ACTIVE,
                 user.getStatus(),
-                user.getRole(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                roleCodes,
+                authorities
         );
     }
 

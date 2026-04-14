@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -35,8 +36,13 @@ class JwtServiceTest {
                 .passwordHash("encoded")
                 .phone("0123456789")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        user.getUserRoles().add(UserRole.builder()
+                .user(user)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         CustomUserDetails userDetails = CustomUserDetails.fromUser(user);
 

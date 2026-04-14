@@ -3,6 +3,7 @@ package com.wedservice.backend.module.destinations.controller;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.support.TestAuthenticationFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +43,15 @@ class DestinationProposalIntegrationTest {
                 .fullName("Test User")
                 .email("test@example.com")
                 .passwordHash("password")
-                .role(Role.CUSTOMER)
                 .status(Status.ACTIVE)
                 .build();
+        
+        testUser.getUserRoles().add(UserRole.builder()
+                .user(testUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
+
         userRepository.save(testUser);
     }
 
@@ -112,7 +119,7 @@ class DestinationProposalIntegrationTest {
         """;
 
         mockMvc.perform(post("/destinations/propose")
-                        .with(TestAuthenticationFactory.customUser(testUser.getId(), testUser.getEmail(), Role.CUSTOMER))
+                        .with(TestAuthenticationFactory.customUser(testUser.getId(), testUser.getEmail(), "CUSTOMER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated());

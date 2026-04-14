@@ -11,6 +11,8 @@ import com.wedservice.backend.module.destinations.entity.DestinationFollow;
 import com.wedservice.backend.module.destinations.mapper.DestinationMapper;
 import com.wedservice.backend.module.destinations.repository.DestinationFollowRepository;
 import com.wedservice.backend.module.destinations.repository.DestinationRepository;
+import com.wedservice.backend.module.destinations.service.command.DestinationFollowCommandService;
+import com.wedservice.backend.module.destinations.service.query.DestinationFollowQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +25,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class DestinationFollowService {
+public class DestinationFollowService implements DestinationFollowCommandService, DestinationFollowQueryService {
 
     private final DestinationFollowRepository followRepository;
     private final DestinationRepository destinationRepository;

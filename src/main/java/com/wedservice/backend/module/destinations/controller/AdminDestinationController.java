@@ -28,28 +28,31 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/destinations")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminDestinationController {
 
     private final AdminDestinationFacade adminDestinationFacade;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('destination.view')")
     public ApiResponse<PageResponse<DestinationResponse>> searchDestinations(DestinationSearchRequest request) {
     return ApiResponse.success(adminDestinationFacade.searchDestinations(request));
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("hasAuthority('destination.view')")
     public ApiResponse<DestinationDetailResponse> getDestination(@PathVariable UUID uuid) {
     return ApiResponse.success(adminDestinationFacade.getDestinationByUuid(uuid));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('destination.create')")
     public ApiResponse<DestinationDetailResponse> createDestination(@Valid @RequestBody DestinationRequest request) {
     return ApiResponse.success(adminDestinationFacade.createDestination(request), "Create destination successfully");
     }
 
     @PutMapping("/{uuid}")
+    @PreAuthorize("hasAuthority('destination.update')")
     public ApiResponse<DestinationDetailResponse> updateDestination(
             @PathVariable UUID uuid,
             @Valid @RequestBody DestinationRequest request
@@ -59,17 +62,20 @@ public class AdminDestinationController {
 
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('destination.delete')")
     public ApiResponse<Void> deleteDestination(@PathVariable UUID uuid) {
     adminDestinationFacade.deleteDestination(uuid);
         return ApiResponse.success(null, "Delete destination successfully");
     }
 
     @PatchMapping("/{uuid}/approve")
+    @PreAuthorize("hasAnyAuthority('destination.review','destination.publish')")
     public ApiResponse<DestinationDetailResponse> approveProposal(@PathVariable UUID uuid) {
     return ApiResponse.success(adminDestinationFacade.approveProposal(uuid), "Approve proposal successfully");
     }
 
     @PatchMapping("/{uuid}/reject")
+    @PreAuthorize("hasAnyAuthority('destination.review','destination.publish')")
     public ApiResponse<DestinationDetailResponse> rejectProposal(
             @PathVariable UUID uuid,
             @Valid @RequestBody RejectProposalRequest request

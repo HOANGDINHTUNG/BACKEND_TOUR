@@ -1,5 +1,7 @@
 package com.wedservice.backend.module.bookings.service.command.impl;
 
+import com.wedservice.backend.common.exception.BadRequestException;
+import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreatePassengerRequest;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
@@ -11,6 +13,7 @@ import com.wedservice.backend.module.bookings.service.command.BookingCommandServ
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -21,13 +24,16 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 
     private final BookingRepository bookingRepository;
     private final BookingPassengerRepository passengerRepository;
+    private final AuthenticatedUserProvider authenticatedUserProvider;
 
     @Override
     @Transactional
     public BookingResponse createBooking(CreateBookingRequest request) {
+        UUID ownerId = resolveBookingOwnerId(request.getUserId());
+
         Booking booking = Booking.builder()
                 .bookingCode("BK" + System.currentTimeMillis())
-                .userId(UUID.fromString(request.getUserId()))
+                .userId(ownerId)
                 .tourId(request.getTourId())
                 .scheduleId(request.getScheduleId())
                 .contactName(request.getContactName())
@@ -68,5 +74,20 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .status(booking.getStatus())
                 .finalAmount(booking.getFinalAmount())
                 .build();
+    }
+
+    private UUID resolveBookingOwnerId(String requestedUserId) {
+        UUID currentUserId = authenticatedUserProvider.getRequiredCurrentUserId();
+        if (!authenticatedUserProvider.isCurrentUserBackoffice()) {
+            return currentUserId;
+        }
+        if (!StringUtils.hasText(requestedUserId)) {
+            return currentUserId;
+        }
+        try {
+            return UUID.fromString(requestedUserId);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("userId must be a valid UUID");
+        }
     }
 }

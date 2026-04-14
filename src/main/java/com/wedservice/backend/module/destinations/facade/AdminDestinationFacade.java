@@ -6,7 +6,8 @@ import com.wedservice.backend.module.destinations.dto.request.DestinationSearchR
 import com.wedservice.backend.module.destinations.dto.request.RejectProposalRequest;
 import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
 import com.wedservice.backend.module.destinations.dto.response.DestinationResponse;
-import com.wedservice.backend.module.destinations.service.AdminDestinationService;
+import com.wedservice.backend.module.destinations.service.command.AdminDestinationCommandService;
+import com.wedservice.backend.module.destinations.service.query.AdminDestinationQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,33 +17,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminDestinationFacade {
 
-    private final AdminDestinationService adminDestinationService;
+    private final AdminDestinationCommandService commandService;
+    private final AdminDestinationQueryService queryService;
 
     public PageResponse<DestinationResponse> searchDestinations(DestinationSearchRequest request) {
-        return adminDestinationService.searchDestinations(request);
+        return queryService.searchDestinations(request);
     }
 
     public DestinationDetailResponse getDestinationByUuid(UUID uuid) {
-        return adminDestinationService.getDestinationByUuid(uuid);
+        return queryService.getDestinationByUuid(uuid);
     }
 
     public DestinationDetailResponse createDestination(DestinationRequest request) {
-        return adminDestinationService.createDestination(request);
+        return commandService.createDestination(request);
     }
 
     public DestinationDetailResponse updateDestination(UUID uuid, DestinationRequest request) {
-        return adminDestinationService.updateDestination(uuid, request);
+        return commandService.updateDestination(uuid, request);
     }
 
     public void deleteDestination(UUID uuid) {
-        adminDestinationService.deleteDestination(uuid);
+        commandService.deleteDestination(uuid);
     }
 
     public DestinationDetailResponse approveProposal(UUID uuid) {
-        return adminDestinationService.approveProposal(uuid);
+        return commandService.approveProposal(uuid);
     }
 
     public DestinationDetailResponse rejectProposal(UUID uuid, RejectProposalRequest request) {
-        return adminDestinationService.rejectProposal(uuid, request);
+        return commandService.rejectProposal(uuid, request);
     }
 }

@@ -5,7 +5,6 @@ import com.wedservice.backend.module.auth.dto.LoginRequest;
 import com.wedservice.backend.module.auth.dto.RegisterRequest;
 import com.wedservice.backend.module.auth.facade.AuthFacade;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 
 import org.junit.jupiter.api.Test;
@@ -35,8 +34,8 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-        @MockitoBean
-        private AuthFacade authService;
+    @MockitoBean
+    private AuthFacade authService;
 
     @Test
     void register_returnsWrappedApiResponse() throws Exception {
@@ -56,7 +55,7 @@ class AuthControllerTest {
                         .email("a@example.com")
                         .phone("0987654321")
                         .status(Status.ACTIVE)
-                        .role(Role.CUSTOMER)
+                        .role("CUSTOMER")
                         .build())
                 .build();
 
@@ -88,7 +87,7 @@ class AuthControllerTest {
                         .email("admin@example.com")
                         .phone("0987654321")
                         .status(Status.ACTIVE)
-                        .role(Role.ADMIN)
+                        .role("ADMIN")
                         .build())
                 .build();
 

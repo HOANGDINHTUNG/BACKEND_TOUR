@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.wedservice.backend.module.users.dto.request.UpdateMyProfileRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.service.UserProfileService;
 
@@ -47,7 +46,7 @@ class UserProfileControllerTest {
                 .email("customer@example.com")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
+                .role("CUSTOMER")
                 .build();
 
         when(userProfileService.getMyProfile()).thenReturn(response);
@@ -72,7 +71,7 @@ class UserProfileControllerTest {
                 .email("customer.updated@example.com")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
+                .role("CUSTOMER")
                 .build();
 
         when(userProfileService.updateMyProfile(any(UpdateMyProfileRequest.class))).thenReturn(response);

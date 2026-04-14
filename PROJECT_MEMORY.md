@@ -1,0 +1,399 @@
+# Bộ Nhớ Dự Án - BACKEND_TOUR
+
+> Mục đích của file này là giúp một agent mới nắm nhanh bối cảnh dự án mà không phải đọc lại toàn bộ codebase từ đầu.
+> Khi bắt đầu một phiên làm việc mới, nên đọc file này trước, sau đó chỉ mở thêm đúng các file liên quan đến yêu cầu hiện tại.
+> File này không thay thế việc kiểm tra source thật trước khi sửa code. Nó là lớp tóm tắt để tăng tốc khởi động và giữ ngữ cảnh dài hạn.
+
+---
+
+## 1. Dự Án Này Là Gì
+
+- Tên repo: `BACKEND_TOUR`
+- Domain: backend hệ thống đặt tour / du lịch cho TravelViet
+- Stack chính:
+  - Java Spring Boot
+  - Spring Web
+  - Spring Security
+  - Spring Data JPA
+  - MySQL
+  - Flyway
+- Kiểu kiến trúc trong code hiện tại:
+  - `controller`
+  - `facade`
+  - `service`
+  - `repository`
+  - `dto`
+  - `entity`
+- Mục tiêu triển khai:
+  - API rõ ràng, có phân quyền chi tiết theo permission
+  - dữ liệu domain tách module theo nghiệp vụ
+  - tài liệu API phải bám sát source code thật
+
+---
+
+## 2. Cách Chạy Và Cấu Hình Quan Trọng
+
+- Base URL hiện tại: `http://localhost:8088/api/v1`
+- Cấu hình lấy từ:
+  - `src/main/resources/application.yaml`
+  - `src/main/resources/application-dev.yaml`
+- Port hiện tại: `8088`
+- Context path: `/api/v1`
+- Profile mặc định: `dev`
+- Lệnh chạy thường dùng:
+
+```powershell
+./mvnw spring-boot:run
+```
+
+- Lệnh build:
+
+```powershell
+./mvnw clean install
+```
+
+### Ghi nhớ vận hành
+
+- Đã từng có lỗi cổng `8088` bị chiếm bởi tiến trình Java cũ.
+- Nếu app không lên vì port bận, ưu tiên kiểm tra process trước khi đổi config.
+
+---
+
+## 3. Các Module Chính
+
+Các module nằm dưới `src/main/java/com/wedservice/backend/module`:
+
+- `auth`
+- `bookings`
+- `destinations`
+- `payments`
+- `reviews`
+- `system`
+- `tours`
+- `users`
+
+### Ý nghĩa ngắn gọn từng module
+
+- `auth`: đăng ký, đăng nhập, refresh token, JWT
+- `users`: hồ sơ cá nhân và quản trị người dùng
+- `destinations`: destination public, đề xuất destination, admin duyệt destination, follow destination
+- `tours`: danh sách tour public và admin CRUD tour
+- `bookings`: tạo booking, xem booking
+- `payments`: tạo payment, xem payment, refund
+- `reviews`: tạo review, xem review, phản hồi review, moderation
+- `system`: health check
+
+---
+
+## 4. Kiến Trúc Và Luồng Suy Nghĩ Nên Dùng Khi Làm Việc
+
+### 4.1 Flow đọc code hiệu quả
+
+Khi có yêu cầu mới, nên đọc theo thứ tự:
+
+1. Controller liên quan
+2. DTO request/response liên quan
+3. Facade
+4. Service implementation
+5. Entity / repository nếu cần hiểu sâu nghiệp vụ hoặc dữ liệu
+
+### 4.2 Đặc điểm codebase
+
+- Controller thường mỏng, chuyển sang facade
+- Permission thường đặt ngay ở controller bằng `@PreAuthorize`
+- Nghiệp vụ chính nằm trong service
+- Response thường bọc bằng `ApiResponse<T>`
+- Danh sách phân trang thường dùng `PageResponse<T>`
+- Các facade nghiệp vụ chính hiện đã chuyển sang phụ thuộc command/query thay vì gọi trực tiếp service kiểu cũ; các lớp service trung gian chỉ dùng để chuyển tiếp đã được dọn bớt để giảm chồng chéo kiến trúc
+
+### 4.3 Khi sửa API
+
+Nếu sửa endpoint hoặc payload:
+
+1. Kiểm tra controller
+2. Kiểm tra DTO request/response
+3. Kiểm tra service xem có rule nghiệp vụ ẩn không
+4. Cập nhật lại `API_DOCUMENTATION.md`
+5. Cập nhật lại file `PROJECT_MEMORY.md` này nếu thay đổi có tính dài hạn
+
+---
+
+## 5. Security Model Quan Trọng
+
+### 5.1 Dự án này không nên nghĩ đơn giản là USER / ADMIN
+
+Hệ thống phân quyền theo:
+
+- Role để nhóm quyền
+- Permission để authorize API
+
+Một role tùy biến vẫn dùng được nếu có đúng permission.
+
+### 5.2 Các role seed đã thấy trong migration
+
+- `SUPER_ADMIN`
+- `ADMIN`
+- `CONTENT_EDITOR`
+- `FIELD_STAFF`
+- `OPERATOR`
+- `USER`
+
+### 5.3 Một số permission quan trọng đang dùng thật ở controller
+
+- `user.create`
+- `user.view`
+- `user.update`
+- `user.block`
+- `user.delete`
+- `destination.view`
+- `destination.create`
+- `destination.update`
+- `destination.delete`
+- `destination.review`
+- `destination.publish`
+- `destination.propose`
+- `tour.create`
+- `tour.update`
+- `tour.delete`
+- `booking.create`
+- `booking.view`
+- `payment.create`
+- `payment.view`
+- `refund.create`
+- `refund.view`
+- `refund.approve`
+- `refund.process`
+- `review.create`
+- `review.view`
+- `review.reply`
+- `review.moderate`
+
+### 5.4 Backoffice roles theo source
+
+`AuthenticatedUserProvider` đang coi các role sau là backoffice:
+
+- `SUPER_ADMIN`
+- `ADMIN`
+- `OPERATOR`
+- `FIELD_STAFF`
+- `CONTENT_EDITOR`
+
+Điều này ảnh hưởng đến các logic kiểu:
+
+- user thường chỉ thao tác trên dữ liệu của chính họ
+- backoffice có thể thao tác rộng hơn
+
+---
+
+## 6. Quy Ước Response Và Exception
+
+### Response thành công
+
+- `ApiResponse<T>`
+- Có dạng:
+  - `success`
+  - `message`
+  - `data`
+
+### Response phân trang
+
+- `PageResponse<T>`
+- Có các field:
+  - `content`
+  - `page`
+  - `size`
+  - `totalElements`
+  - `totalPages`
+  - `last`
+
+### Exception layer cần nhớ
+
+Các file đáng chú ý:
+
+- `common/exception/ErrorResponse.java`
+- `common/exception/GlobalExceptionHandler.java`
+- `common/exception/BadRequestException.java`
+- `common/exception/ResourceNotFoundException.java`
+
+### Security error
+
+Các file đáng chú ý:
+
+- `common/security/RestAuthenticationEntryPoint.java`
+- `common/security/RestAccessDeniedHandler.java`
+
+---
+
+## 7. Những Quy Tắc Nghiệp Vụ Đã Xác Nhận
+
+### Bookings
+
+- `POST /bookings` cần permission `booking.create`
+- `GET /bookings/{id}` cần `booking.view`
+- `userId`, `tourId`, `scheduleId`, `contactName`, `contactPhone` là bắt buộc
+- `adults` tối thiểu là `1`
+- Với user thường, backend ưu tiên user hiện tại từ token
+- `passengers[].dateOfBirth` hiện chưa được map xuống entity khi tạo booking
+
+### Payments
+
+- `POST /payments` cần `payment.create`
+- `GET /payments/{id}` cần `payment.view`
+- Backend tự set:
+  - `currency = "VND"`
+  - `status = "paid"`
+  - `paidAt = now()`
+
+### Refunds
+
+- `POST /refunds` cần `refund.create`
+- `GET /refunds/{id}` cần `refund.view`
+- `PATCH /refunds/{id}/approve` cần `refund.approve` hoặc `refund.process`
+- Backend gọi stored procedure `sp_get_refund_quote`
+- Approve refund sẽ:
+  - đổi refund status thành `approved`
+  - tạo thêm payment record hoàn tiền
+  - cập nhật booking payment status thành `refunded`
+
+### Reviews
+
+- `POST /reviews` cần `review.create`
+- `GET /reviews/{id}`, `/reviews/tours/{tourId}`, `/reviews/me` cần `review.view`
+- `POST /reviews/{id}/replies` cần `review.reply`
+- `PATCH /reviews/{id}/moderation` cần `review.moderate`
+- Chỉ booking có status `checked_in` hoặc `completed` mới được review
+- Mỗi booking chỉ được review một lần
+- `sentiment` ban đầu mặc định là `neutral`
+
+### Destinations
+
+- `POST /destinations/propose` cần `destination.propose` hoặc `destination.create`
+- Follow destination chỉ yêu cầu đăng nhập, không yêu cầu permission riêng
+- Admin destination dùng các permission `destination.view/create/update/delete/review/publish`
+
+---
+
+## 8. Tài Liệu Đã Có Và Cách Dùng
+
+### File tài liệu quan trọng
+
+- `API_DOCUMENTATION.md`
+- `README.md`
+- `ERD.sql`
+- `AGENTS.md`
+
+### Trạng thái hiện tại của tài liệu API
+
+- `API_DOCUMENTATION.md` đã được chỉnh lại theo source code thật
+- Đã chuyển sang tiếng Việt có dấu
+- Đã sửa lại phần quyền truy cập theo permission thay vì role cứng
+
+### Trạng thái hiện tại của README
+
+- `README.md` đã được viết lại thành hồ sơ kỹ thuật cấp dự án, không còn là bản ghi sửa lỗi cũ
+- README hiện tập trung vào:
+  - stack và thư viện đang dùng
+  - cấu trúc module và layer
+  - các quyết định kỹ thuật nhỏ nhưng quan trọng
+  - cách cấu hình runtime, database, security, cache, logging, test
+  - đánh giá hiện trạng codebase
+- Khi framework, security model, migration, test strategy hoặc cấu trúc module thay đổi, nên cập nhật lại `README.md`
+
+### Lưu ý
+
+- Không tin tài liệu cũ hoặc comment cũ nếu chúng mâu thuẫn với source
+- Khi có nghi ngờ, source code là nguồn đúng nhất
+
+---
+
+## 9. Phong Cách Làm Việc Mà Chủ Repo Mong Muốn
+
+Đây là những điều đã thể hiện rõ qua yêu cầu của người dùng:
+
+- Muốn tài liệu và code đồng bộ, không chấp nhận kiểu “bổ sung ở chỗ khác” gây khó đọc
+- Muốn tiếng Việt có dấu trong phần mô tả tài liệu
+- Muốn agent nhớ bối cảnh dự án lâu dài để tăng tốc các phiên sau
+- Muốn thay đổi được triển khai tiếp nối nhanh, không phải phân tích lại toàn bộ từ đầu
+- Ưu tiên cách làm thực dụng, đi thẳng vào sửa đúng chỗ thay vì trình bày dài dòng
+
+### Khi viết code hoặc tài liệu cho repo này
+
+- Ưu tiên ngắn gọn nhưng chính xác
+- Không mô tả quyền truy cập theo role nếu thực tế code dùng permission
+- Nếu sửa tài liệu, sửa ngay section gốc để đồng bộ, tránh chèn phần “bổ sung” tách rời
+- Nếu sửa API hoặc nghiệp vụ dài hạn, cập nhật lại file nhớ này
+
+---
+
+## 10. Cách Cập Nhật File Này Sau Mỗi Lần Làm Việc
+
+Chỉ cập nhật khi thay đổi có tính nền tảng hoặc hữu ích cho các phiên sau, ví dụ:
+
+- thêm module mới
+- đổi permission / security model
+- đổi base URL / context-path / runtime flow
+- phát hiện quy tắc nghiệp vụ quan trọng
+- thay đổi phong cách tài liệu / quy ước làm việc của repo
+
+Không cần cập nhật cho các thay đổi quá nhỏ như:
+
+- đổi tên biến cục bộ
+- sửa typo
+- chỉnh vài dòng log không ảnh hưởng flow
+
+### Mẫu cập nhật ngắn
+
+Mỗi khi có thay đổi lớn, nên bổ sung:
+
+- thay đổi gì
+- ảnh hưởng ở đâu
+- cần nhớ gì cho lần sau
+
+---
+
+## 11. Điểm Khởi Đầu Nhanh Cho Các Yêu Cầu Thường Gặp
+
+### Nếu user hỏi về API
+
+Đọc theo thứ tự:
+
+1. `API_DOCUMENTATION.md`
+2. Controller liên quan
+3. DTO liên quan
+4. Service liên quan
+
+### Nếu user hỏi về lỗi auth / quyền
+
+Đọc theo thứ tự:
+
+1. Controller có `@PreAuthorize`
+2. `CustomUserDetails`
+3. `AuthenticatedUserProvider`
+4. `SecurityConfig`
+5. `RestAuthenticationEntryPoint` / `RestAccessDeniedHandler`
+
+### Nếu user hỏi về lỗi nghiệp vụ booking / payment / refund / review
+
+Đọc theo thứ tự:
+
+1. Controller module
+2. Service implementation
+3. Entity
+4. Repository
+5. Exception handler nếu lỗi trả ra sai format
+
+---
+
+## 12. Cam Kết Sử Dụng File Này
+
+Từ thời điểm file này được tạo:
+
+- Mỗi phiên mới nên đọc `PROJECT_MEMORY.md` trước
+- Sau đó chỉ mở thêm các file thật sự liên quan đến yêu cầu
+- Khi hoàn thành thay đổi có giá trị dài hạn, cần cập nhật lại file này
+
+Điều này sẽ giúp:
+
+- giảm số lần phải đọc lại toàn bộ repo
+- giảm token cho phần khởi động ngữ cảnh
+- vẫn giữ được độ hiểu sâu về dự án nếu file được duy trì đều

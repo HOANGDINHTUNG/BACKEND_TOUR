@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **BACKEND_TOUR** (1971 symbols, 5054 relationships, 159 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **BACKEND_TOUR** (2061 symbols, 5197 relationships, 166 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -99,3 +99,9 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+## Project Memory
+
+- Before doing substantial exploration, read `PROJECT_MEMORY.md` first to load the long-term project context quickly.
+- Treat `PROJECT_MEMORY.md` as the persistent working summary of this repo: architecture, business rules, user preferences, and recent long-term decisions.
+- After any change that materially affects architecture, security, API contracts, workflow conventions, or important business rules, update `PROJECT_MEMORY.md`.

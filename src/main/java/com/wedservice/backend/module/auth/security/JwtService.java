@@ -71,7 +71,8 @@ public class JwtService {
         Map<String, Object> payload = new HashMap<>();
         payload.put("sub", userDetails.getUsername());
         payload.put("userId", userDetails.getUserId());
-        payload.put("role", userDetails.getRole().name());
+        payload.put("role", userDetails.getRoleCodes().isEmpty() ? "USER" : userDetails.getRoleCodes().get(0));
+        payload.put("roles", userDetails.getRoleCodes());
         payload.put("type", "access");
         payload.put("iat", issuedAt);
         payload.put("exp", expiredAt);

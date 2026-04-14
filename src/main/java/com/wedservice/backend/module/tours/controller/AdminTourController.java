@@ -18,22 +18,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin/tours")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminTourController {
 
     private final TourFacade tourFacade;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('tour.create')")
     public ApiResponse<TourResponse> createTour(@Validated @RequestBody TourRequest request) {
     return ApiResponse.success(tourFacade.createTour(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('tour.update')")
     public ApiResponse<TourResponse> updateTour(@PathVariable Long id, @Validated @RequestBody TourRequest request) {
     return ApiResponse.success(tourFacade.updateTour(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('tour.delete')")
     public ApiResponse<String> deleteTour(@PathVariable Long id) {
     tourFacade.deleteTour(id);
         return ApiResponse.success("Deleted");

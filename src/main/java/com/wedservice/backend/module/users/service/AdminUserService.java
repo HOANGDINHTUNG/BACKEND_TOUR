@@ -14,6 +14,8 @@ import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
+import com.wedservice.backend.module.users.repository.RoleRepository;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.common.util.DataNormalizer;
 
 import lombok.RequiredArgsConstructor;
@@ -51,7 +53,7 @@ public class AdminUserService extends BaseService<User, UUID> {
             "displayName",
             "email",
             "phone",
-            "role",
+            "userCategory",
             "status",
             "memberLevel",
             "createdAt",
@@ -61,6 +63,7 @@ public class AdminUserService extends BaseService<User, UUID> {
     );
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
@@ -78,6 +81,21 @@ public class AdminUserService extends BaseService<User, UUID> {
         );
 
         User savedUser = userRepository.save(user);
+
+        if (request.getRoleCodes() != null && !request.getRoleCodes().isEmpty()) {
+            java.util.List<com.wedservice.backend.module.users.entity.Role> roles = roleRepository.findAllByCodeIn(request.getRoleCodes());
+            for (int i = 0; i < roles.size(); i++) {
+                UserRole ur = UserRole.builder()
+                        .user(savedUser)
+                        .role(roles.get(i))
+                        .isPrimary(i == 0)
+                        .assignedAt(java.time.LocalDateTime.now())
+                        .build();
+                savedUser.getUserRoles().add(ur);
+            }
+            savedUser = userRepository.save(savedUser);
+        }
+
         return userMapper.toDto(savedUser);
     }
 
@@ -99,8 +117,8 @@ public class AdminUserService extends BaseService<User, UUID> {
             builder.and(qUser.status.eq(request.getStatus()));
         }
 
-        if (request.getRole() != null) {
-            builder.and(qUser.role.eq(request.getRole()));
+        if (StringUtils.hasText(request.getRoleCode())) {
+            builder.and(qUser.userRoles.any().role.code.eq(request.getRoleCode()));
         }
 
         if (request.getMemberLevel() != null) {
@@ -135,6 +153,18 @@ public class AdminUserService extends BaseService<User, UUID> {
                 : null;
 
         userMapper.applyAdminUpdate(user, request, email, phone, encodedPassword);
+
+        if (request.getRoleCodes() != null) {
+            user.getUserRoles().clear();
+            java.util.List<com.wedservice.backend.module.users.entity.Role> roles = roleRepository.findAllByCodeIn(request.getRoleCodes());
+            for (int i = 0; i < roles.size(); i++) {
+                user.getUserRoles().add(UserRole.builder()
+                        .user(user)
+                        .role(roles.get(i))
+                        .isPrimary(i == 0)
+                        .build());
+            }
+        }
 
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);

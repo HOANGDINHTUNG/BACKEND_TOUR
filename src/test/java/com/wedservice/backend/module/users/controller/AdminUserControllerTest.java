@@ -4,7 +4,6 @@ import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.module.users.dto.request.AdminCreateUserRequest;
 import com.wedservice.backend.module.users.dto.request.AdminUpdateUserRequest;
 import com.wedservice.backend.module.users.dto.response.UserResponse;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.service.AdminUserService;
 
@@ -48,7 +47,7 @@ class AdminUserControllerTest {
         request.setEmail("a@example.com");
         request.setPasswordHash("123456");
         request.setPhone("0987654321");
-        request.setRole(Role.CUSTOMER);
+        request.setRoleCodes(List.of("CUSTOMER"));
 
         UserResponse response = UserResponse.builder()
                 .id(UUID.randomUUID())
@@ -56,7 +55,7 @@ class AdminUserControllerTest {
                 .email("a@example.com")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
+                .role("CUSTOMER")
                 .build();
 
         when(adminUserService.createUser(any(AdminCreateUserRequest.class))).thenReturn(response);
@@ -81,7 +80,7 @@ class AdminUserControllerTest {
                                 .email("a@example.com")
                                 .phone("0987654321")
                                 .status(Status.ACTIVE)
-                                .role(Role.CUSTOMER)
+                                .role("CUSTOMER")
                                 .build()
                 ))
                 .page(0)
@@ -114,7 +113,7 @@ class AdminUserControllerTest {
                 .email("detail@example.com")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.ADMIN)
+                .role("ADMIN")
                 .build();
 
         when(adminUserService.getUserById(id)).thenReturn(response);
@@ -148,7 +147,7 @@ class AdminUserControllerTest {
         request.setFullName("Updated User");
         request.setEmail("updated@example.com");
         request.setPhone("0911222333");
-        request.setRole(Role.ADMIN);
+        request.setRoleCodes(List.of("ADMIN"));
 
         UUID id = UUID.randomUUID();
         UserResponse response = UserResponse.builder()
@@ -157,7 +156,7 @@ class AdminUserControllerTest {
                 .email("updated@example.com")
                 .phone("0911222333")
                 .status(Status.ACTIVE)
-                .role(Role.ADMIN)
+                .role("ADMIN")
                 .build();
 
         when(adminUserService.updateUser(any(UUID.class), any(AdminUpdateUserRequest.class))).thenReturn(response);
@@ -178,7 +177,7 @@ class AdminUserControllerTest {
         request.setEmail("invalid-email");
         request.setPasswordHash("123");
         request.setPhone("");
-        request.setRole(Role.MANAGER);
+        request.setRoleCodes(List.of("UNKNOWN"));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -187,8 +186,7 @@ class AdminUserControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errors.fullName").exists())
                 .andExpect(jsonPath("$.errors.email").exists())
-                .andExpect(jsonPath("$.errors.password").exists())
-                .andExpect(jsonPath("$.errors.phone").exists())
-                .andExpect(jsonPath("$.errors.role").exists());
+                .andExpect(jsonPath("$.errors.passwordHash").exists())
+                .andExpect(jsonPath("$.errors.phone").exists());
     }
 }

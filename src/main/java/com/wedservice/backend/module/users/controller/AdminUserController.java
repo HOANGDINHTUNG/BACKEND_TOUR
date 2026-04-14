@@ -28,12 +28,12 @@ import java.util.UUID;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     private final AdminUserFacade adminUserFacade;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('user.create')")
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody AdminCreateUserRequest request) {
         UserResponse response = adminUserFacade.createUser(request);
 
@@ -45,6 +45,7 @@ public class AdminUserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('user.view')")
     public ApiResponse<PageResponse<UserResponse>> getUsers(@Valid @ModelAttribute UserSearchRequest request) {
         PageResponse<UserResponse> users = adminUserFacade.getUsers(request);
 
@@ -56,6 +57,7 @@ public class AdminUserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('user.view')")
     public ApiResponse<UserResponse> getUserById(@PathVariable UUID id) {
         UserResponse user = adminUserFacade.getUserById(id);
 
@@ -67,6 +69,7 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('user.update')")
     public ApiResponse<UserResponse> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody AdminUpdateUserRequest request
@@ -81,6 +84,7 @@ public class AdminUserController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyAuthority('user.block','user.delete')")
     public ApiResponse<UserResponse> deactivateUser(@PathVariable UUID id) {
         UserResponse deactivatedUser = adminUserFacade.deactivateUser(id);
 

@@ -1,7 +1,6 @@
 package com.wedservice.backend.module.users.dto.request;
 
 import com.wedservice.backend.module.users.entity.MemberLevel;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 
 import jakarta.validation.constraints.Max;
@@ -26,11 +25,11 @@ public class UserSearchRequest {
     private String keyword;
 
     private Status status;
-    private Role role;
+    private String roleCode;
     private MemberLevel memberLevel;
 
     @Pattern(
-            regexp = "id|fullName|displayName|email|phone|role|status|memberLevel|createdAt|updatedAt|lastLoginAt|deletedAt",
+            regexp = "id|fullName|displayName|email|phone|userCategory|status|memberLevel|createdAt|updatedAt|lastLoginAt|deletedAt",
             message = "sortBy is invalid"
     )
     private String sortBy = "createdAt";

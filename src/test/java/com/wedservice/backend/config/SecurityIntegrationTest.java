@@ -3,6 +3,7 @@ package com.wedservice.backend.config;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.support.TestAuthenticationFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +41,8 @@ class SecurityIntegrationTest {
     void setUp() {
         userRepository.deleteAll();
 
-        customerUser = saveUser("Customer One", "customer@example.com", "0987654321", Role.CUSTOMER, Status.ACTIVE);
-        targetUser = saveUser("Target User", "target@example.com", "0987654322", Role.CUSTOMER, Status.ACTIVE);
+        customerUser = saveUser("Customer One", "customer@example.com", "0987654321", "CUSTOMER", Status.ACTIVE);
+        targetUser = saveUser("Target User", "target@example.com", "0987654322", "CUSTOMER", Status.ACTIVE);
     }
 
     @Test
@@ -61,7 +62,7 @@ class SecurityIntegrationTest {
     @Test
     void customer_cannotAccessAdminUserList() throws Exception {
         mockMvc.perform(get("/users")
-                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), Role.CUSTOMER)))
+                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), "CUSTOMER")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
     }
@@ -73,7 +74,7 @@ class SecurityIntegrationTest {
                         .queryParam("size", "10")
                         .queryParam("sortBy", "createdAt")
                         .queryParam("sortDir", "desc")
-                        .with(TestAuthenticationFactory.customUser(UUID.randomUUID(), "admin@example.com", Role.ADMIN)))
+                        .with(TestAuthenticationFactory.customUser(UUID.randomUUID(), "admin@example.com", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.totalElements").value(2));
@@ -82,7 +83,7 @@ class SecurityIntegrationTest {
     @Test
     void customer_canAccessOwnProfile() throws Exception {
         mockMvc.perform(get("/users/me")
-                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), Role.CUSTOMER)))
+                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), "CUSTOMER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.email").value("customer@example.com"));
@@ -92,7 +93,7 @@ class SecurityIntegrationTest {
     void admin_canDeactivateUser() throws Exception {
         mockMvc.perform(patch("/users/{id}/deactivate", targetUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(TestAuthenticationFactory.customUser(UUID.randomUUID(), "admin@example.com", Role.ADMIN)))
+                        .with(TestAuthenticationFactory.customUser(UUID.randomUUID(), "admin@example.com", "ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.status").value("SUSPENDED"))
@@ -102,20 +103,26 @@ class SecurityIntegrationTest {
     @Test
     void customer_cannotDeactivateAnotherUser() throws Exception {
         mockMvc.perform(patch("/users/{id}/deactivate", targetUser.getId())
-                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), Role.CUSTOMER)))
+                        .with(TestAuthenticationFactory.customUser(customerUser.getId(), customerUser.getEmail(), "CUSTOMER")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
     }
 
-    private User saveUser(String fullName, String email, String phone, Role role, Status status) {
+    private User saveUser(String fullName, String email, String phone, String roleCode, Status status) {
         User user = User.builder()
                 .fullName(fullName)
                 .email(email)
                 .passwordHash("encoded-password")
                 .phone(phone)
                 .status(status)
-                .role(role)
                 .build();
+        
+        user.getUserRoles().add(UserRole.builder()
+                .user(user)
+                .role(Role.builder().code(roleCode).name(roleCode.toLowerCase()).build())
+                .isPrimary(true)
+                .build());
+        
         return userRepository.save(user);
     }
 }

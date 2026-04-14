@@ -3,15 +3,8 @@ package com.wedservice.backend.module.users.entity;
 import com.wedservice.backend.common.entity.AuditableEntity;
 import com.wedservice.backend.module.users.entity.converter.GenderConverter;
 import com.wedservice.backend.module.users.entity.converter.MemberLevelConverter;
-import com.wedservice.backend.module.users.entity.converter.RoleConverter;
 import com.wedservice.backend.module.users.entity.converter.StatusConverter;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,10 +39,14 @@ public class User extends AuditableEntity {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Convert(converter = RoleConverter.class)
-    @Column(name = "role", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_category", nullable = false)
     @Builder.Default
-    private Role role = Role.CUSTOMER;
+    private UserCategory userCategory = UserCategory.CUSTOMER;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
+    private java.util.Set<UserRole> userRoles = new java.util.HashSet<>();
 
     @Convert(converter = StatusConverter.class)
     @Column(name = "status", nullable = false, length = 20)
@@ -111,12 +108,26 @@ public class User extends AuditableEntity {
     }
 
     private void applyDefaults() {
-        if (role == null) role = Role.CUSTOMER;
+        if (userCategory == null) userCategory = UserCategory.CUSTOMER;
         if (status == null) status = Status.ACTIVE;
         if (gender == null) gender = Gender.UNKNOWN;
         if (memberLevel == null) memberLevel = MemberLevel.BRONZE;
         if (loyaltyPoints == null) loyaltyPoints = 0;
         if (totalSpent == null) totalSpent = BigDecimal.ZERO;
+    }
+
+    /**
+     * Backward compatibility method to get the primary role name.
+     */
+    public String getRoleName() {
+        return userRoles.stream()
+                .filter(UserRole::getIsPrimary)
+                .map(ur -> ur.getRole().getCode())
+                .findFirst()
+                .orElseGet(() -> userRoles.stream()
+                        .map(ur -> ur.getRole().getCode())
+                        .findFirst()
+                        .orElse("USER"));
     }
 
     private void validateState() {

@@ -1,8 +1,8 @@
 package com.wedservice.backend.module.destinations.service.command;
 
-import com.wedservice.backend.module.destinations.dto.request.DestinationRequest;
-import com.wedservice.backend.module.destinations.dto.response.DestinationDetailResponse;
+import com.wedservice.backend.module.destinations.dto.request.ProposeDestinationRequest;
+import com.wedservice.backend.module.destinations.dto.response.DestinationProposalResponse;
 
 public interface DestinationCommandService {
-    DestinationDetailResponse proposeDestination(DestinationRequest request);
+    DestinationProposalResponse proposeDestination(ProposeDestinationRequest request);
 }

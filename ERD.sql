@@ -1463,9 +1463,41 @@ CREATE OR REPLACE VIEW v_user_effective_permissions AS
             JOIN
         roles r ON r.id = ur.role_id AND r.is_active = TRUE
             JOIN
-        role_permissions rp ON rp.role_id = r.id
-            JOIN
         permissions p ON p.id = rp.permission_id AND p.is_active = TRUE; 
+
+CREATE OR REPLACE VIEW v_transactions AS
+    SELECT 
+        'PAYMENT' AS transaction_type,
+        p.payment_code AS transaction_code,
+        b.booking_code,
+        p.amount,
+        p.currency,
+        p.status,
+        p.payment_method AS method,
+        p.paid_at AS transaction_date,
+        b.user_id,
+        p.created_at
+    FROM
+        payments p
+            JOIN
+        bookings b ON b.id = p.booking_id 
+    UNION ALL 
+    SELECT 
+        'REFUND' AS transaction_type,
+        r.refund_code AS transaction_code,
+        b.booking_code,
+        -r.approved_amount AS amount,
+        'VND' AS currency,
+        r.status,
+        r.refund_method AS method,
+        r.processed_at AS transaction_date,
+        b.user_id,
+        r.created_at
+    FROM
+        refund_requests r
+            JOIN
+        bookings b ON b.id = r.booking_id
+    WHERE r.status = 'completed';
 
 -- 17. FUNCTIONS / PROCEDURES -- 
 DELIMITER $$ CREATE FUNCTION fn_generate_code(p_prefix VARCHAR(10)) 
@@ -1552,6 +1584,19 @@ INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id F
 INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'FIELD_STAFF' AND p.code IN ('dashboard.view','destination.view','destination.create','destination.update','content.view','content.create','content.update','tour.view','schedule.view','schedule.update','booking.view','booking.checkin'); 
 INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'OPERATOR' AND p.code IN ('dashboard.view','user.view','destination.view','tour.view','schedule.view','schedule.create','schedule.update','schedule.close','guide.assign','booking.view','booking.create','booking.update','booking.cancel','booking.checkin','payment.view','payment.create','payment.update','refund.view','refund.create','refund.approve','refund.reject','refund.process','review.view','review.reply','support.view','support.reply','support.assign','notification.view','notification.send','report.view'); 
 INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'USER' AND p.code IN ('destination.view','content.view','tour.view','schedule.view','booking.view','booking.create','booking.cancel','payment.view','payment.create','refund.view','refund.create','review.view','notification.view','support.view','support.reply'); 
+
+INSERT IGNORE INTO permissions (code, name, module_name, action_name, description) VALUES ('destination.propose', 'Äá» xuáº¥t destination', 'destination', 'propose', 'NgÆ°á»i dÃ¹ng Ä‘á» xuáº¥t Ä‘iá»ƒm Ä‘áº¿n Ä‘á»ƒ chá» kiá»ƒm duyá»‡t'), ('destination.review', 'Kiá»ƒm duyá»‡t destination', 'destination', 'review', 'Tháº©m Ä‘á»‹nh tÃ­nh há»£p lÃ½ cá»§a Ä‘á» xuáº¥t trÆ°á»›c khi publish');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'USER' AND p.code IN ('destination.propose');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'FIELD_STAFF' AND p.code IN ('destination.review');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'CONTENT_EDITOR' AND p.code IN ('destination.review');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'OPERATOR' AND p.code IN ('destination.review');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'ADMIN' AND p.code IN ('destination.review');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'SUPER_ADMIN' AND p.code IN ('destination.review');
+
+INSERT IGNORE INTO permissions (code, name, module_name, action_name, description) VALUES ('review.create', 'Create review', 'review', 'create', 'Create review for completed booking');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'USER' AND p.code IN ('review.create');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'ADMIN' AND p.code IN ('review.create');
+INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p WHERE r.code = 'OPERATOR' AND p.code IN ('review.create');
 
 INSERT IGNORE INTO cancellation_policies ( id, name, description, voucher_bonus_percent, is_default, is_active ) 
 VALUES (1, 'CHINH_SACH_MAC_DINH', 'Chính sách hoàn hủy mặc định của TravelViet', 10, TRUE, TRUE); 

@@ -8,6 +8,7 @@ import com.wedservice.backend.module.users.dto.response.UserResponse;
 import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
+import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.mapper.UserMapper;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import org.mapstruct.factory.Mappers;
@@ -57,8 +58,13 @@ class UserProfileServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        currentUser.getUserRoles().add(UserRole.builder()
+                .user(currentUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(id);
         when(userRepository.findById(id)).thenReturn(Optional.of(currentUser));
@@ -84,8 +90,13 @@ class UserProfileServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        currentUser.getUserRoles().add(UserRole.builder()
+                .user(currentUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(id);
         when(authenticatedUserProvider.getRequiredCurrentUserLogin()).thenReturn("current@example.com");
@@ -97,7 +108,7 @@ class UserProfileServiceTest {
 
         assertThat(response.getFullName()).isEqualTo("Updated User");
         assertThat(response.getEmail()).isEqualTo("updated@example.com");
-        assertThat(currentUser.getRole()).isEqualTo(Role.CUSTOMER);
+        assertThat(currentUser.getRoleName()).isEqualTo("CUSTOMER");
     }
 
     @Test
@@ -115,8 +126,13 @@ class UserProfileServiceTest {
                 .passwordHash("encoded")
                 .phone("0987654321")
                 .status(Status.ACTIVE)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        currentUser.getUserRoles().add(UserRole.builder()
+                .user(currentUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(id);
         when(userRepository.findById(id)).thenReturn(Optional.of(currentUser));
@@ -134,8 +150,13 @@ class UserProfileServiceTest {
                 .id(id)
                 .fullName("Suspended User")
                 .status(Status.SUSPENDED)
-                .role(Role.CUSTOMER)
                 .build();
+        
+        suspendedUser.getUserRoles().add(UserRole.builder()
+                .user(suspendedUser)
+                .role(Role.builder().code("CUSTOMER").build())
+                .isPrimary(true)
+                .build());
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(id);
         when(userRepository.findById(id)).thenReturn(Optional.of(suspendedUser));
