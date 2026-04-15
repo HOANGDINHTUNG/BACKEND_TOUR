@@ -5,6 +5,7 @@ import com.wedservice.backend.common.exception.ResourceNotFoundException;
 import com.wedservice.backend.common.response.PageResponse;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.bookings.entity.Booking;
+import com.wedservice.backend.module.bookings.entity.BookingStatus;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
 import com.wedservice.backend.module.reviews.dto.request.CreateReviewAspectRequest;
 import com.wedservice.backend.module.reviews.dto.request.CreateReviewRequest;
@@ -40,7 +41,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewCommandService, ReviewQueryService {
 
-    private static final Set<String> ALLOWED_REVIEW_BOOKING_STATUS = Set.of("checked_in", "completed");
+    private static final Set<BookingStatus> ALLOWED_REVIEW_BOOKING_STATUS = Set.of(
+            BookingStatus.CHECKED_IN,
+            BookingStatus.COMPLETED
+    );
 
     private final ReviewRepository reviewRepository;
     private final ReviewAspectRepository reviewAspectRepository;
@@ -59,7 +63,7 @@ public class ReviewServiceImpl implements ReviewCommandService, ReviewQueryServi
         if (!authenticatedUserProvider.isCurrentUserBackoffice() && !currentUserId.equals(booking.getUserId())) {
             throw new AccessDeniedException("You do not have permission to review this booking");
         }
-        if (!ALLOWED_REVIEW_BOOKING_STATUS.contains(booking.getStatus().toLowerCase())) {
+        if (!ALLOWED_REVIEW_BOOKING_STATUS.contains(booking.getStatus())) {
             throw new BadRequestException("Only checked-in or completed bookings can be reviewed");
         }
         if (reviewRepository.existsByBookingId(request.getBookingId())) {

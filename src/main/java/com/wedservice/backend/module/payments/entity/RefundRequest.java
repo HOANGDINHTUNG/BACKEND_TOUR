@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.payments.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
+import com.wedservice.backend.module.payments.entity.converter.RefundStatusConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -54,9 +55,10 @@ public class RefundRequest extends AuditableEntity {
     @Column(name = "refund_method", length = 30)
     private String refundMethod;
 
+    @Convert(converter = RefundStatusConverter.class)
     @Column(name = "status", length = 30, nullable = false)
     @Builder.Default
-    private String status = "requested";
+    private RefundStatus status = RefundStatus.REQUESTED;
 
     @Column(name = "policy_snapshot", columnDefinition = "JSON")
     private String policySnapshot;

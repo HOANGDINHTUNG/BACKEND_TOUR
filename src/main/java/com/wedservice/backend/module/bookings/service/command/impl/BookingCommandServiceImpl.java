@@ -6,7 +6,9 @@ import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreatePassengerRequest;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
 import com.wedservice.backend.module.bookings.entity.Booking;
+import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.bookings.entity.BookingPassenger;
+import com.wedservice.backend.module.bookings.entity.BookingStatus;
 import com.wedservice.backend.module.bookings.repository.BookingPassengerRepository;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
 import com.wedservice.backend.module.bookings.service.command.BookingCommandService;
@@ -43,6 +45,8 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .children(request.getChildren())
                 .infants(request.getInfants())
                 .seniors(request.getSeniors())
+                .status(BookingStatus.PENDING_PAYMENT)
+                .paymentStatus(BookingPaymentStatus.UNPAID)
                 .subtotalAmount(BigDecimal.ZERO)
                 .finalAmount(BigDecimal.ZERO)
                 .currency("VND")
@@ -71,7 +75,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         return BookingResponse.builder()
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
-                .status(booking.getStatus())
+                .status(booking.getStatus().getValue())
                 .finalAmount(booking.getFinalAmount())
                 .build();
     }

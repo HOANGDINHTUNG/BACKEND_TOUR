@@ -2,6 +2,7 @@ package com.wedservice.backend.module.tours.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
 import com.wedservice.backend.module.destinations.entity.Destination;
+import com.wedservice.backend.module.tours.entity.converter.TourStatusConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -125,9 +126,10 @@ public class Tour extends AuditableEntity {
     @Builder.Default
     private Integer totalBookings = 0;
 
+    @Convert(converter = TourStatusConverter.class)
     @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
-    private String status = "draft";
+    private TourStatus status = TourStatus.DRAFT;
 
     @Column(name = "created_by", length = 36)
     private java.util.UUID createdBy;

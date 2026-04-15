@@ -24,7 +24,7 @@ public class BookingQueryServiceImpl implements BookingQueryService {
         return BookingResponse.builder()
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
-                .status(booking.getStatus())
+                .status(booking.getStatus().getValue())
                 .finalAmount(booking.getFinalAmount())
                 .build();
     }

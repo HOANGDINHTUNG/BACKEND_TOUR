@@ -104,4 +104,7 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 
 - Before doing substantial exploration, read `PROJECT_MEMORY.md` first to load the long-term project context quickly.
 - Treat `PROJECT_MEMORY.md` as the persistent working summary of this repo: architecture, business rules, user preferences, and recent long-term decisions.
+- When the task is about roadmap coverage, ERD alignment, or implementation progress, also read `PHASE_0_AUDIT.md` and `PHASE_0_IMPLEMENTATION_CHECKLIST.md` before exploring the codebase broadly.
+- Treat `API_DOCUMENTATION.md` as the maintained API contract snapshot. When controller, DTO, validation, or service behavior changes, update it in the same pass.
+- On Windows, prefer `mvnw.cmd` for verification commands. The wrapper has already been adjusted for the current environment and is the expected local entry point for Maven tasks.
 - After any change that materially affects architecture, security, API contracts, workflow conventions, or important business rules, update `PROJECT_MEMORY.md`.

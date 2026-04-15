@@ -664,6 +664,17 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 
 - Permission: `tour.create`
 
+**Rules from current code**
+
+- `code`, `name`, `slug`, `destinationId`, `basePrice`, `durationDays` are required
+- `basePrice >= 0`
+- `durationDays >= 1`
+- `durationNights >= 0`
+- `durationNights` must not be greater than `durationDays`
+- If `currency` is omitted, backend defaults to `VND`
+- If `status` is omitted, backend defaults to `draft`
+- `destinationId` must exist and must not be soft-deleted
+
 **Request**
 
 ```json
@@ -795,6 +806,11 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
   - `currency = "VND"`
   - `status = "paid"`
   - `paidAt = now()`
+
+**Additional notes**
+
+- After creating the payment, booking `paymentStatus` is updated to `paid`
+- `paymentMethod` is currently accepted as a plain `string`; the DTO layer does not enforce an enum yet
 
 **Request**
 
@@ -976,11 +992,17 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 
 - Permission: `review.view`
 - Query params: `page`, `size`
+- Validation:
+  - `page >= 0`
+  - `1 <= size <= 100`
 
 ### `GET /reviews/me`
 
 - Permission: `review.view`
 - Query params: `page`, `size`
+- Validation:
+  - `page >= 0`
+  - `1 <= size <= 100`
 
 ### `POST /reviews/{id}/replies`
 
@@ -1085,9 +1107,18 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 
 ### Booking / Payment / Refund
 
+- `BookingStatus`: `pending_payment`, `confirmed`, `checked_in`, `completed`, `cancel_requested`, `cancelled`, `refunded`, `expired`
+- `BookingPaymentStatus`: `unpaid`, `partial`, `paid`, `failed`, `refunded`, `chargeback`
+- `PaymentStatus`: `unpaid`, `partial`, `paid`, `failed`, `refunded`, `chargeback`
+- `RefundStatus`: `requested`, `quoted`, `approved`, `rejected`, `processing`, `completed`, `cancelled`
 - `passengerType`: `adult`, `child`, `infant`, `senior`
-- `paymentMethod`: ví dụ `CASH`, `BANK_TRANSFER`, `VNPAY`, `MOMO`, `ZALOPAY`
+- `paymentMethod`: source hiện nhận `string`; ví dụ `cash`, `bank_transfer`, `credit_card`, `e_wallet`, `qr`, `gateway`
 - `reasonType`: ví dụ `CANCEL_BY_USER`, `FORCE_CANCEL`, `DUPLICATE_BOOKING`
+
+### Tours
+
+- `TourStatus`: `draft`, `active`, `inactive`, `archived`
+- `TourScheduleStatus`: `draft`, `open`, `closed`, `full`, `departed`, `completed`, `cancelled`
 
 ---
 

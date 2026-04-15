@@ -1,6 +1,8 @@
 package com.wedservice.backend.module.bookings.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
+import com.wedservice.backend.module.bookings.entity.converter.BookingPaymentStatusConverter;
+import com.wedservice.backend.module.bookings.entity.converter.BookingStatusConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,13 +33,15 @@ public class Booking extends AuditableEntity {
     @Column(name = "schedule_id", nullable = false)
     private Long scheduleId;
 
+    @Convert(converter = BookingStatusConverter.class)
     @Column(name = "status", length = 30, nullable = false)
     @Builder.Default
-    private String status = "pending_payment";
+    private BookingStatus status = BookingStatus.PENDING_PAYMENT;
 
+    @Convert(converter = BookingPaymentStatusConverter.class)
     @Column(name = "payment_status", length = 30, nullable = false)
     @Builder.Default
-    private String paymentStatus = "unpaid";
+    private BookingPaymentStatus paymentStatus = BookingPaymentStatus.UNPAID;
 
     @Column(name = "contact_name", nullable = false, length = 150)
     private String contactName;

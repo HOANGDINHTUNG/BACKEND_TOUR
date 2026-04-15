@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.payments.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
+import com.wedservice.backend.module.payments.entity.converter.PaymentStatusConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,8 +43,10 @@ public class Payment extends AuditableEntity {
     @Builder.Default
     private String currency = "VND";
 
+    @Convert(converter = PaymentStatusConverter.class)
     @Column(name = "status", length = 30, nullable = false)
-    private String status;
+    @Builder.Default
+    private PaymentStatus status = PaymentStatus.UNPAID;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;

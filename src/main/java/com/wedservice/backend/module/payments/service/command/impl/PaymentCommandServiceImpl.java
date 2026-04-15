@@ -2,10 +2,12 @@ package com.wedservice.backend.module.payments.service.command.impl;
 
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.bookings.entity.Booking;
+import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
 import com.wedservice.backend.module.payments.dto.request.CreatePaymentRequest;
 import com.wedservice.backend.module.payments.dto.response.PaymentResponse;
 import com.wedservice.backend.module.payments.entity.Payment;
+import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
 import com.wedservice.backend.module.payments.service.command.PaymentCommandService;
 import lombok.RequiredArgsConstructor;
@@ -36,18 +38,20 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
                 .transactionRef(request.getTransactionRef())
                 .amount(request.getAmount())
                 .currency("VND")
-                .status("paid")
+                .status(PaymentStatus.PAID)
                 .paidAt(LocalDateTime.now())
                 .build();
 
         p = paymentRepository.save(p);
+        booking.setPaymentStatus(BookingPaymentStatus.PAID);
+        bookingRepository.save(booking);
 
         return PaymentResponse.builder()
                 .id(p.getId())
                 .paymentCode(p.getPaymentCode())
                 .bookingId(p.getBookingId())
                 .amount(p.getAmount())
-                .status(p.getStatus())
+                .status(p.getStatus().getValue())
                 .build();
     }
 

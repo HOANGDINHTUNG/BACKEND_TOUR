@@ -1,14 +1,17 @@
 package com.wedservice.backend.module.payments.service.impl;
 
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
+import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.payments.dto.request.CreateRefundRequest;
 import com.wedservice.backend.module.payments.dto.response.RefundResponse;
 import com.wedservice.backend.module.payments.entity.RefundRequest;
+import com.wedservice.backend.module.payments.entity.RefundStatus;
 import com.wedservice.backend.module.payments.repository.RefundRequestRepository;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
 import com.wedservice.backend.module.bookings.entity.Booking;
 import com.wedservice.backend.module.payments.entity.Payment;
+import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.service.command.RefundCommandService;
 import com.wedservice.backend.module.payments.service.query.RefundQueryService;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +60,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
         .voucherOfferAmount(voucherObj instanceof Number ? new java.math.BigDecimal(((Number) voucherObj).doubleValue()) : java.math.BigDecimal.ZERO)
         .policySnapshot(policySnapshot.toString())
         .requestedBy(resolveRequestedBy(request.getRequestedBy()))
-        .status("requested")
+        .status(RefundStatus.REQUESTED)
         .build();
 
     r = refundRepository.save(r);
@@ -66,7 +69,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
         .id(r.getId())
         .refundCode(r.getRefundCode())
         .bookingId(r.getBookingId())
-        .status(r.getStatus())
+        .status(r.getStatus().getValue())
         .requestedAmount(r.getRequestedAmount())
         .build();
     }
@@ -81,7 +84,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
                 .id(r.getId())
                 .refundCode(r.getRefundCode())
                 .bookingId(r.getBookingId())
-                .status(r.getStatus())
+                .status(r.getStatus().getValue())
                 .requestedAmount(r.getRequestedAmount())
                 .build();
     }
@@ -103,7 +106,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
             r.setProcessedBy(authenticatedUserProvider.getRequiredCurrentUserId());
         }
         r.setProcessedAt(java.time.LocalDateTime.now());
-        r.setStatus("approved");
+        r.setStatus(RefundStatus.APPROVED);
 
         r = refundRepository.save(r);
 
@@ -116,7 +119,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
                 .transactionRef(r.getRefundCode())
                 .amount(approvedAmount)
                 .currency("VND")
-                .status("refunded")
+                .status(PaymentStatus.REFUNDED)
                 .paidAt(java.time.LocalDateTime.now())
                 .build();
 
@@ -126,7 +129,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
         try {
             Booking bookingToUpdate = bookingRepository.findById(r.getBookingId()).orElse(null);
             if (bookingToUpdate != null) {
-                bookingToUpdate.setPaymentStatus("refunded");
+                bookingToUpdate.setPaymentStatus(BookingPaymentStatus.REFUNDED);
                 bookingRepository.save(bookingToUpdate);
             }
         } catch (Exception ignored) {
@@ -136,7 +139,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
                 .id(r.getId())
                 .refundCode(r.getRefundCode())
                 .bookingId(r.getBookingId())
-                .status(r.getStatus())
+                .status(r.getStatus().getValue())
                 .requestedAmount(r.getRequestedAmount())
                 .build();
     }

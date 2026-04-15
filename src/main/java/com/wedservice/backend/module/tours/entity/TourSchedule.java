@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.tours.entity;
 
 import com.wedservice.backend.common.entity.AuditableEntity;
+import com.wedservice.backend.module.tours.entity.converter.TourScheduleStatusConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -90,9 +91,10 @@ public class TourSchedule extends AuditableEntity {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
+    @Convert(converter = TourScheduleStatusConverter.class)
     @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
-    private String status = "draft";
+    private TourScheduleStatus status = TourScheduleStatus.DRAFT;
 
     @Column(name = "remaining_seats", insertable = false, updatable = false)
     private Integer remainingSeats;

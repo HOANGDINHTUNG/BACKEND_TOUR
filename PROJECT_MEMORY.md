@@ -397,3 +397,20 @@ Từ thời điểm file này được tạo:
 - giảm số lần phải đọc lại toàn bộ repo
 - giảm token cho phần khởi động ngữ cảnh
 - vẫn giữ được độ hiểu sâu về dự án nếu file được duy trì đều
+---
+
+## 13. Theo Doi Audit Phase 0
+
+- Repo da co file `PHASE_0_AUDIT.md` de theo doi baseline trien khai theo `ERD.sql`
+- File nay dung de ghi:
+  - ma tran coverage `table -> code layer -> test`
+  - cac bang da co schema nhung chua co feature backend
+  - cac status/enum con dang dung `String` va can chuan hoa truoc khi vao Phase 1
+- Khi tiep tuc roadmap nhieu dot, nen doc `PHASE_0_AUDIT.md` cung voi `PROJECT_MEMORY.md`
+- Repo da co them `PHASE_0_IMPLEMENTATION_CHECKLIST.md` de theo doi tung bang theo layer va nhan `implemented` / `mvp` / `schema-only`
+- Da chuan hoa cac lifecycle status cho `booking`, `payment`, `refund`, `tour`, `tour_schedule` bang enum/converter trong code thay vi `String` literal
+- Da bo sung test baseline cap service cho `tours`, `bookings`, `payments`, `reviews`
+- `mvnw.cmd` da duoc sua de chay duoc tren moi truong Windows hien tai; baseline tests da chay qua bang Maven wrapper
+- Khi chay test voi Java 25 hien co warning lien quan Lombok `Unsafe` va Mockito dynamic agent; chua block build nhung nen xu ly sau
+- `AGENTS.md` da duoc bo sung quy uoc doc `PHASE_0_AUDIT.md` va `PHASE_0_IMPLEMENTATION_CHECKLIST.md` khi lam viec theo roadmap/ERD, dong thoi nhac dong bo `API_DOCUMENTATION.md` va uu tien `mvnw.cmd` tren Windows
+- `README.md` da duoc cap nhat de phan anh ket qua Phase 0, bo test baseline moi, tai lieu audit/checklist, va huong dan chay Maven wrapper tren Windows

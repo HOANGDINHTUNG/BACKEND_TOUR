@@ -42,3 +42,88 @@
 2026-04-15 00:49:06 [http-nio-8088-exec-10] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
 2026-04-15 00:49:06 [http-nio-8088-exec-10] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
 2026-04-15 00:49:06 [http-nio-8088-exec-10] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 4 ms
+2026-04-15 01:14:36 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 27300 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-15 01:14:36 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-15 01:14:36 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-15 01:14:38 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-15 01:14:38 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 265 ms. Found 21 JPA repository interfaces.
+2026-04-15 01:14:40 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-15 01:14:40 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-15 01:14:40 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-15 01:14:40 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 3891 ms
+2026-04-15 01:14:41 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-15 01:14:41 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-15 01:14:42 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-15 01:14:42 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-15 01:14:42 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1c0a4f87
+2026-04-15 01:14:42 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-15 01:14:42 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-15 01:14:45 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-15 01:14:45 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-15 01:14:45 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-15 01:14:45 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-15 01:14:47 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-15 01:14:47 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-15 01:14:47 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-15 01:14:47 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-15 01:14:47 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-15 01:14:50 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-15 01:14:50 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-15 01:14:50 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 14.865 seconds (process running for 15.688)
+2026-04-15 10:55:16 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Starting BackendApplication using Java 25.0.1 with PID 10060 (D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR\target\classes started by Admin in D:\Documents\WED_SERVICE\travelviet-booking-system\BACKEND_TOUR)
+2026-04-15 10:55:16 [main] DEBUG c.w.backend.BackendApplication [NO-TRACE] - Running with Spring Boot v4.0.5, Spring v7.0.6
+2026-04-15 10:55:16 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - No active profile set, falling back to 1 default profile: "dev"
+2026-04-15 10:55:19 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-15 10:55:19 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [NO-TRACE] - Finished Spring Data repository scanning in 307 ms. Found 21 JPA repository interfaces.
+2026-04-15 10:55:20 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat initialized with port 8088 (http)
+2026-04-15 10:55:20 [main] INFO  o.a.catalina.core.StandardService [NO-TRACE] - Starting service [Tomcat]
+2026-04-15 10:55:20 [main] INFO  o.a.catalina.core.StandardEngine [NO-TRACE] - Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-04-15 10:55:21 [main] INFO  o.s.b.w.c.s.WebApplicationContextInitializer [NO-TRACE] - Root WebApplicationContext: initialization completed in 4171 ms
+2026-04-15 10:55:21 [main] INFO  org.hibernate.orm.jpa [NO-TRACE] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-15 10:55:21 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-04-15 10:55:22 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [NO-TRACE] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-15 10:55:22 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Starting...
+2026-04-15 10:55:23 [main] INFO  com.zaxxer.hikari.pool.HikariPool [NO-TRACE] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@23243bc0
+2026-04-15 10:55:23 [main] INFO  com.zaxxer.hikari.HikariDataSource [NO-TRACE] - HikariPool-1 - Start completed.
+2026-04-15 10:55:23 [main] INFO  o.hibernate.orm.connections.pooling [NO-TRACE] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.44
+	Default catalog/schema: wedservice/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-15 10:55:26 [main] INFO  org.hibernate.orm.core [NO-TRACE] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-15 10:55:26 [main] DEBUG org.hibernate.SQL [NO-TRACE] - 
+    alter table destinations 
+       modify column status enum ('APPROVED','PENDING','REJECTED') not null
+2026-04-15 10:55:26 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [NO-TRACE] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-15 10:55:27 [main] INFO  o.s.d.j.r.q.QueryEnhancerFactories [NO-TRACE] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-15 10:55:28 [main] DEBUG c.w.b.m.a.s.JwtAuthenticationFilter [NO-TRACE] - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-15 10:55:28 [main] DEBUG c.w.b.c.logging.CorrelationIdFilter [NO-TRACE] - Filter 'correlationIdFilter' configured for use
+2026-04-15 10:55:28 [main] DEBUG c.w.b.c.security.RateLimitFilter [NO-TRACE] - Filter 'rateLimitFilter' configured for use
+2026-04-15 10:55:28 [main] INFO  o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-04-15 10:55:28 [main] WARN  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [NO-TRACE] - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-04-15 10:55:31 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [NO-TRACE] - Exposing 3 endpoints beneath base path '/actuator'
+2026-04-15 10:55:31 [main] INFO  o.s.boot.tomcat.TomcatWebServer [NO-TRACE] - Tomcat started on port 8088 (http) with context path '/api/v1'
+2026-04-15 10:55:31 [main] INFO  c.w.backend.BackendApplication [NO-TRACE] - Started BackendApplication in 15.885 seconds (process running for 16.629)
+2026-04-15 11:09:46 [http-nio-8088-exec-2] INFO  o.a.c.c.C.[.[localhost].[/api/v1] [NO-TRACE] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-15 11:09:46 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Initializing Servlet 'dispatcherServlet'
+2026-04-15 11:09:46 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet [NO-TRACE] - Completed initialization in 12 ms
