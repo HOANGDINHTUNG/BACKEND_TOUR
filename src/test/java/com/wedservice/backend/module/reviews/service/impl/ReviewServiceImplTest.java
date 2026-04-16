@@ -13,6 +13,7 @@ import com.wedservice.backend.module.reviews.repository.ReviewAspectRepository;
 import com.wedservice.backend.module.reviews.repository.ReviewReplyRepository;
 import com.wedservice.backend.module.reviews.repository.ReviewRepository;
 import com.wedservice.backend.module.reviews.validator.ReviewValidator;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,9 @@ class ReviewServiceImplTest {
     @Mock
     private ReviewValidator reviewValidator;
 
+    @Mock
+    private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+
     private ReviewServiceImpl reviewService;
 
     @BeforeEach
@@ -62,7 +66,8 @@ class ReviewServiceImplTest {
                 reviewReplyRepository,
                 bookingRepository,
                 authenticatedUserProvider,
-                reviewValidator
+                reviewValidator,
+                tourRuntimeStatsSyncService
         );
     }
 
@@ -110,6 +115,7 @@ class ReviewServiceImplTest {
         assertThat(savedReview.getBookingId()).isEqualTo(1L);
         assertThat(savedReview.getUserId()).isEqualTo(userId);
         assertThat(savedReview.getTourId()).isEqualTo(10L);
+        verify(tourRuntimeStatsSyncService).syncTourRating(10L);
 
         assertThat(response.getId()).isEqualTo(100L);
         assertThat(response.getBookingId()).isEqualTo(1L);

@@ -820,9 +820,9 @@ Các test đang thấy trong dự án:
 
 **Điểm cần phát triển tiếp**
 
-- booking / payment / refund / review nên có thêm integration test riêng
 - các flow permission nên có thêm test phủ rộng hơn
 - các rule domain quan trọng nên có test regression riêng
+- các module schema-only sau Phase 1 vẫn cần roadmap riêng
 
 ### 12.4 Trạng thái sau Phase 0
 
@@ -833,6 +833,16 @@ Sau đợt ổn định nền gần nhất, repo đã có thêm một baseline r
 - các lifecycle status quan trọng đã được chuẩn hóa bằng enum/converter ở `booking`, `payment`, `refund`, `tour`, `tour_schedule`
 - đã có thêm service-level regression test cho các flow đang active: `tours`, `bookings`, `payments`, `reviews`
 - khi chạy test với Java 25 hiện vẫn có warning từ Lombok `Unsafe` và Mockito dynamic agent; chưa chặn build nhưng nên xử lý ở một lượt kỹ thuật riêng
+
+### 12.5 Trạng thái sau Phase 1
+
+Sau đợt hoàn thiện core commerce và tour catalog gần nhất:
+
+- `GET /tours` đã filter/sort được theo giá, seasonality, audience, difficulty, activity, duration, traveller suitability, trip mode, transport type, min rating
+- app layer đã tự sync `tour_schedule.bookedSeats`, `tour.totalBookings`, `tour.averageRating`, `tour.totalReviews` thay vì phụ thuộc trigger DB
+- đã có integration test cho chuỗi `booking -> payment -> refund -> booking_status_history`
+- đã có integration test cho `completed booking -> review -> tour rating stats`
+- có thể coi Phase 1 core là đã chốt xong và sẵn sàng chuyển sang Phase 2
 
 ---
 

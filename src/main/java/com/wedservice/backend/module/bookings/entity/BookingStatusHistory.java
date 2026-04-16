@@ -47,6 +47,13 @@ public class BookingStatusHistory {
     @Column(name = "change_reason", columnDefinition = "TEXT")
     private String changeReason;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @jakarta.persistence.PrePersist
+    protected void beforeInsert() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

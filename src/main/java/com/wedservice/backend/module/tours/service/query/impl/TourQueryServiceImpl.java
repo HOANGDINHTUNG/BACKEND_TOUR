@@ -136,6 +136,47 @@ public class TourQueryServiceImpl implements TourQueryService {
             }
             builder.and(qTour.id.in(matchingTourIds));
         }
+        if (Boolean.TRUE.equals(request.getFeaturedOnly())) {
+            builder.and(qTour.isFeatured.isTrue());
+        }
+        if (Boolean.TRUE.equals(request.getStudentFriendlyOnly())) {
+            builder.and(qTour.isStudentFriendly.isTrue());
+        }
+        if (Boolean.TRUE.equals(request.getFamilyFriendlyOnly())) {
+            builder.and(qTour.isFamilyFriendly.isTrue());
+        }
+        if (Boolean.TRUE.equals(request.getSeniorFriendlyOnly())) {
+            builder.and(qTour.isSeniorFriendly.isTrue());
+        }
+        if (request.getDifficultyLevel() != null) {
+            builder.and(qTour.difficultyLevel.eq(request.getDifficultyLevel()));
+        }
+        if (request.getActivityLevel() != null) {
+            builder.and(qTour.activityLevel.eq(request.getActivityLevel()));
+        }
+        if (request.getMinDurationDays() != null) {
+            builder.and(qTour.durationDays.goe(request.getMinDurationDays()));
+        }
+        if (request.getMaxDurationDays() != null) {
+            builder.and(qTour.durationDays.loe(request.getMaxDurationDays()));
+        }
+        if (request.getTravellerAge() != null) {
+            builder.and(qTour.minAge.isNull().or(qTour.minAge.loe(request.getTravellerAge())));
+            builder.and(qTour.maxAge.isNull().or(qTour.maxAge.goe(request.getTravellerAge())));
+        }
+        if (request.getGroupSize() != null) {
+            builder.and(qTour.minGroupSize.loe(request.getGroupSize()));
+            builder.and(qTour.maxGroupSize.goe(request.getGroupSize()));
+        }
+        if (StringUtils.hasText(request.getTripMode())) {
+            builder.and(qTour.tripMode.equalsIgnoreCase(request.getTripMode().trim()));
+        }
+        if (StringUtils.hasText(request.getTransportType())) {
+            builder.and(qTour.transportType.containsIgnoreCase(request.getTransportType().trim()));
+        }
+        if (request.getMinRating() != null) {
+            builder.and(qTour.averageRating.goe(request.getMinRating()));
+        }
 
         Page<Tour> page = tourRepository.findAll(builder, pr);
         return page.map(this::toResponse);
@@ -205,6 +246,11 @@ public class TourQueryServiceImpl implements TourQueryService {
         BigDecimal maxPrice = request.getMaxPrice();
         if (minPrice != null && maxPrice != null && maxPrice.compareTo(minPrice) < 0) {
             throw new BadRequestException("maxPrice must be greater than or equal to minPrice");
+        }
+        Integer minDurationDays = request.getMinDurationDays();
+        Integer maxDurationDays = request.getMaxDurationDays();
+        if (minDurationDays != null && maxDurationDays != null && maxDurationDays < minDurationDays) {
+            throw new BadRequestException("maxDurationDays must be greater than or equal to minDurationDays");
         }
     }
 

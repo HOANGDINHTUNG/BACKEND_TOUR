@@ -14,6 +14,7 @@ import com.wedservice.backend.module.payments.entity.RefundRequest;
 import com.wedservice.backend.module.payments.entity.RefundStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
 import com.wedservice.backend.module.payments.repository.RefundRequestRepository;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +61,9 @@ class RefundServiceImplTest {
     @Mock
     private BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
 
+    @Mock
+    private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+
     private RefundServiceImpl refundService;
 
     @BeforeEach
@@ -70,7 +74,8 @@ class RefundServiceImplTest {
                 paymentRepository,
                 bookingRepository,
                 authenticatedUserProvider,
-                bookingStatusHistoryRecorder
+                bookingStatusHistoryRecorder,
+                tourRuntimeStatsSyncService
         );
     }
 
@@ -207,6 +212,8 @@ class RefundServiceImplTest {
                 userId,
                 "Refund approved"
         );
+        verify(tourRuntimeStatsSyncService).syncScheduleState(null);
+        verify(tourRuntimeStatsSyncService).syncTourBookingStats(null);
 
         ArgumentCaptor<RefundRequest> refundCaptor = ArgumentCaptor.forClass(RefundRequest.class);
         verify(refundRepository).save(refundCaptor.capture());

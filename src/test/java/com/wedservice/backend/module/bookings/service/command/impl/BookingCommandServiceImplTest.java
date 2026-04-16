@@ -15,6 +15,7 @@ import com.wedservice.backend.module.bookings.validator.BookingValidator;
 import com.wedservice.backend.module.tours.entity.TourSchedule;
 import com.wedservice.backend.module.tours.entity.TourScheduleStatus;
 import com.wedservice.backend.module.tours.repository.TourScheduleRepository;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +55,9 @@ class BookingCommandServiceImplTest {
     @Mock
     private BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
 
+    @Mock
+    private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+
     private BookingCommandServiceImpl bookingCommandService;
 
     @BeforeEach
@@ -64,7 +68,8 @@ class BookingCommandServiceImplTest {
                 tourScheduleRepository,
                 authenticatedUserProvider,
                 new BookingValidator(),
-                bookingStatusHistoryRecorder
+                bookingStatusHistoryRecorder,
+                tourRuntimeStatsSyncService
         );
     }
 
@@ -159,6 +164,8 @@ class BookingCommandServiceImplTest {
                 currentUserId,
                 "Booking created"
         );
+        verify(tourRuntimeStatsSyncService).syncScheduleState(22L);
+        verify(tourRuntimeStatsSyncService).syncTourBookingStats(10L);
     }
 
     @Test
@@ -222,6 +229,8 @@ class BookingCommandServiceImplTest {
                 userId,
                 "Customer requested cancellation"
         );
+        verify(tourRuntimeStatsSyncService).syncScheduleState(null);
+        verify(tourRuntimeStatsSyncService).syncTourBookingStats(null);
     }
 
     @Test

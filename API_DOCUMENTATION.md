@@ -280,7 +280,261 @@ Authorization: Bearer <ACCESS_TOKEN>
 - `email` hoặc `phone`: phải có ít nhất một
 - `gender`: `male`, `female`, `other`, `unknown`
 
-### 5.2 Admin Users
+#### `GET /users/me/preferences`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Returns current user's preference record
+- If the user has no saved record yet, backend returns a default virtual response with empty lists and default boolean flags
+
+#### `PUT /users/me/preferences`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+**Request**
+
+```json
+{
+  "budgetLevel": "medium",
+  "preferredTripMode": "private",
+  "travelStyle": "food",
+  "preferredDepartureCity": "Ho Chi Minh City",
+  "favoriteRegions": ["South", "Central"],
+  "favoriteTags": ["food", "culture"],
+  "favoriteDestinations": ["Can Tho", "Hue"],
+  "prefersLowMobility": false,
+  "prefersFamilyFriendly": true,
+  "prefersStudentBudget": false,
+  "prefersWeatherAlert": true,
+  "prefersPromotionAlert": false
+}
+```
+
+**Rules**
+
+- `budgetLevel`: `low`, `medium`, `high`, `luxury`
+- `preferredTripMode`: `group`, `private`, `shared`
+- `travelStyle`: `relax`, `adventure`, `checkin`, `family`, `culture`, `food`, `spiritual`, `mixed`
+- `preferredDepartureCity`: optional, max 120
+- `favoriteRegions`, `favoriteTags`, `favoriteDestinations`: optional string arrays; blank items are dropped and duplicate items are removed while preserving order
+- `prefersLowMobility`, `prefersFamilyFriendly`, `prefersStudentBudget`: default to `false` when omitted
+- `prefersWeatherAlert`, `prefersPromotionAlert`: default to `true` when omitted
+- Endpoint behaves as idempotent upsert by `user_id`
+
+#### `GET /users/me/devices`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Returns active devices of the current user ordered by `lastSeenAt desc, id desc`
+
+#### `POST /users/me/devices`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+**Request**
+
+```json
+{
+  "platform": "android",
+  "deviceName": "Pixel 8",
+  "pushToken": "push-token-abc",
+  "appVersion": "1.2.0"
+}
+```
+
+**Rules**
+
+- `platform`: required, max 30, normalized to lowercase before save
+- `deviceName`: optional, max 100
+- `pushToken`: optional
+- `appVersion`: optional, max 30
+- At least one of `deviceName` or `pushToken` must be provided
+- If the same current user re-registers the same `pushToken`, backend updates and reactivates the existing device instead of creating a duplicate
+- `lastSeenAt` is refreshed on every successful register/upsert
+
+#### `DELETE /users/me/devices/{id}`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Soft deletes the device by setting `isActive = false`
+
+#### `GET /users/me/addresses`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Returns current user's addresses ordered by `isDefault desc, id asc`
+
+#### `POST /users/me/addresses`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+**Request**
+
+```json
+{
+  "contactName": "Nguyen Van A",
+  "contactPhone": "0901222333",
+  "province": "Da Nang",
+  "district": "Hai Chau",
+  "ward": "Thach Thang",
+  "addressLine": "123 Tran Phu",
+  "isDefault": true
+}
+```
+
+**Rules**
+
+- `contactName`: required, max 150
+- `contactPhone`: required, max 20, normalized before save
+- `province`, `district`, `ward`: optional, max 100
+- `addressLine`: required
+- First address is forced to default even if `isDefault = false`
+- If `isDefault = true`, other addresses of the same user are cleared from default
+
+#### `PUT /users/me/addresses/{id}`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+
+**Rules**
+
+- Only the current owner can update the address
+- `isDefault = true` promotes this address and clears other defaults
+- Default address cannot be unset directly with `isDefault = false`
+
+#### `PATCH /users/me/addresses/{id}/default`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Marks the selected address as the only default address of the current user
+
+#### `DELETE /users/me/addresses/{id}`
+
+- Access: `AUTHENTICATED`
+- Security: `isAuthenticated()`
+- Hard deletes the address
+- If the deleted address was default, the next address by smallest `id` is auto-promoted as default
+
+### 5.2 RBAC Read APIs
+
+> Luu y: current code gates these read-only RBAC endpoints with `user.view` because dedicated `role.view` / `permission.view` permissions have not been introduced yet.
+
+#### `GET /roles`
+
+- Permission: `user.view`
+- Mo ta: Tra danh sach role cung toan bo permission gan vao moi role
+- Thu tu: `hierarchyLevel desc`, `name asc`
+
+#### `GET /roles/{id}`
+
+- Permission: `user.view`
+- Mo ta: Tra chi tiet mot role cung danh sach permission da sap xep theo `moduleName`, `actionName`, `code`
+
+#### `GET /permissions`
+
+- Permission: `user.view`
+- Mo ta: Tra danh sach permission dang co trong he thong
+- Thu tu: `moduleName asc`, `actionName asc`, `name asc`
+
+#### `POST /roles`
+
+- Permission: `role.assign`
+- Mo ta: Tao role moi
+
+**Request**
+
+```json
+{
+  "code": "RBAC_AUDITOR",
+  "name": "RBAC Auditor",
+  "description": "Can review role and permission setup",
+  "roleScope": "BACKOFFICE",
+  "hierarchyLevel": 40,
+  "isSystemRole": false,
+  "isActive": true
+}
+```
+
+**Rules**
+
+- `code`: required, max 50, normalized to uppercase
+- `name`: required, max 120
+- `description`: optional, max 255
+- `roleScope`: required, one of `SYSTEM`, `BACKOFFICE`, `CUSTOMER`
+- `hierarchyLevel`: required, `0..9999`
+- `isSystemRole`: optional, defaults to `false`
+- `isActive`: optional, defaults to `true`
+- `code` must be unique
+- Only `SUPER_ADMIN` can create system roles (`roleScope = SYSTEM` or `isSystemRole = true`)
+
+#### `PUT /roles/{id}`
+
+- Permission: `role.assign`
+- Mo ta: Cap nhat metadata cua role
+
+**Rules**
+
+- `code` must remain unique
+- Only `SUPER_ADMIN` can modify existing system roles
+- Request is treated as full update for role metadata
+
+#### `PATCH /roles/{id}/permissions`
+
+- Permission: `role.assign`
+- Mo ta: Thay the toan bo tap permission cua role bang `permissionCodes`
+
+**Request**
+
+```json
+{
+  "permissionCodes": ["role.view", "permission.view", "audit.view"]
+}
+```
+
+**Rules**
+
+- `permissionCodes`: required array
+- Blank values are removed, duplicate codes are deduplicated while preserving order
+- Every permission code must exist
+- Inactive permissions cannot be assigned
+- Only `SUPER_ADMIN` can change permissions of system roles
+
+### 5.3 Audit Logs
+
+#### `GET /audit-logs`
+
+- Permission: `audit.view`
+- Mo ta: Tra danh sach audit log theo bo loc va phan trang
+- Thu tu: `createdAt desc`
+
+**Query params**
+
+- `page`: mac dinh `0`, phai `>= 0`
+- `size`: mac dinh `20`, phai trong khoang `1..100`
+- `actorUserId`: UUID actor thuc hien hanh dong
+- `actionName`: filter contains ignore-case
+- `entityName`: filter contains ignore-case
+- `entityId`: filter exact match
+- `from`: ISO datetime, `createdAt >= from`
+- `to`: ISO datetime, `createdAt <= to`
+
+**Rules**
+
+- `from` khong duoc lon hon `to`
+- `oldData` va `newData` tra ve dang JSON neu parse duoc, neu khong se fallback thanh text node
+- `ipAddress` va `userAgent` duoc capture tu request hien tai neu co
+- O pham vi hien tai, audit producer da duoc noi vao cac admin write flow sau:
+  - `role.create`
+  - `role.update`
+  - `permission.assign`
+  - `user.create`
+  - `user.update`
+  - `user.deactivate`
+
+### 5.4 Admin Users
 
 > Lưu ý: ở code hiện tại, phần này kiểm theo permission, không phải một role cố định.
 
@@ -386,7 +640,7 @@ PATCH http://localhost:8088/api/v1/users/550e8400-e29b-41d4-a716-446655440000/de
 Authorization: Bearer <ACCESS_TOKEN>
 ```
 
-### 5.3 UserResponse shape
+### 5.4 UserResponse shape
 
 ```json
 {
@@ -651,6 +905,19 @@ Thêm các filter sau ngoài bộ public:
 | `minPrice` | decimal | - |
 | `maxPrice` | decimal | - |
 | `travelMonth` | int | - |
+| `featuredOnly` | boolean | - |
+| `studentFriendlyOnly` | boolean | - |
+| `familyFriendlyOnly` | boolean | - |
+| `seniorFriendlyOnly` | boolean | - |
+| `difficultyLevel` | int | - |
+| `activityLevel` | int | - |
+| `minDurationDays` | int | - |
+| `maxDurationDays` | int | - |
+| `travellerAge` | int | - |
+| `groupSize` | int | - |
+| `tripMode` | string | - |
+| `transportType` | string | - |
+| `minRating` | decimal | - |
 | `sortBy` | string | `createdAt` |
 | `sortDir` | string | `desc` |
 | `page` | int | `0` |
@@ -664,6 +931,18 @@ Thêm các filter sau ngoài bộ public:
 - `tagIds` filter theo `tour_tags`; nếu không có tour nào match tag thì backend trả page rỗng
 - `minPrice` / `maxPrice` filter theo `tours.base_price`; `maxPrice` không được nhỏ hơn `minPrice`
 - `travelMonth` filter theo `tour_seasonality.month_from/month_to`; nếu không có tour nào match tháng thì backend trả page rỗng
+- `featuredOnly=true` chỉ lấy các tour có `isFeatured = true`
+- `studentFriendlyOnly=true` chỉ lấy các tour có `isStudentFriendly = true`
+- `familyFriendlyOnly=true` chỉ lấy các tour có `isFamilyFriendly = true`
+- `seniorFriendlyOnly=true` chỉ lấy các tour có `isSeniorFriendly = true`
+- `difficultyLevel` filter theo `tours.difficulty_level` và phải nằm trong `1..5`
+- `activityLevel` filter theo `tours.activity_level` và phải nằm trong `1..5`
+- `minDurationDays` / `maxDurationDays` filter theo `tours.duration_days`; `maxDurationDays` không được nhỏ hơn `minDurationDays`
+- `travellerAge` filter theo eligibility của `tours.min_age/max_age`; tuổi phải `>= 0`
+- `groupSize` filter theo eligibility của `tours.min_group_size/max_group_size`; size phải `>= 1`
+- `tripMode` chỉ nhận `group`, `private`, `shared`
+- `transportType` match không phân biệt hoa thường trên `tours.transport_type`
+- `minRating` filter theo `tours.average_rating`; giá trị phải nằm trong `0..5`
 - `sortBy` chỉ nhận: `name`, `basePrice`, `durationDays`, `averageRating`, `totalBookings`, `createdAt`
 - `sortDir` chỉ nhận `asc` hoặc `desc`
 - `travelMonth` phải nằm trong khoảng `1..12`
@@ -673,7 +952,7 @@ Thêm các filter sau ngoài bộ public:
 **Request**
 
 ```http
-GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&tagIds=4&tagIds=8&minPrice=900000&maxPrice=1500000&travelMonth=6&sortBy=basePrice&sortDir=asc&page=0&size=10
+GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&tagIds=4&tagIds=8&minPrice=900000&maxPrice=1500000&travelMonth=6&featuredOnly=true&familyFriendlyOnly=true&difficultyLevel=3&activityLevel=4&minDurationDays=2&maxDurationDays=5&travellerAge=18&groupSize=4&tripMode=private&transportType=car&minRating=4.5&sortBy=basePrice&sortDir=asc&page=0&size=10
 ```
 
 ### `GET /tours/{id}`
@@ -1484,6 +1763,23 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&tagIds=4&
 | `POST /auth/refresh` | `PUBLIC` |
 | `GET /users/me` | `AUTHENTICATED` |
 | `PUT /users/me` | `AUTHENTICATED` |
+| `GET /users/me/preferences` | `AUTHENTICATED` |
+| `PUT /users/me/preferences` | `AUTHENTICATED` |
+| `GET /users/me/devices` | `AUTHENTICATED` |
+| `POST /users/me/devices` | `AUTHENTICATED` |
+| `DELETE /users/me/devices/{id}` | `AUTHENTICATED` |
+| `GET /users/me/addresses` | `AUTHENTICATED` |
+| `POST /users/me/addresses` | `AUTHENTICATED` |
+| `PUT /users/me/addresses/{id}` | `AUTHENTICATED` |
+| `PATCH /users/me/addresses/{id}/default` | `AUTHENTICATED` |
+| `DELETE /users/me/addresses/{id}` | `AUTHENTICATED` |
+| `GET /roles` | `user.view` |
+| `GET /roles/{id}` | `user.view` |
+| `GET /permissions` | `user.view` |
+| `POST /roles` | `role.assign` |
+| `PUT /roles/{id}` | `role.assign` |
+| `PATCH /roles/{id}/permissions` | `role.assign` |
+| `GET /audit-logs` | `audit.view` |
 | `POST /users` | `user.create` |
 | `GET /users` | `user.view` |
 | `GET /users/{id}` | `user.view` |

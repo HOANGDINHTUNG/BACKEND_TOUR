@@ -15,6 +15,7 @@ import com.wedservice.backend.module.payments.entity.Payment;
 import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
 import com.wedservice.backend.module.payments.service.command.PaymentCommandService;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
     private final BookingRepository bookingRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
+    private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
 
     @Override
     @Transactional
@@ -63,6 +65,8 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPaymentStatus(BookingPaymentStatus.PAID);
         bookingRepository.save(booking);
+        tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
+        tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         if (oldStatus != booking.getStatus()) {
             bookingStatusHistoryRecorder.record(
                     booking.getId(),

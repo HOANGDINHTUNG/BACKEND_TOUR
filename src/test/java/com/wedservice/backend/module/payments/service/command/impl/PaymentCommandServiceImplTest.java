@@ -11,6 +11,7 @@ import com.wedservice.backend.module.payments.dto.response.PaymentResponse;
 import com.wedservice.backend.module.payments.entity.Payment;
 import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ class PaymentCommandServiceImplTest {
     @Mock
     private BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
 
+    @Mock
+    private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+
     private PaymentCommandServiceImpl paymentCommandService;
 
     @BeforeEach
@@ -52,7 +56,8 @@ class PaymentCommandServiceImplTest {
                 paymentRepository,
                 bookingRepository,
                 authenticatedUserProvider,
-                bookingStatusHistoryRecorder
+                bookingStatusHistoryRecorder,
+                tourRuntimeStatsSyncService
         );
     }
 
@@ -107,6 +112,8 @@ class PaymentCommandServiceImplTest {
                 userId,
                 "Payment recorded"
         );
+        verify(tourRuntimeStatsSyncService).syncScheduleState(3L);
+        verify(tourRuntimeStatsSyncService).syncTourBookingStats(2L);
 
         assertThat(response.getId()).isEqualTo(50L);
         assertThat(response.getStatus()).isEqualTo("paid");

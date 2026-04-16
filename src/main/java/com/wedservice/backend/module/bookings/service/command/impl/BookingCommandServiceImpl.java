@@ -18,6 +18,7 @@ import com.wedservice.backend.module.bookings.service.command.BookingCommandServ
 import com.wedservice.backend.module.bookings.validator.BookingValidator;
 import com.wedservice.backend.module.tours.entity.TourSchedule;
 import com.wedservice.backend.module.tours.repository.TourScheduleRepository;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookingValidator bookingValidator;
     private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
+    private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
 
     @Override
     @Transactional
@@ -69,6 +71,8 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .build();
 
         booking = bookingRepository.save(booking);
+        tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
+        tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         bookingStatusHistoryRecorder.record(
                 booking.getId(),
                 null,
@@ -176,6 +180,8 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(newStatus);
         bookingRepository.save(booking);
+        tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
+        tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         bookingStatusHistoryRecorder.record(
                 booking.getId(),
                 oldStatus,

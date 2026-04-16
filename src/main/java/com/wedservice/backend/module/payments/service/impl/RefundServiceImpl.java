@@ -19,6 +19,7 @@ import com.wedservice.backend.module.payments.entity.Payment;
 import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.service.command.RefundCommandService;
 import com.wedservice.backend.module.payments.service.query.RefundQueryService;
+import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -53,6 +54,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
     private final BookingRepository bookingRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
+    private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
 
     @Override
     @Transactional
@@ -139,6 +141,8 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
         booking.setStatus(BookingStatus.REFUNDED);
         booking.setPaymentStatus(BookingPaymentStatus.REFUNDED);
         bookingRepository.save(booking);
+        tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
+        tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         bookingStatusHistoryRecorder.record(
                 booking.getId(),
                 oldStatus,

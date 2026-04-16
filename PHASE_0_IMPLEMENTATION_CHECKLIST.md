@@ -15,9 +15,9 @@
 | `permissions` | yes | no direct repo | yes | indirect | yes | `implemented` | Loaded through role mapping in security flow |
 | `role_permissions` | join mapping only | no direct repo | yes | indirect | yes | `implemented` | Managed via JPA many-to-many join |
 | `user_roles` | yes | no direct repo | yes | indirect | yes | `implemented` | Used for primary/all roles on user |
-| `user_preferences` | no | no | no | no | no | `schema-only` | User preference feature not started |
-| `user_devices` | no | no | no | no | no | `schema-only` | Device/push token feature not started |
-| `user_addresses` | no | no | no | no | no | `schema-only` | Address book feature not started |
+| `user_preferences` | yes | yes | yes | yes | yes | `implemented` | Self-profile preference get/upsert flow is active |
+| `user_devices` | yes | yes | yes | yes | yes | `implemented` | Self-profile device register/list/remove flow is active |
+| `user_addresses` | yes | yes | yes | yes | yes | `implemented` | Self-profile address book CRUD/default flow is active |
 
 ## Destinations
 
@@ -112,7 +112,7 @@
 | `user_tour_views` | no | no | no | no | no | `schema-only` | Not started |
 | `wishlist_tours` | no | no | no | no | no | `schema-only` | Not started |
 | `recommendation_logs` | no | no | no | no | no | `schema-only` | Not started |
-| `audit_logs` | no | no | no | no | no | `schema-only` | Not started |
+| `audit_logs` | yes | yes | yes | yes | yes | `implemented` | Query API and RBAC write audit producer are active |
 
 ## Phase Label By ERD Area
 

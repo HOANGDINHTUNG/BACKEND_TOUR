@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.tours.service.query.impl;
 
 import com.wedservice.backend.common.exception.ResourceNotFoundException;
+import com.wedservice.backend.common.exception.BadRequestException;
 import com.wedservice.backend.module.destinations.entity.Destination;
 import com.wedservice.backend.module.tours.dto.request.TourSearchRequest;
 import com.wedservice.backend.module.tours.dto.response.TourResponse;
@@ -412,5 +413,182 @@ class TourQueryServiceImplTest {
         var page = tourQueryService.searchTours(request);
 
         assertThat(page.getContent()).isEmpty();
+    }
+
+    @Test
+    void searchTours_appliesFeaturedAndAudienceFilters() {
+        TourSearchRequest request = TourSearchRequest.builder()
+                .featuredOnly(true)
+                .studentFriendlyOnly(true)
+                .familyFriendlyOnly(true)
+                .seniorFriendlyOnly(true)
+                .page(0)
+                .size(10)
+                .build();
+        Tour tour = Tour.builder()
+                .id(16L)
+                .code("TOUR-016")
+                .name("Hue Family Tour")
+                .slug("hue-family-tour")
+                .destination(Destination.builder().id(4L).build())
+                .basePrice(new BigDecimal("1200000"))
+                .currency("VND")
+                .isFeatured(true)
+                .isStudentFriendly(true)
+                .isFamilyFriendly(true)
+                .isSeniorFriendly(true)
+                .status(com.wedservice.backend.module.tours.entity.TourStatus.ACTIVE)
+                .build();
+
+        when(tourRepository.findAll(any(com.querydsl.core.BooleanBuilder.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(tour), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")), 1));
+
+        var page = tourQueryService.searchTours(request);
+
+        ArgumentCaptor<com.querydsl.core.BooleanBuilder> predicateCaptor = ArgumentCaptor.forClass(com.querydsl.core.BooleanBuilder.class);
+        ArgumentCaptor<PageRequest> pageRequestCaptor = ArgumentCaptor.forClass(PageRequest.class);
+        verify(tourRepository).findAll(predicateCaptor.capture(), pageRequestCaptor.capture());
+
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(pageRequestCaptor.getValue()).isEqualTo(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+        assertThat(predicateCaptor.getValue().toString())
+                .contains("isFeatured")
+                .contains("isStudentFriendly")
+                .contains("isFamilyFriendly")
+                .contains("isSeniorFriendly");
+    }
+
+    @Test
+    void searchTours_appliesDifficultyActivityAndDurationFilters() {
+        TourSearchRequest request = TourSearchRequest.builder()
+                .difficultyLevel(3)
+                .activityLevel(4)
+                .minDurationDays(2)
+                .maxDurationDays(5)
+                .sortBy("durationDays")
+                .sortDir("desc")
+                .page(0)
+                .size(10)
+                .build();
+        Tour tour = Tour.builder()
+                .id(17L)
+                .code("TOUR-017")
+                .name("Adventure Da Lat")
+                .slug("adventure-da-lat")
+                .destination(Destination.builder().id(5L).build())
+                .basePrice(new BigDecimal("1800000"))
+                .currency("VND")
+                .difficultyLevel(3)
+                .activityLevel(4)
+                .durationDays(4)
+                .status(com.wedservice.backend.module.tours.entity.TourStatus.ACTIVE)
+                .build();
+
+        when(tourRepository.findAll(any(com.querydsl.core.BooleanBuilder.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(tour), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "durationDays")), 1));
+
+        var page = tourQueryService.searchTours(request);
+
+        ArgumentCaptor<com.querydsl.core.BooleanBuilder> predicateCaptor = ArgumentCaptor.forClass(com.querydsl.core.BooleanBuilder.class);
+        ArgumentCaptor<PageRequest> pageRequestCaptor = ArgumentCaptor.forClass(PageRequest.class);
+        verify(tourRepository).findAll(predicateCaptor.capture(), pageRequestCaptor.capture());
+
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(pageRequestCaptor.getValue()).isEqualTo(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "durationDays")));
+        assertThat(predicateCaptor.getValue().toString())
+                .contains("difficultyLevel = 3")
+                .contains("activityLevel = 4")
+                .contains("durationDays >= 2")
+                .contains("durationDays <= 5");
+    }
+
+    @Test
+    void searchTours_throwsWhenMaxDurationIsSmallerThanMinDuration() {
+        TourSearchRequest request = TourSearchRequest.builder()
+                .minDurationDays(5)
+                .maxDurationDays(3)
+                .build();
+
+        assertThatThrownBy(() -> tourQueryService.searchTours(request))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("maxDurationDays must be greater than or equal to minDurationDays");
+    }
+
+    @Test
+    void searchTours_appliesTravellerSuitabilityTripModeAndTransportFilters() {
+        TourSearchRequest request = TourSearchRequest.builder()
+                .travellerAge(18)
+                .groupSize(4)
+                .tripMode("private")
+                .transportType("car")
+                .page(0)
+                .size(10)
+                .build();
+        Tour tour = Tour.builder()
+                .id(18L)
+                .code("TOUR-018")
+                .name("Private Nha Trang Escape")
+                .slug("private-nha-trang-escape")
+                .destination(Destination.builder().id(6L).build())
+                .basePrice(new BigDecimal("2200000"))
+                .currency("VND")
+                .tripMode("private")
+                .transportType("limousine car")
+                .minAge(12)
+                .maxAge(65)
+                .minGroupSize(2)
+                .maxGroupSize(6)
+                .status(com.wedservice.backend.module.tours.entity.TourStatus.ACTIVE)
+                .build();
+
+        when(tourRepository.findAll(any(com.querydsl.core.BooleanBuilder.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(tour), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")), 1));
+
+        var page = tourQueryService.searchTours(request);
+
+        ArgumentCaptor<com.querydsl.core.BooleanBuilder> predicateCaptor = ArgumentCaptor.forClass(com.querydsl.core.BooleanBuilder.class);
+        ArgumentCaptor<PageRequest> pageRequestCaptor = ArgumentCaptor.forClass(PageRequest.class);
+        verify(tourRepository).findAll(predicateCaptor.capture(), pageRequestCaptor.capture());
+
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(pageRequestCaptor.getValue()).isEqualTo(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+        assertThat(predicateCaptor.getValue().toString())
+                .contains("minAge")
+                .contains("maxAge")
+                .contains("minGroupSize")
+                .contains("maxGroupSize")
+                .contains("private")
+                .contains("car");
+    }
+
+    @Test
+    void searchTours_appliesMinRatingFilter() {
+        TourSearchRequest request = TourSearchRequest.builder()
+                .minRating(new BigDecimal("4.50"))
+                .page(0)
+                .size(10)
+                .build();
+        Tour tour = Tour.builder()
+                .id(19L)
+                .code("TOUR-019")
+                .name("Premium Ha Giang Loop")
+                .slug("premium-ha-giang-loop")
+                .destination(Destination.builder().id(7L).build())
+                .basePrice(new BigDecimal("3200000"))
+                .currency("VND")
+                .averageRating(new BigDecimal("4.80"))
+                .status(com.wedservice.backend.module.tours.entity.TourStatus.ACTIVE)
+                .build();
+
+        when(tourRepository.findAll(any(com.querydsl.core.BooleanBuilder.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(tour), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")), 1));
+
+        var page = tourQueryService.searchTours(request);
+
+        ArgumentCaptor<com.querydsl.core.BooleanBuilder> predicateCaptor = ArgumentCaptor.forClass(com.querydsl.core.BooleanBuilder.class);
+        verify(tourRepository).findAll(predicateCaptor.capture(), any(PageRequest.class));
+
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(predicateCaptor.getValue().toString()).contains("4.50");
     }
 }

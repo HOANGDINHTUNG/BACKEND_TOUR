@@ -33,6 +33,48 @@ public class TourSearchRequest {
     @Max(value = 12, message = "travelMonth must be between 1 and 12")
     private Integer travelMonth;
 
+    private Boolean featuredOnly;
+
+    private Boolean studentFriendlyOnly;
+
+    private Boolean familyFriendlyOnly;
+
+    private Boolean seniorFriendlyOnly;
+
+    @Min(value = 1, message = "difficultyLevel must be between 1 and 5")
+    @Max(value = 5, message = "difficultyLevel must be between 1 and 5")
+    private Integer difficultyLevel;
+
+    @Min(value = 1, message = "activityLevel must be between 1 and 5")
+    @Max(value = 5, message = "activityLevel must be between 1 and 5")
+    private Integer activityLevel;
+
+    @Min(value = 1, message = "minDurationDays must be greater than or equal to 1")
+    private Integer minDurationDays;
+
+    @Min(value = 1, message = "maxDurationDays must be greater than or equal to 1")
+    private Integer maxDurationDays;
+
+    @Min(value = 0, message = "travellerAge must be greater than or equal to 0")
+    private Integer travellerAge;
+
+    @Min(value = 1, message = "groupSize must be greater than or equal to 1")
+    private Integer groupSize;
+
+    @Size(max = 120, message = "transportType must not exceed 120 characters")
+    private String transportType;
+
+    @Pattern(
+            regexp = "group|private|shared",
+            flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "tripMode must be one of group, private, shared"
+    )
+    private String tripMode;
+
+    @DecimalMin(value = "0.0", inclusive = true, message = "minRating must be greater than or equal to 0")
+    @jakarta.validation.constraints.DecimalMax(value = "5.0", inclusive = true, message = "minRating must be less than or equal to 5")
+    private BigDecimal minRating;
+
     @Pattern(
             regexp = "name|basePrice|durationDays|averageRating|totalBookings|createdAt",
             message = "sortBy is invalid"

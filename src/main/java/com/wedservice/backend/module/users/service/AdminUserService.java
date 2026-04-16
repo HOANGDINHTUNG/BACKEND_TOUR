@@ -66,6 +66,7 @@ public class AdminUserService extends BaseService<User, UUID> {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final AuditTrailRecorder auditTrailRecorder;
 
     public UserResponse createUser(AdminCreateUserRequest request) {
         String email = DataNormalizer.normalizeEmail(request.getEmail());
@@ -96,7 +97,9 @@ public class AdminUserService extends BaseService<User, UUID> {
             savedUser = userRepository.save(savedUser);
         }
 
-        return userMapper.toDto(savedUser);
+        UserResponse response = userMapper.toDto(savedUser);
+        auditTrailRecorder.record(AuditActionType.USER_CREATE, savedUser.getId(), null, response);
+        return response;
     }
 
     public PageResponse<UserResponse> getUsers(UserSearchRequest request) {
@@ -143,6 +146,7 @@ public class AdminUserService extends BaseService<User, UUID> {
 
     public UserResponse updateUser(UUID id, AdminUpdateUserRequest request) {
         User user = findUserById(id);
+        UserResponse oldState = userMapper.toDto(user);
         String email = DataNormalizer.normalizeEmail(request.getEmail());
         String phone = DataNormalizer.normalizePhone(request.getPhone());
         validateRequiredContact(email, phone);
@@ -167,16 +171,21 @@ public class AdminUserService extends BaseService<User, UUID> {
         }
 
         User updatedUser = userRepository.save(user);
-        return userMapper.toDto(updatedUser);
+        UserResponse response = userMapper.toDto(updatedUser);
+        auditTrailRecorder.record(AuditActionType.USER_UPDATE, updatedUser.getId(), oldState, response);
+        return response;
     }
 
     public UserResponse deactivateUser(UUID id) {
         User user = findUserById(id);
+        UserResponse oldState = userMapper.toDto(user);
         user.setStatus(Status.SUSPENDED);
         user.setDeletedAt(java.time.LocalDateTime.now());
         
         User updatedUser = userRepository.save(user);
-        return userMapper.toDto(updatedUser);
+        UserResponse response = userMapper.toDto(updatedUser);
+        auditTrailRecorder.record(AuditActionType.USER_DEACTIVATE, updatedUser.getId(), oldState, response);
+        return response;
     }
 
     private User findUserById(UUID id) {

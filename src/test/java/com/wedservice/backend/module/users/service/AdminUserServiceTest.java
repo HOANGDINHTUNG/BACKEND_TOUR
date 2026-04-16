@@ -11,6 +11,7 @@ import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.mapper.UserMapper;
+import com.wedservice.backend.module.users.repository.RoleRepository;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import org.mapstruct.factory.Mappers;
 
@@ -37,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +50,12 @@ class AdminUserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private AuditTrailRecorder auditTrailRecorder;
 
     @Spy
     private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
@@ -82,17 +90,19 @@ class AdminUserServiceTest {
 
         when(userRepository.existsByEmailIgnoreCase("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("123456")).thenReturn("encoded-password");
+        when(roleRepository.findAllByCodeIn(List.of("ADMIN"))).thenReturn(List.of(Role.builder().code("ADMIN").build()));
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         UserResponse response = adminUserService.createUser(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        User persistedUser = userCaptor.getValue();
+        verify(userRepository, times(2)).save(userCaptor.capture());
+        User persistedUser = userCaptor.getAllValues().get(0);
 
         assertThat(response.getRole()).isEqualTo("ADMIN");
         assertThat(persistedUser.getEmail()).isEqualTo("test@example.com");
         assertThat(persistedUser.getPasswordHash()).isEqualTo("encoded-password");
+        verify(auditTrailRecorder).record(eq(AuditActionType.USER_CREATE), eq(id), eq(null), any(UserResponse.class));
     }
 
     @Test
@@ -218,6 +228,7 @@ class AdminUserServiceTest {
         assertThat(response.getStatus()).isEqualTo(Status.SUSPENDED);
         assertThat(existingUser.getDeletedAt()).isNotNull();
         verify(userRepository).save(eq(existingUser));
+        verify(auditTrailRecorder).record(eq(AuditActionType.USER_DEACTIVATE), eq(id), any(UserResponse.class), any(UserResponse.class));
     }
 
     @Test
@@ -248,11 +259,13 @@ class AdminUserServiceTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
         when(userRepository.existsByEmailIgnoreCaseAndIdNot("updated@example.com", id)).thenReturn(false);
+        when(roleRepository.findAllByCodeIn(List.of("ADMIN"))).thenReturn(List.of(Role.builder().code("ADMIN").build()));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = adminUserService.updateUser(id, request);
 
         assertThat(response.getEmail()).isEqualTo("updated@example.com");
         assertThat(existingUser.getRoleName()).isEqualTo("ADMIN");
+        verify(auditTrailRecorder).record(eq(AuditActionType.USER_UPDATE), eq(id), any(UserResponse.class), any(UserResponse.class));
     }
 }

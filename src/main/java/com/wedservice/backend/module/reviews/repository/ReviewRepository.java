@@ -4,6 +4,8 @@ import com.wedservice.backend.module.reviews.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -13,4 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByBookingId(Long bookingId);
     Page<Review> findByTourId(Long tourId, Pageable pageable);
     Page<Review> findByUserId(UUID userId, Pageable pageable);
+    long countByTourId(Long tourId);
+
+    @Query("select avg(r.overallRating) from Review r where r.tourId = :tourId")
+    Double findAverageRatingByTourId(@Param("tourId") Long tourId);
 }

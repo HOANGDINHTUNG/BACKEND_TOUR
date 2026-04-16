@@ -28,7 +28,8 @@
 | --- | --- | --- | --- | --- |
 | `auth` | Depends on `users`, `roles`, `permissions`, `user_roles`, `role_permissions` | Controller, facade, command/query services, JWT/security classes present | `AuthControllerTest`, `JwtServiceTest`, `SecurityIntegrationTest` | Core auth is present |
 | `users` core | `users`, `roles`, `permissions`, `user_roles` | Entity/repository/service/controller present | Controller/service/repository tests present | Core user management is relatively stable |
-| `users` extras | `user_preferences`, `user_devices`, `user_addresses` | No entity/repository/service/controller found | No tests | Schema exists, feature not implemented |
+| `users` extras | `user_preferences`, `user_devices`, `user_addresses` | All three now have entity/repository/service/controller flows inside `users/profile` | `UserProfileServiceTest`, `UserProfileControllerTest` cover all three | User extras phase is active at self-profile scope |
+| `audit/admin ops` | `audit_logs` | Entity/repository/query/controller flow present; `AuditTrailRecorder` now records RBAC and admin user write events via shared helper | `AdminAuditLogQueryServiceTest`, `AdminAuditLogControllerTest`, `AdminRbacCommandServiceTest`, `AdminUserServiceTest` | Audit is active, but producer scope is still partial |
 | `destinations` | `destinations`, `destination_media`, `destination_foods`, `destination_specialties`, `destination_activities`, `destination_tips`, `destination_events`, `destination_follows` | Entity/repository/service/controller present | Proposal and admin update integration tests only | Public/admin flows exist but test coverage is partial |
 | `tours` core | `tours`, `tour_media`, `tour_seasonality`, `tour_itinerary_days`, `itinerary_items`, `tour_checklist_items`, `tour_schedules`, `tour_schedule_pickup_points`, `tour_schedule_guides` | Entities and repositories exist, create/update/query flows exist | No tests found | Data model exists, API/service layer is still MVP |
 | `tours` missing attachments | `tags`, `guides`, `cancellation_policies`, `cancellation_policy_rules`, `tour_tags` | No concrete module flow found | No tests | Schema exists, feature not implemented |
@@ -79,7 +80,6 @@
 - `user_tour_views`
 - `wishlist_tours`
 - `recommendation_logs`
-- `audit_logs`
 
 ### Support and real-time communication
 

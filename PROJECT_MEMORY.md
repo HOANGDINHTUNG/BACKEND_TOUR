@@ -279,6 +279,7 @@ Các file đáng chú ý:
   - cập nhật booking status thành `refunded`
   - cập nhật booking payment status thành `refunded`
   - chặn approve nếu `approvedAmount` vượt `requestedAmount` hoặc `quotedAmount`
+  - đồng bộ lại `tour.totalBookings` và `tour_schedule.bookedSeats` ở application layer
 
 ### Reviews
 
@@ -289,6 +290,7 @@ Các file đáng chú ý:
 - Chỉ booking có status `checked_in` hoặc `completed` mới được review
 - Mỗi booking chỉ được review một lần
 - `sentiment` ban đầu mặc định là `neutral`
+- Sau khi tạo review, backend đồng bộ lại `tour.averageRating` và `tour.totalReviews`
 
 ### Destinations
 
@@ -308,13 +310,26 @@ Các file đáng chú ý:
 - `GET /tours/{id}` hiện trả kèm `tags`, `media`, `seasonality`, `itineraryDays[].items`, `checklistItems`
 - `GET /tours/{id}` hiện trả thêm `cancellationPolicy` cùng `rules`
 - `GET /tours` vẫn giữ response mỏng hơn và không load các collection lớn này
-- `GET /tours` hiện chỉ trả tour `active`, filter được theo `destinationId`, `keyword`, `tagIds`, `minPrice`, `maxPrice`, `travelMonth`
+- `GET /tours` hiện chỉ trả tour `active`, filter được theo `destinationId`, `keyword`, `tagIds`, `minPrice`, `maxPrice`, `travelMonth`, `featuredOnly`, `studentFriendlyOnly`, `familyFriendlyOnly`, `seniorFriendlyOnly`
+- `GET /tours` hiện filter thêm được theo `difficultyLevel`, `activityLevel`, `minDurationDays`, `maxDurationDays`
+- `GET /tours` hiện filter thêm được theo `travellerAge`, `groupSize`, `tripMode`, `transportType`, `minRating`
 - `GET /tours` dùng `keyword` để match `name`, `slug`, `shortDescription`, `description`, `highlights`
 - Nếu `tagIds` không match tour nào, backend trả page rỗng ngay thay vì query catalog rộng
 - Nếu `travelMonth` không match seasonality nào, backend trả page rỗng ngay thay vì query catalog rộng
+- Các cờ `featuredOnly`, `studentFriendlyOnly`, `familyFriendlyOnly`, `seniorFriendlyOnly` chỉ áp filter khi client truyền `true`
+- `difficultyLevel` và `activityLevel` cho public search phải nằm trong `1..5`
+- `GET /tours` reject `maxDurationDays < minDurationDays`
+- `travellerAge` cho public search được map qua `minAge/maxAge` của tour
+- `groupSize` cho public search được map qua `minGroupSize/maxGroupSize` của tour
+- `tripMode` cho public search chỉ nhận `group|private|shared`
+- `transportType` cho public search dùng match `containsIgnoreCase`
+- `minRating` cho public search phải nằm trong `0..5` và map qua `tour.averageRating`
 - `GET /tours` hiện cho sort theo `name`, `basePrice`, `durationDays`, `averageRating`, `totalBookings`, `createdAt`
 - `GET /tours` validate `travelMonth` trong `1..12`, `page >= 0`, `1 <= size <= 100`, `sortDir in {asc,desc}`
 - `GET /tours` reject `maxPrice < minPrice`
+- App layer hiện đã tự sync `tour.totalBookings` theo các booking status `confirmed|checked_in|completed`
+- App layer hiện đã tự sync `tour.averageRating` và `tour.totalReviews` sau khi tạo review
+- App layer hiện đã tự sync `tour_schedule.bookedSeats` theo tổng `adults + children + seniors`, và tự đổi `open <-> full` theo sức chứa
 - Tour root create/update hiện replace toàn bộ child list `media`, `itineraryDays/items`, `checklistItems` theo payload thay vì patch từng phần tử
 - Nếu request tour không truyền `cancellationPolicyId`, backend tự bind `default active cancellation policy`
 - Nếu request truyền `cancellationPolicyId`, policy phải tồn tại, active, và phải có ít nhất một rule
@@ -492,3 +507,46 @@ Từ thời điểm file này được tạo:
 - Khi chay test voi Java 25 hien co warning lien quan Lombok `Unsafe` va Mockito dynamic agent; chua block build nhung nen xu ly sau
 - `AGENTS.md` da duoc bo sung quy uoc doc `PHASE_0_AUDIT.md` va `PHASE_0_IMPLEMENTATION_CHECKLIST.md` khi lam viec theo roadmap/ERD, dong thoi nhac dong bo `API_DOCUMENTATION.md` va uu tien `mvnw.cmd` tren Windows
 - `README.md` da duoc cap nhat de phan anh ket qua Phase 0, bo test baseline moi, tai lieu audit/checklist, va huong dan chay Maven wrapper tren Windows
+- Task `2.1` dang/khoi dong trong Phase 2 voi huong giu `user_addresses` ben trong flow `users/profile`, khong tach module rieng
+- `UserProfileController` co bo endpoint address book: `GET/POST/PUT /users/me/addresses`, `PATCH /users/me/addresses/{id}/default`, `DELETE /users/me/addresses/{id}`
+- `UserProfileController` co them preference endpoints: `GET /users/me/preferences`, `PUT /users/me/preferences`
+- `UserProfileController` co them device endpoints: `GET /users/me/devices`, `POST /users/me/devices`, `DELETE /users/me/devices/{id}`
+- Da co them `AdminRbacController` cho read-only RBAC endpoints: `GET /roles`, `GET /roles/{id}`, `GET /permissions`
+- `AdminRbacController` da co them write endpoints: `POST /roles`, `PUT /roles/{id}`, `PATCH /roles/{id}/permissions`
+- Rule address book da chot:
+  - chi user hien tai duoc quan ly address cua minh
+  - address dau tien tu dong la default
+  - set `isDefault = true` se clear default khac
+  - khong cho unset default bang `isDefault = false` truc tiep
+  - xoa default address thi address tiep theo theo `id` nho nhat se duoc promote len default
+- Rule `user_preferences` da chot:
+  - `GET` tra default virtual response neu user chua co record
+  - `PUT` la upsert theo `user_id`
+  - list JSON (`favoriteRegions`, `favoriteTags`, `favoriteDestinations`) duoc trim, bo phan tu rong va remove duplicate theo thu tu goc
+  - booleans co default false/true dung theo schema neu request bo trong
+- Rule `user_devices` da chot:
+  - `GET` chi tra device active cua user hien tai
+  - `POST` dung `pushToken` de upsert/reactivate neu record cua cung user da ton tai
+  - `DELETE` la soft delete bang `isActive = false`, khong xoa cung
+  - `platform` duoc normalize lowercase; can it nhat `deviceName` hoac `pushToken`
+- Rule `RBAC read APIs` da chot:
+  - endpoints la `/roles`, `/roles/{id}`, `/permissions`
+  - tam thoi gate bang authority `user.view` vi codebase chua co permission rieng cho role/permission read
+  - `RoleRepository` dung entity graph de load `permissions` cung role trong read flow
+  - `RoleResponse` tra nested permission list da duoc sort on service layer theo `moduleName`, `actionName`, `code`
+- Rule `RBAC write APIs` da chot:
+  - endpoints la `POST /roles`, `PUT /roles/{id}`, `PATCH /roles/{id}/permissions`
+  - write flow gate bang authority `role.assign`
+  - role code duoc normalize uppercase; permission code duoc normalize lowercase
+  - system role (`roleScope = SYSTEM` hoac `isSystemRole = true`) chi `SUPER_ADMIN` moi duoc create/modify
+  - patch permissions la replace-toan-bo danh sach permission cua role, khong merge incrementally
+  - permission inactive hoac khong ton tai se bi reject
+- Rule `audit_logs` da chot:
+  - endpoint admin la `GET /audit-logs`, gate bang authority `audit.view`
+  - bo loc gom `actorUserId`, `actionName`, `entityName`, `entityId`, `from`, `to`; sort `createdAt desc`
+  - `from` phai `<= to`
+  - `AuditLogService` serialize `oldData/newData` thanh JSON string khi ghi, va parse lai thanh `JsonNode` khi query
+  - `ipAddress` va `userAgent` duoc lay tu request scope neu co
+  - `AuditTrailRecorder` la helper dung chung de centralize `actionName/entityName` va tranh scatter string literal o tung service
+  - producer scope hien tai da duoc noi vao admin write flow: `role.create`, `role.update`, `permission.assign`, `user.create`, `user.update`, `user.deactivate`
+- `UserProfileFacade.updateMyProfile` khong con validate unique o facade; de command/service xu ly voi `currentUserId` dung scope
