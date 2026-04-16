@@ -1,6 +1,11 @@
 package com.wedservice.backend.module.payments.service.impl;
 
+import com.wedservice.backend.common.exception.BadRequestException;
+import com.wedservice.backend.common.exception.ResourceNotFoundException;
+import com.wedservice.backend.common.util.DataNormalizer;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
+import com.wedservice.backend.module.bookings.service.BookingStatusHistoryRecorder;
+import com.wedservice.backend.module.bookings.entity.BookingStatus;
 import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.payments.dto.request.CreateRefundRequest;
 import com.wedservice.backend.module.payments.dto.response.RefundResponse;
@@ -20,63 +25,74 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RefundServiceImpl implements RefundCommandService, RefundQueryService {
+
+    private static final List<RefundStatus> ACTIVE_REFUND_STATUSES = List.of(
+            RefundStatus.REQUESTED,
+            RefundStatus.QUOTED,
+            RefundStatus.APPROVED,
+            RefundStatus.PROCESSING,
+            RefundStatus.COMPLETED
+    );
 
     private final RefundRequestRepository refundRepository;
     private final JdbcTemplate jdbcTemplate;
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
+    private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
 
     @Override
+    @Transactional
     public RefundResponse createRefundRequest(CreateRefundRequest request) {
-    Booking booking = findBooking(request.getBookingId());
-    ensureCanAccessBooking(booking, "refund");
+        Booking booking = findBooking(request.getBookingId());
+        ensureCanAccessBooking(booking, "refund");
+        validateCreateRefundRequest(request, booking);
 
-    // Call stored procedure sp_get_refund_quote to get quote and policy snapshot
-    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("sp_get_refund_quote");
-    MapSqlParameterSource in = new MapSqlParameterSource().addValue("p_booking_id", request.getBookingId());
-    Map<String, Object> out = Optional.ofNullable(call.execute(in)).orElse(Map.of());
+        Map<String, Object> refundQuote = loadRefundQuote(request.getBookingId());
+        BigDecimal quotedAmount = toBigDecimal(refundQuote.get("refundable_amount"));
+        BigDecimal voucherOfferAmount = toBigDecimal(refundQuote.get("voucher_offer_amount"));
+        validateRefundQuote(quotedAmount, request.getRequestedAmount());
 
-    // The stored procedure returns columns like refundable_amount and voucher_offer_amount
-    Object refundableObj = out.getOrDefault("refundable_amount", null);
-    Object voucherObj = out.getOrDefault("voucher_offer_amount", null);
-    Object policySnapshot = out; // store full map as JSON-like string
+        RefundRequest refund = RefundRequest.builder()
+                .refundCode("RF" + System.currentTimeMillis())
+                .bookingId(request.getBookingId())
+                .reasonType(DataNormalizer.normalize(request.getReasonType()))
+                .reasonDetail(DataNormalizer.normalize(request.getReasonDetail()))
+                .requestedAmount(request.getRequestedAmount())
+                .quotedAmount(quotedAmount)
+                .voucherOfferAmount(voucherOfferAmount)
+                .policySnapshot(refundQuote.toString())
+                .requestedBy(resolveRequestedBy(request.getRequestedBy()))
+                .status(RefundStatus.REQUESTED)
+                .build();
 
-    RefundRequest r = RefundRequest.builder()
-        .refundCode("RF" + System.currentTimeMillis())
-        .bookingId(request.getBookingId())
-        .reasonType(request.getReasonType())
-        .reasonDetail(request.getReasonDetail())
-        .requestedAmount(request.getRequestedAmount())
-        .quotedAmount(refundableObj instanceof Number ? new java.math.BigDecimal(((Number) refundableObj).doubleValue()) : java.math.BigDecimal.ZERO)
-        .voucherOfferAmount(voucherObj instanceof Number ? new java.math.BigDecimal(((Number) voucherObj).doubleValue()) : java.math.BigDecimal.ZERO)
-        .policySnapshot(policySnapshot.toString())
-        .requestedBy(resolveRequestedBy(request.getRequestedBy()))
-        .status(RefundStatus.REQUESTED)
-        .build();
+        refund = refundRepository.save(refund);
 
-    r = refundRepository.save(r);
-
-    return RefundResponse.builder()
-        .id(r.getId())
-        .refundCode(r.getRefundCode())
-        .bookingId(r.getBookingId())
-        .status(r.getStatus().getValue())
-        .requestedAmount(r.getRequestedAmount())
-        .build();
+        return RefundResponse.builder()
+                .id(refund.getId())
+                .refundCode(refund.getRefundCode())
+                .bookingId(refund.getBookingId())
+                .status(refund.getStatus().getValue())
+                .requestedAmount(refund.getRequestedAmount())
+                .build();
     }
 
     @Override
     public RefundResponse getRefund(Long id) {
-        RefundRequest r = refundRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Refund not found"));
+        RefundRequest r = refundRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Refund not found"));
         Booking booking = findBooking(r.getBookingId());
         ensureCanAccessBooking(booking, "refund");
 
@@ -90,22 +106,16 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
-    public RefundResponse approveRefund(Long id, String processedBy, java.math.BigDecimal approvedAmount) {
-        RefundRequest r = refundRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Refund not found"));
+    @Transactional
+    public RefundResponse approveRefund(Long id, String processedBy, BigDecimal approvedAmount) {
+        RefundRequest r = refundRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Refund not found"));
         Booking booking = findBooking(r.getBookingId());
         ensureCanAccessBooking(booking, "refund");
+        validateApproveRefund(r, booking, approvedAmount);
 
         r.setApprovedAmount(approvedAmount);
-        if (StringUtils.hasText(processedBy)) {
-            try {
-                r.setProcessedBy(java.util.UUID.fromString(processedBy));
-            } catch (Exception ignored) {
-            }
-        } else {
-            r.setProcessedBy(authenticatedUserProvider.getRequiredCurrentUserId());
-        }
-        r.setProcessedAt(java.time.LocalDateTime.now());
+        r.setProcessedBy(resolveProcessedBy(processedBy));
+        r.setProcessedAt(LocalDateTime.now());
         r.setStatus(RefundStatus.APPROVED);
 
         r = refundRepository.save(r);
@@ -120,20 +130,22 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
                 .amount(approvedAmount)
                 .currency("VND")
                 .status(PaymentStatus.REFUNDED)
-                .paidAt(java.time.LocalDateTime.now())
+                .paidAt(LocalDateTime.now())
                 .build();
 
         paymentRepository.save(p);
 
-        // Update booking payment status to indicate refund
-        try {
-            Booking bookingToUpdate = bookingRepository.findById(r.getBookingId()).orElse(null);
-            if (bookingToUpdate != null) {
-                bookingToUpdate.setPaymentStatus(BookingPaymentStatus.REFUNDED);
-                bookingRepository.save(bookingToUpdate);
-            }
-        } catch (Exception ignored) {
-        }
+        BookingStatus oldStatus = booking.getStatus();
+        booking.setStatus(BookingStatus.REFUNDED);
+        booking.setPaymentStatus(BookingPaymentStatus.REFUNDED);
+        bookingRepository.save(booking);
+        bookingStatusHistoryRecorder.record(
+                booking.getId(),
+                oldStatus,
+                booking.getStatus(),
+                authenticatedUserProvider.getRequiredCurrentUserId(),
+                "Refund approved"
+        );
 
         return RefundResponse.builder()
                 .id(r.getId())
@@ -146,7 +158,7 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
 
     private Booking findBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
     private void ensureCanAccessBooking(Booking booking, String resourceName) {
@@ -158,13 +170,93 @@ public class RefundServiceImpl implements RefundCommandService, RefundQueryServi
         }
     }
 
-    private java.util.UUID resolveRequestedBy(String requestedBy) {
+    private Map<String, Object> loadRefundQuote(Long bookingId) {
+        SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("sp_get_refund_quote");
+        MapSqlParameterSource in = new MapSqlParameterSource().addValue("p_booking_id", bookingId);
+        return Optional.ofNullable(call.execute(in)).orElse(Map.of());
+    }
+
+    private void validateCreateRefundRequest(CreateRefundRequest request, Booking booking) {
+        if (booking.getPaymentStatus() != BookingPaymentStatus.PAID) {
+            throw new BadRequestException("Only paid bookings can create a refund request");
+        }
+        if (booking.getStatus() == BookingStatus.REFUNDED || booking.getPaymentStatus() == BookingPaymentStatus.REFUNDED) {
+            throw new BadRequestException("Booking has already been refunded");
+        }
+        if (refundRepository.existsByBookingIdAndStatusIn(request.getBookingId(), ACTIVE_REFUND_STATUSES)) {
+            throw new BadRequestException("An active refund request already exists for this booking");
+        }
+        if (booking.getFinalAmount() == null || booking.getFinalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Booking does not have a refundable amount");
+        }
+        if (request.getRequestedAmount().compareTo(booking.getFinalAmount()) > 0) {
+            throw new BadRequestException("Requested refund amount cannot exceed booking final amount");
+        }
+    }
+
+    private void validateRefundQuote(BigDecimal quotedAmount, BigDecimal requestedAmount) {
+        if (quotedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Booking is not eligible for refund");
+        }
+        if (requestedAmount.compareTo(quotedAmount) > 0) {
+            throw new BadRequestException("Requested refund amount cannot exceed quoted refundable amount");
+        }
+    }
+
+    private void validateApproveRefund(RefundRequest refund, Booking booking, BigDecimal approvedAmount) {
+        if (refund.getStatus() != RefundStatus.REQUESTED) {
+            throw new BadRequestException("Refund request is not awaiting approval");
+        }
+        if (booking.getPaymentStatus() != BookingPaymentStatus.PAID) {
+            throw new BadRequestException("Only paid bookings can be refunded");
+        }
+        if (approvedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Approved refund amount must be greater than 0");
+        }
+        if (approvedAmount.compareTo(refund.getRequestedAmount()) > 0) {
+            throw new BadRequestException("Approved refund amount cannot exceed requested amount");
+        }
+        if (approvedAmount.compareTo(refund.getQuotedAmount()) > 0) {
+            throw new BadRequestException("Approved refund amount cannot exceed quoted refundable amount");
+        }
+    }
+
+    private UUID resolveRequestedBy(String requestedBy) {
         if (authenticatedUserProvider.isCurrentUserBackoffice() && StringUtils.hasText(requestedBy)) {
             try {
-                return java.util.UUID.fromString(requestedBy);
-            } catch (Exception ignored) {
+                return UUID.fromString(requestedBy);
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("requestedBy must be a valid UUID");
             }
         }
         return authenticatedUserProvider.getRequiredCurrentUserId();
+    }
+
+    private UUID resolveProcessedBy(String processedBy) {
+        if (!StringUtils.hasText(processedBy)) {
+            return authenticatedUserProvider.getRequiredCurrentUserId();
+        }
+        try {
+            return UUID.fromString(processedBy);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("processedBy must be a valid UUID");
+        }
+    }
+
+    private BigDecimal toBigDecimal(Object rawValue) {
+        if (rawValue == null) {
+            return BigDecimal.ZERO;
+        }
+        if (rawValue instanceof BigDecimal bigDecimal) {
+            return bigDecimal;
+        }
+        if (rawValue instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        try {
+            return new BigDecimal(rawValue.toString());
+        } catch (NumberFormatException ex) {
+            return BigDecimal.ZERO;
+        }
     }
 }

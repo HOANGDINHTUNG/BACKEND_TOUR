@@ -647,18 +647,63 @@ Thêm các filter sau ngoài bộ public:
 | --- | --- | --- |
 | `destinationId` | long | - |
 | `keyword` | string | - |
+| `tagIds` | list<long> | - |
+| `minPrice` | decimal | - |
+| `maxPrice` | decimal | - |
+| `travelMonth` | int | - |
+| `sortBy` | string | `createdAt` |
+| `sortDir` | string | `desc` |
 | `page` | int | `0` |
 | `size` | int | `10` |
+
+**Rules from current code**
+
+- Public search chỉ trả các tour chưa soft-delete và có `status = active`
+- `destinationId` filter theo tour destination
+- `keyword` match không phân biệt hoa thường trên `name`, `slug`, `shortDescription`, `description`, `highlights`
+- `tagIds` filter theo `tour_tags`; nếu không có tour nào match tag thì backend trả page rỗng
+- `minPrice` / `maxPrice` filter theo `tours.base_price`; `maxPrice` không được nhỏ hơn `minPrice`
+- `travelMonth` filter theo `tour_seasonality.month_from/month_to`; nếu không có tour nào match tháng thì backend trả page rỗng
+- `sortBy` chỉ nhận: `name`, `basePrice`, `durationDays`, `averageRating`, `totalBookings`, `createdAt`
+- `sortDir` chỉ nhận `asc` hoặc `desc`
+- `travelMonth` phải nằm trong khoảng `1..12`
+- `page >= 0`, `1 <= size <= 100`
+- `GET /tours` vẫn trả response mỏng hơn `GET /tours/{id}` và không load các collection lớn
 
 **Request**
 
 ```http
-GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&size=10
+GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&tagIds=4&tagIds=8&minPrice=900000&maxPrice=1500000&travelMonth=6&sortBy=basePrice&sortDir=asc&page=0&size=10
 ```
 
 ### `GET /tours/{id}`
 
 - Access: `PUBLIC`
+
+**Rules from current code**
+
+- Detail hiện trả thêm các khối nội dung `media`, `itineraryDays[].items`, `checklistItems`
+- `GET /tours` vẫn giữ response nhẹ hơn và không load các collection này
+
+### `GET /tours/{id}/schedules`
+
+- Access: `PUBLIC`
+
+**Rules from current code**
+
+- Public API chỉ trả các schedule chưa bị soft-delete và có status thuộc một trong các giá trị:
+  - `open`
+  - `closed`
+  - `full`
+  - `departed`
+  - `completed`
+- `draft` không xuất hiện ở public list
+
+### `GET /tours/{tourId}/schedules/{scheduleId}`
+
+- Access: `PUBLIC`
+- `scheduleId` phải thuộc đúng `tourId`
+- Hiện tại detail public đang dùng cùng query path với admin, nên nếu schedule tồn tại và chưa soft-delete thì API vẫn trả được detail
 
 ### `POST /admin/tours`
 
@@ -671,9 +716,21 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 - `durationDays >= 1`
 - `durationNights >= 0`
 - `durationNights` must not be greater than `durationDays`
+- Nếu `cancellationPolicyId` không được truyền, backend tự bind `default active cancellation policy`
+- Nếu `cancellationPolicyId` được truyền, policy phải tồn tại, active, và phải có ít nhất một rule
+- `tagIds` nếu có truyền thì phải unique, dương, và phải map được tới tag đang active
+- `seasonality[].seasonName` phải unique trong cùng tour
+- `seasonality[].monthFrom/monthTo` nếu cùng có dữ liệu thì `monthTo` không được nhỏ hơn `monthFrom`
+- `seasonality[].recommendationScore >= 0`
+- `media[].sortOrder` phải unique trong cùng tour
+- `itineraryDays[].dayNumber` phải unique trong cùng tour và không được vượt `durationDays`
+- `itineraryDays[].items[].sequenceNo` phải unique trong cùng ngày
+- `itineraryDays[].items[].endTime` không được trước `startTime`
+- `checklistItems[].itemName` phải unique trong cùng tour
 - If `currency` is omitted, backend defaults to `VND`
 - If `status` is omitted, backend defaults to `draft`
 - `destinationId` must exist and must not be soft-deleted
+- Backend hiện replace toàn bộ `media`, `itineraryDays/items`, `checklistItems` theo payload khi create/update
 
 **Request**
 
@@ -683,10 +740,14 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
   "name": "Tour Bà Nà Hills 2 ngày 1 đêm",
   "slug": "tour-ba-na-hills-2n1d",
   "destinationId": 1,
+  "cancellationPolicyId": 1,
+  "tagIds": [1, 4],
   "basePrice": 1500000,
   "currency": "VND",
   "durationDays": 2,
   "durationNights": 1,
+  "shortDescription": "Tour ngắn ngày cho gia đình",
+  "description": "Lịch trình bao gồm cáp treo, Cầu Vàng và Fantasy Park",
   "transportType": "BUS",
   "tripMode": "GROUP",
   "highlights": "Cầu Vàng, Làng Pháp, Fantasy Park",
@@ -694,7 +755,51 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
   "exclusions": "Chi phí cá nhân",
   "notes": "Mang giày thể thao",
   "isFeatured": true,
-  "status": "ACTIVE"
+  "status": "ACTIVE",
+  "media": [
+    {
+      "mediaType": "image",
+      "mediaUrl": "https://cdn.example.com/tours/ba-na-cover.jpg",
+      "altText": "Bà Nà cover",
+      "sortOrder": 0,
+      "isActive": true
+    }
+  ],
+  "seasonality": [
+    {
+      "seasonName": "Mùa hè",
+      "monthFrom": 5,
+      "monthTo": 8,
+      "recommendationScore": 9.5,
+      "notes": "Thời tiết đẹp, phù hợp gia đình"
+    }
+  ],
+  "itineraryDays": [
+    {
+      "dayNumber": 1,
+      "title": "Khởi hành đi Bà Nà",
+      "description": "Tập trung và di chuyển lên khu du lịch",
+      "items": [
+        {
+          "sequenceNo": 1,
+          "itemType": "visit",
+          "title": "Check-in Cầu Vàng",
+          "description": "Tham quan và chụp ảnh",
+          "locationName": "Cầu Vàng",
+          "startTime": "09:00:00",
+          "endTime": "10:30:00",
+          "travelMinutesEstimated": 30
+        }
+      ]
+    }
+  ],
+  "checklistItems": [
+    {
+      "itemName": "Áo khoác mỏng",
+      "itemGroup": "packing",
+      "isRequired": true
+    }
+  ]
 }
 ```
 
@@ -707,6 +812,107 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 
 - Permission: `tour.delete`
 
+### `GET /admin/tours/{tourId}/schedules`
+
+- Permission: `schedule.view`
+- Trả toàn bộ schedule chưa bị soft-delete của tour, không lọc theo status
+
+### `GET /admin/tours/{tourId}/schedules/{scheduleId}`
+
+- Permission: `schedule.view`
+- `scheduleId` phải thuộc đúng `tourId`
+
+### `POST /admin/tours/{tourId}/schedules`
+
+- Permission: `schedule.create`
+
+**Rules from current code**
+
+- `departureAt`, `returnAt`, `capacityTotal`, `adultPrice` là bắt buộc
+- `capacityTotal >= 1`
+- `minGuestsToOperate >= 1` nếu có truyền; nếu bỏ trống backend mặc định `1`
+- Các giá đều phải `>= 0`
+- `returnAt` phải sau `departureAt`
+- `bookingCloseAt` phải sau `bookingOpenAt` nếu cả hai cùng có
+- `bookingCloseAt` không được sau `departureAt`
+- `meetingAt` không được sau `departureAt`
+- `minGuestsToOperate` không được lớn hơn `capacityTotal`
+- `pickupPoints[].pickupAt` không được sau `departureAt`
+- `guideAssignments[].guideId` nếu có truyền thì phải `> 0`
+- `guideAssignments[].guideId` không được trùng nhau trong cùng schedule payload
+- Guide được assign phải tồn tại và đang ở trạng thái `active`
+- Nếu `status` bỏ trống, backend mặc định `draft`
+- Nếu `scheduleCode` bỏ trống, backend tự sinh theo dạng `SCH<timestamp>`
+- Backend hiện đồng bộ child list bằng cách replace toàn bộ `pickupPoints` và `guideAssignments`
+
+**Request**
+
+```json
+{
+  "scheduleCode": "SCH-SGN-20260510",
+  "departureAt": "2026-05-10T08:00:00",
+  "returnAt": "2026-05-12T18:00:00",
+  "bookingOpenAt": "2026-04-01T00:00:00",
+  "bookingCloseAt": "2026-05-09T23:00:00",
+  "meetingAt": "2026-05-10T07:30:00",
+  "meetingPointName": "Chợ Bến Thành",
+  "meetingAddress": "Quận 1, TP.HCM",
+  "meetingLatitude": 10.7721,
+  "meetingLongitude": 106.6983,
+  "capacityTotal": 20,
+  "minGuestsToOperate": 5,
+  "adultPrice": 1000000,
+  "childPrice": 600000,
+  "infantPrice": 0,
+  "seniorPrice": 800000,
+  "singleRoomSurcharge": 300000,
+  "transportDetail": "Xe giường nằm 29 chỗ",
+  "note": "Có mặt trước 30 phút",
+  "status": "open",
+  "pickupPoints": [
+    {
+      "pointName": "Chợ Bến Thành",
+      "address": "Quận 1, TP.HCM",
+      "latitude": 10.7721,
+      "longitude": 106.6983,
+      "pickupAt": "2026-05-10T07:00:00",
+      "sortOrder": 1
+    }
+  ],
+  "guideAssignments": [
+    {
+      "guideId": 99,
+      "guideRole": "lead"
+    }
+  ]
+}
+```
+
+### `PUT /admin/tours/{tourId}/schedules/{scheduleId}`
+
+- Permission: `schedule.update`
+- Body: giống `POST /admin/tours/{tourId}/schedules`
+- Nếu `status` được truyền trong body, backend vẫn validate transition như luồng update status riêng
+
+### `PATCH /admin/tours/{tourId}/schedules/{scheduleId}/status`
+
+- Permission: `schedule.close`
+
+**Rules from current code**
+
+- Body chỉ gồm `status`
+- Không cho đưa schedule đã có `bookedSeats > 0` quay lại `draft`
+- Không cho reopen schedule quá ngày khởi hành về `open` hoặc `full`
+- Nếu caller set `status = open` nhưng `bookedSeats >= capacityTotal`, backend tự chuyển thành `full`
+
+**Request**
+
+```json
+{
+  "status": "closed"
+}
+```
+
 ### TourResponse shape
 
 ```json
@@ -716,8 +922,168 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
   "name": "Tour Bà Nà Hills 2 ngày 1 đêm",
   "slug": "tour-ba-na-hills-2n1d",
   "destinationId": 1,
+  "cancellationPolicyId": 1,
   "basePrice": 1500000,
-  "currency": "VND"
+  "currency": "VND",
+  "durationDays": 2,
+  "durationNights": 1,
+  "shortDescription": "Tour ngắn ngày cho gia đình",
+  "description": "Lịch trình bao gồm cáp treo, Cầu Vàng và Fantasy Park",
+  "transportType": "BUS",
+  "tripMode": "GROUP",
+  "highlights": "Cầu Vàng, Làng Pháp, Fantasy Park",
+  "inclusions": "Xe đưa đón, cáp treo, vé vào cửa",
+  "exclusions": "Chi phí cá nhân",
+  "notes": "Mang giày thể thao",
+  "isFeatured": true,
+  "status": "active",
+  "tags": [
+    {
+      "id": 1,
+      "code": "GIAI_TRI",
+      "name": "Giải trí",
+      "tagGroup": "phong_cach",
+      "description": "Tour vui chơi, hoạt động sôi động"
+    },
+    {
+      "id": 4,
+      "code": "GIA_DINH",
+      "name": "Gia đình",
+      "tagGroup": "doi_tuong",
+      "description": "Tour phù hợp gia đình và trẻ em"
+    }
+  ],
+  "media": [
+    {
+      "id": 101,
+      "mediaType": "image",
+      "mediaUrl": "https://cdn.example.com/tours/ba-na-cover.jpg",
+      "altText": "Bà Nà cover",
+      "sortOrder": 0,
+      "isActive": true
+    }
+  ],
+  "seasonality": [
+    {
+      "id": 151,
+      "seasonName": "Mùa hè",
+      "monthFrom": 5,
+      "monthTo": 8,
+      "recommendationScore": 9.5,
+      "notes": "Thời tiết đẹp, phù hợp gia đình"
+    }
+  ],
+  "itineraryDays": [
+    {
+      "id": 201,
+      "dayNumber": 1,
+      "title": "Khởi hành đi Bà Nà",
+      "description": "Tập trung và di chuyển lên khu du lịch",
+      "overnightDestinationId": null,
+      "items": [
+        {
+          "id": 301,
+          "sequenceNo": 1,
+          "itemType": "visit",
+          "title": "Check-in Cầu Vàng",
+          "description": "Tham quan và chụp ảnh",
+          "destinationId": null,
+          "locationName": "Cầu Vàng",
+          "address": null,
+          "latitude": null,
+          "longitude": null,
+          "googleMapUrl": null,
+          "startTime": "09:00:00",
+          "endTime": "10:30:00",
+          "travelMinutesEstimated": 30
+        }
+      ]
+    }
+  ],
+  "checklistItems": [
+    {
+      "id": 401,
+      "itemName": "Áo khoác mỏng",
+      "itemGroup": "packing",
+      "isRequired": true
+    }
+  ],
+  "cancellationPolicy": {
+    "id": 1,
+    "name": "CHINH_SACH_MAC_DINH",
+    "description": "Chính sách hoàn hủy mặc định của TravelViet",
+    "voucherBonusPercent": 10,
+    "isDefault": true,
+    "isActive": true,
+    "rules": [
+      {
+        "id": 1,
+        "minHoursBefore": 168,
+        "maxHoursBefore": null,
+        "refundPercent": 80,
+        "voucherPercent": 90,
+        "feePercent": 20,
+        "allowReschedule": true,
+        "notes": "Hủy trước 7 ngày"
+      }
+    ]
+  ]
+}
+```
+
+### TourScheduleResponse shape
+
+```json
+{
+  "id": 66,
+  "scheduleCode": "SCH-SGN-20260510",
+  "tourId": 15,
+  "departureAt": "2026-05-10T08:00:00",
+  "returnAt": "2026-05-12T18:00:00",
+  "bookingOpenAt": "2026-04-01T00:00:00",
+  "bookingCloseAt": "2026-05-09T23:00:00",
+  "meetingAt": "2026-05-10T07:30:00",
+  "meetingPointName": "Chợ Bến Thành",
+  "meetingAddress": "Quận 1, TP.HCM",
+  "meetingLatitude": 10.7721,
+  "meetingLongitude": 106.6983,
+  "capacityTotal": 20,
+  "bookedSeats": 5,
+  "remainingSeats": 15,
+  "minGuestsToOperate": 5,
+  "adultPrice": 1000000,
+  "childPrice": 600000,
+  "infantPrice": 0,
+  "seniorPrice": 800000,
+  "singleRoomSurcharge": 300000,
+  "transportDetail": "Xe giường nằm 29 chỗ",
+  "note": "Có mặt trước 30 phút",
+  "status": "open",
+  "pickupPoints": [
+    {
+      "id": 10,
+      "pointName": "Chợ Bến Thành",
+      "address": "Quận 1, TP.HCM",
+      "latitude": 10.7721,
+      "longitude": 106.6983,
+      "pickupAt": "2026-05-10T07:00:00",
+      "sortOrder": 1
+    }
+  ],
+  "guideAssignments": [
+    {
+      "id": 20,
+      "guideId": 99,
+      "guideCode": "GD099",
+      "guideFullName": "Le Van Guide",
+      "guidePhone": "0909000000",
+      "guideEmail": "guide99@example.com",
+      "guideStatus": "active",
+      "isLocalGuide": true,
+      "guideRole": "lead",
+      "assignedAt": "2026-04-01T09:00:00"
+    }
+  ]
 }
 ```
 
@@ -734,7 +1100,17 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 - `userId`, `tourId`, `scheduleId`, `contactName`, `contactPhone` là bắt buộc
 - `adults` tối thiểu `1`
 - Nếu user thường gọi API, backend ưu tiên user trong token
-- `passengers[].dateOfBirth` hiện đang không được map xuống entity khi create booking
+- `scheduleId` phải tồn tại, phải thuộc đúng `tourId`, và schedule phải ở trạng thái `open`
+- Nếu `bookingOpenAt` hoặc `bookingCloseAt` có dữ liệu, backend sẽ áp dụng cửa sổ đặt chỗ theo thời điểm hiện tại
+- Backend kiểm tra sức chứa schedule theo số ghế thực chiếm: `adults + children + seniors`
+- `subtotalAmount` và `finalAmount` được tính theo bảng giá của `tour_schedule`:
+  - `adultPrice * adults`
+  - `childPrice * children`
+  - `infantPrice * infants`
+  - `seniorPrice * seniors`
+- `passengers[].dateOfBirth` được parse theo định dạng `yyyy-MM-dd` và map xuống entity
+- `passengers[].passengerType` hợp lệ: `adult`, `child`, `infant`, `senior`
+- `passengers[].gender` hợp lệ: `male`, `female`, `other`, `unknown`; nếu để trống backend sẽ dùng `unknown`
 
 **Request**
 
@@ -782,7 +1158,7 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
     "id": 1,
     "bookingCode": "BK1713115800000",
     "status": "pending_payment",
-    "finalAmount": 0
+    "finalAmount": 2850000
   }
 }
 ```
@@ -790,6 +1166,50 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 ### `GET /bookings/{id}`
 
 - Permission: `booking.view`
+
+### `GET /bookings/{id}/status-history`
+
+- Permission: `booking.view`
+- Trả về lịch sử chuyển trạng thái của booking theo thứ tự thời gian tăng dần
+
+### `PATCH /bookings/{id}/cancel`
+
+- Permission: `booking.cancel`
+
+**Lưu ý nghiệp vụ từ code**
+
+- Chỉ cho phép khi booking đang ở `pending_payment` hoặc `confirmed`
+- Nếu booking đã thanh toán, backend chuyển sang `cancel_requested`
+- Nếu booking chưa thanh toán, backend chuyển thẳng sang `cancelled`
+- Backend ghi thêm `booking_status_history`
+
+**Request**
+
+```json
+{
+  "reason": "Khách yêu cầu hủy booking"
+}
+```
+
+### `PATCH /bookings/{id}/check-in`
+
+- Permission: `booking.checkin`
+
+**Lưu ý nghiệp vụ từ code**
+
+- Chỉ booking `confirmed` và `paymentStatus = paid` mới được check-in
+- Backend chuyển status sang `checked_in`
+- Backend ghi thêm `booking_status_history`
+
+### `PATCH /bookings/{id}/complete`
+
+- Permission: `booking.update`
+
+**Lưu ý nghiệp vụ từ code**
+
+- Chỉ booking `checked_in` mới được complete
+- Backend chuyển status sang `completed`
+- Backend ghi thêm `booking_status_history`
 
 ---
 
@@ -802,6 +1222,11 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 **Lưu ý nghiệp vụ từ code**
 
 - DTO bắt buộc: `bookingId`, `paymentMethod`, `amount`
+- `amount` phải lớn hơn `0`
+- Booking phải tồn tại và người gọi phải có quyền truy cập booking đó
+- Booking chỉ được thanh toán khi đang ở trạng thái `pending_payment` hoặc `confirmed`
+- Booking không được ở trạng thái thanh toán `paid` hoặc `refunded`
+- `amount` phải khớp tuyệt đối với `booking.finalAmount`
 - Backend tự set:
   - `currency = "VND"`
   - `status = "paid"`
@@ -809,7 +1234,9 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 
 **Additional notes**
 
+- After creating the payment, booking `status` is updated to `confirmed`
 - After creating the payment, booking `paymentStatus` is updated to `paid`
+- The service also rejects duplicate successful payments for the same booking
 - `paymentMethod` is currently accepted as a plain `string`; the DTO layer does not enforce an enum yet
 
 **Request**
@@ -855,8 +1282,13 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 **Lưu ý nghiệp vụ từ code**
 
 - DTO bắt buộc: `bookingId`, `requestedAmount`
+- `requestedAmount` phải lớn hơn `0`
+- Chỉ booking đã thanh toán (`paymentStatus = paid`) mới được tạo refund request
+- `requestedAmount` không được vượt `booking.finalAmount`
+- Backend chặn tạo refund request mới nếu booking đã có refund đang active
 - `requestedBy` nếu không phải backoffice sẽ bị override bằng user đang login
 - Backend gọi stored procedure `sp_get_refund_quote`
+- `requestedAmount` không được vượt `refundable_amount` trả về từ quote
 - Status khởi tạo: `requested`
 
 **Request**
@@ -906,9 +1338,14 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 **Lưu ý nghiệp vụ từ code**
 
 - Refund status -> `approved`
+- Chỉ refund ở trạng thái `requested` mới được approve
+- `approvedAmount` phải lớn hơn `0`
+- `approvedAmount` không được vượt `requestedAmount`
+- `approvedAmount` không được vượt `quotedAmount`
 - Hệ thống tạo thêm payment record:
   - `paymentMethod = "refund"`
   - `status = "refunded"`
+- Booking status được update thành `refunded`
 - Booking payment status được update thành `refunded`
 
 ---
@@ -1068,9 +1505,16 @@ GET http://localhost:8088/api/v1/tours?keyword=Da+Nang&destinationId=1&page=0&si
 | `GET /destinations/me/follows` | `AUTHENTICATED` |
 | `GET /tours` | `PUBLIC` |
 | `GET /tours/{id}` | `PUBLIC` |
+| `GET /tours/{id}/schedules` | `PUBLIC` |
+| `GET /tours/{tourId}/schedules/{scheduleId}` | `PUBLIC` |
 | `POST /admin/tours` | `tour.create` |
 | `PUT /admin/tours/{id}` | `tour.update` |
 | `DELETE /admin/tours/{id}` | `tour.delete` |
+| `GET /admin/tours/{tourId}/schedules` | `schedule.view` |
+| `GET /admin/tours/{tourId}/schedules/{scheduleId}` | `schedule.view` |
+| `POST /admin/tours/{tourId}/schedules` | `schedule.create` |
+| `PUT /admin/tours/{tourId}/schedules/{scheduleId}` | `schedule.update` |
+| `PATCH /admin/tours/{tourId}/schedules/{scheduleId}/status` | `schedule.close` |
 | `POST /bookings` | `booking.create` |
 | `GET /bookings/{id}` | `booking.view` |
 | `POST /payments` | `payment.create` |

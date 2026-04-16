@@ -40,6 +40,8 @@
 - Port hiện tại: `8088`
 - Context path: `/api/v1`
 - Profile mặc định: `dev`
+- Runtime dev hiện trỏ MySQL schema `wedservice` qua port `3308`
+- Dev không còn để Hibernate tự sửa schema; hướng chuẩn hiện tại là để Flyway quản lý migration
 - Lệnh chạy thường dùng:
 
 ```powershell
@@ -230,10 +232,24 @@ Các file đáng chú ý:
 
 - `POST /bookings` cần permission `booking.create`
 - `GET /bookings/{id}` cần `booking.view`
+- `GET /bookings/{id}/status-history` cần `booking.view`
+- `PATCH /bookings/{id}/cancel` cần `booking.cancel`
+- `PATCH /bookings/{id}/check-in` cần `booking.checkin`
+- `PATCH /bookings/{id}/complete` cần `booking.update`
 - `userId`, `tourId`, `scheduleId`, `contactName`, `contactPhone` là bắt buộc
 - `adults` tối thiểu là `1`
 - Với user thường, backend ưu tiên user hiện tại từ token
-- `passengers[].dateOfBirth` hiện chưa được map xuống entity khi tạo booking
+- `scheduleId` phải tồn tại, phải thuộc đúng `tourId`, và schedule phải ở trạng thái `open`
+- Nếu `bookingOpenAt` / `bookingCloseAt` có dữ liệu thì booking phải nằm trong cửa sổ mở bán
+- `subtotalAmount` và `finalAmount` hiện đã được tính theo giá của `tour_schedule`
+- Kiểm tra sức chứa schedule chỉ tính nhóm chiếm ghế: `adults + children + seniors`
+- `passengers[].dateOfBirth` hiện đã được parse theo `yyyy-MM-dd` và map xuống entity
+- `booking_status_history` hiện đã được ghi ở application layer khi tạo booking và khi booking đổi trạng thái
+- `PATCH /bookings/{id}/cancel`:
+  - `pending_payment` / `confirmed` chưa thanh toán -> `cancelled`
+  - booking đã thanh toán -> `cancel_requested`
+- `PATCH /bookings/{id}/check-in`: chỉ hợp lệ với booking `confirmed` và `paymentStatus = paid`
+- `PATCH /bookings/{id}/complete`: chỉ hợp lệ với booking `checked_in`
 
 ### Payments
 
@@ -243,6 +259,10 @@ Các file đáng chú ý:
   - `currency = "VND"`
   - `status = "paid"`
   - `paidAt = now()`
+- `amount` phải lớn hơn `0` và phải khớp với `booking.finalAmount`
+- Booking chỉ được thanh toán khi `status` là `pending_payment` hoặc `confirmed`
+- Nếu payment thành công, backend cập nhật `booking.status = confirmed` và `booking.paymentStatus = paid`
+- Backend chặn tạo thêm successful payment nếu booking đã `paid` / `refunded` hoặc đã có payment `paid` trước đó
 
 ### Refunds
 
@@ -250,10 +270,15 @@ Các file đáng chú ý:
 - `GET /refunds/{id}` cần `refund.view`
 - `PATCH /refunds/{id}/approve` cần `refund.approve` hoặc `refund.process`
 - Backend gọi stored procedure `sp_get_refund_quote`
+- Chỉ booking đã `paid` mới được tạo refund request
+- `requestedAmount` phải lớn hơn `0`, không vượt `booking.finalAmount`, và không vượt quote trả về từ procedure
+- Backend chặn tạo refund request mới nếu booking đã có refund đang active
 - Approve refund sẽ:
   - đổi refund status thành `approved`
   - tạo thêm payment record hoàn tiền
+  - cập nhật booking status thành `refunded`
   - cập nhật booking payment status thành `refunded`
+  - chặn approve nếu `approvedAmount` vượt `requestedAmount` hoặc `quotedAmount`
 
 ### Reviews
 
@@ -270,6 +295,59 @@ Các file đáng chú ý:
 - `POST /destinations/propose` cần `destination.propose` hoặc `destination.create`
 - Follow destination chỉ yêu cầu đăng nhập, không yêu cầu permission riêng
 - Admin destination dùng các permission `destination.view/create/update/delete/review/publish`
+
+### Tours
+
+- `POST /admin/tours` và `PUT /admin/tours/{id}` hiện nhận thêm nested content:
+  - `tagIds`
+  - `media`
+  - `seasonality`
+  - `itineraryDays[].items`
+  - `checklistItems`
+- `POST /admin/tours` và `PUT /admin/tours/{id}` hiện hỗ trợ `cancellationPolicyId`
+- `GET /tours/{id}` hiện trả kèm `tags`, `media`, `seasonality`, `itineraryDays[].items`, `checklistItems`
+- `GET /tours/{id}` hiện trả thêm `cancellationPolicy` cùng `rules`
+- `GET /tours` vẫn giữ response mỏng hơn và không load các collection lớn này
+- `GET /tours` hiện chỉ trả tour `active`, filter được theo `destinationId`, `keyword`, `tagIds`, `minPrice`, `maxPrice`, `travelMonth`
+- `GET /tours` dùng `keyword` để match `name`, `slug`, `shortDescription`, `description`, `highlights`
+- Nếu `tagIds` không match tour nào, backend trả page rỗng ngay thay vì query catalog rộng
+- Nếu `travelMonth` không match seasonality nào, backend trả page rỗng ngay thay vì query catalog rộng
+- `GET /tours` hiện cho sort theo `name`, `basePrice`, `durationDays`, `averageRating`, `totalBookings`, `createdAt`
+- `GET /tours` validate `travelMonth` trong `1..12`, `page >= 0`, `1 <= size <= 100`, `sortDir in {asc,desc}`
+- `GET /tours` reject `maxPrice < minPrice`
+- Tour root create/update hiện replace toàn bộ child list `media`, `itineraryDays/items`, `checklistItems` theo payload thay vì patch từng phần tử
+- Nếu request tour không truyền `cancellationPolicyId`, backend tự bind `default active cancellation policy`
+- Nếu request truyền `cancellationPolicyId`, policy phải tồn tại, active, và phải có ít nhất một rule
+- Validation nội dung tour hiện chặn:
+  - `tagIds` trùng nhau hoặc chứa id không hợp lệ
+  - `seasonality[].seasonName` trùng nhau
+  - `seasonality[].monthTo` nhỏ hơn `monthFrom`
+  - `seasonality[].recommendationScore` âm
+  - `media[].sortOrder` trùng nhau trong cùng tour
+  - `itineraryDays[].dayNumber` trùng nhau hoặc vượt `durationDays`
+  - `itineraryDays[].items[].sequenceNo` trùng nhau trong cùng ngày
+  - `itineraryDays[].items[].endTime` trước `startTime`
+  - `checklistItems[].itemName` trùng nhau trong cùng tour
+- `POST /admin/tours/{tourId}/schedules` cần `schedule.create`
+- `PUT /admin/tours/{tourId}/schedules/{scheduleId}` cần `schedule.update`
+- `PATCH /admin/tours/{tourId}/schedules/{scheduleId}/status` cần `schedule.close`
+- `GET /admin/tours/{tourId}/schedules` và `GET /admin/tours/{tourId}/schedules/{scheduleId}` cần `schedule.view`
+- `GET /tours/{id}/schedules` chỉ trả các schedule chưa soft-delete với status thuộc: `open`, `closed`, `full`, `departed`, `completed`
+- Schedule request hiện validate:
+  - `returnAt` phải sau `departureAt`
+  - `bookingCloseAt` phải sau `bookingOpenAt` và không được sau `departureAt`
+  - `meetingAt` không được sau `departureAt`
+  - `minGuestsToOperate` không được lớn hơn `capacityTotal`
+  - các giá phải `>= 0`
+  - `pickupPoints[].pickupAt` không được sau `departureAt`
+  - `guideAssignments[].guideId` nếu có thì phải `> 0`, không được trùng nhau, và guide phải đang `active`
+- Nếu `status` của schedule bị bỏ trống thì backend mặc định `draft`
+- Nếu `scheduleCode` bị bỏ trống thì backend tự sinh `SCH<timestamp>`
+- Update schedule hiện replace toàn bộ child list `pickupPoints` và `guideAssignments` thay vì patch từng phần tử
+- Schedule response hiện enrich `guideAssignments` bằng thông tin guide cơ bản: `guideCode`, `guideFullName`, `guidePhone`, `guideEmail`, `guideStatus`, `isLocalGuide`
+- Không cho schedule đã có `bookedSeats > 0` quay lại `draft`
+- Không cho reopen schedule quá ngày khởi hành về `open` hoặc `full`
+- Nếu caller set `status = open` nhưng số ghế đã đầy, backend tự chuyển status thành `full`
 
 ---
 

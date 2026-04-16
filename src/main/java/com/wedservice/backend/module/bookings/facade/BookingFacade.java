@@ -2,10 +2,13 @@ package com.wedservice.backend.module.bookings.facade;
 
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
+import com.wedservice.backend.module.bookings.dto.response.BookingStatusHistoryResponse;
 import com.wedservice.backend.module.bookings.service.command.BookingCommandService;
 import com.wedservice.backend.module.bookings.service.query.BookingQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,5 +24,21 @@ public class BookingFacade {
 
     public BookingResponse getBooking(Long id) {
         return bookingQueryService.getBooking(id);
+    }
+
+    public BookingResponse cancelBooking(Long id, String reason) {
+        return bookingCommandService.cancelBooking(id, reason);
+    }
+
+    public BookingResponse checkInBooking(Long id, String reason) {
+        return bookingCommandService.checkInBooking(id, reason);
+    }
+
+    public BookingResponse completeBooking(Long id, String reason) {
+        return bookingCommandService.completeBooking(id, reason);
+    }
+
+    public List<BookingStatusHistoryResponse> getBookingStatusHistory(Long id) {
+        return bookingQueryService.getBookingStatusHistory(id);
     }
 }

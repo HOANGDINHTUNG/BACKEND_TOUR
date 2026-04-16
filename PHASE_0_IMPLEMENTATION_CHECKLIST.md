@@ -36,20 +36,20 @@
 
 | Table | Entity | Repository | Service/Facade | Controller/API | Tests | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `tours` | yes | yes | yes | yes | yes | `mvp` | Core create/update/query exists; still thin versus ERD richness |
-| `tour_media` | yes | yes | partial | no direct endpoint | no | `mvp` | Mapped but not fully exposed as dedicated flow |
-| `tour_seasonality` | yes | yes | partial | no direct endpoint | no | `mvp` | Entity/repository exist, orchestration incomplete |
-| `tour_itinerary_days` | yes | yes | partial | no direct endpoint | no | `mvp` | Data model exists, CRUD flow incomplete |
-| `itinerary_items` | yes | yes | partial | no direct endpoint | no | `mvp` | Data model exists, CRUD flow incomplete |
-| `tour_checklist_items` | yes | yes | partial | no direct endpoint | no | `mvp` | Data model exists, orchestration incomplete |
-| `tour_schedules` | yes | yes | partial | no direct endpoint | no | `mvp` | Lifecycle typed, but no real schedule management flow yet |
-| `tour_schedule_pickup_points` | yes | yes | partial | no direct endpoint | no | `mvp` | Data model only for now |
-| `tour_schedule_guides` | yes | yes | partial | no direct endpoint | no | `mvp` | Depends on missing guide module |
-| `tags` | no | no | no | no | no | `schema-only` | Not started |
-| `guides` | no | no | no | no | no | `schema-only` | Not started |
-| `cancellation_policies` | no | no | no | no | no | `schema-only` | Not started |
-| `cancellation_policy_rules` | no | no | no | no | no | `schema-only` | Not started |
-| `tour_tags` | no | no | no | no | no | `schema-only` | Not started |
+| `tours` | yes | yes | yes | yes | yes | `mvp` | Core create/update/query exists; root tour now orchestrates media, itinerary, checklist, and schedules |
+| `tour_media` | yes | yes | yes | indirect | yes | `mvp` | Managed through tour create/update/detail payloads; no standalone endpoint |
+| `tour_seasonality` | yes | yes | yes | indirect | yes | `mvp` | Managed through tour root payloads and returned in tour detail |
+| `tour_itinerary_days` | yes | yes | yes | indirect | yes | `mvp` | Managed through tour root payloads and returned in tour detail |
+| `itinerary_items` | yes | yes | yes | indirect | yes | `mvp` | Managed through itinerary day payloads; no standalone endpoint |
+| `tour_checklist_items` | yes | yes | yes | indirect | yes | `mvp` | Managed through tour root payloads and returned in tour detail |
+| `tour_schedules` | yes | yes | yes | yes | yes | `mvp` | Admin/public schedule list-detail-create-update-status flow exists; broader lifecycle automation still pending |
+| `tour_schedule_pickup_points` | yes | yes | yes | indirect | yes | `mvp` | Managed through schedule create/update payloads; no standalone endpoint |
+| `tour_schedule_guides` | yes | yes | yes | indirect | yes | `mvp` | Managed through schedule payloads; guide ids are now validated against active guide master data |
+| `tags` | yes | yes | yes | indirect | yes | `mvp` | Active master data is resolved through tour root tagIds and returned in tour detail |
+| `guides` | yes | yes | yes | indirect | yes | `mvp` | Guide master data now backs schedule assignment validation and response enrichment |
+| `cancellation_policies` | yes | yes | yes | indirect | yes | `mvp` | Bound through tour root; default active policy fallback is enforced |
+| `cancellation_policy_rules` | yes | yes | yes | indirect | yes | `mvp` | Returned in tour detail and validated before binding a policy |
+| `tour_tags` | yes | yes | yes | indirect | yes | `mvp` | Managed through tour root tagIds; no standalone endpoint |
 
 ## Booking
 
@@ -57,7 +57,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `bookings` | yes | yes | yes | yes | yes | `mvp` | Core create/detail exists, pricing/lifecycle still incomplete |
 | `booking_passengers` | yes | yes | yes | indirect | partial | `mvp` | Saved through booking flow; passenger typing still string-based |
-| `booking_status_history` | no | no | no | no | no | `schema-only` | Not started |
+| `booking_status_history` | yes | yes | yes | yes | yes | `mvp` | Lifecycle history is now recorded and exposed; transition coverage can still be expanded |
 | `booking_products` | no | no | no | no | no | `schema-only` | ERD contains it, backend does not |
 | `booking_combo_items` | no | no | no | no | no | `schema-only` | Not started |
 

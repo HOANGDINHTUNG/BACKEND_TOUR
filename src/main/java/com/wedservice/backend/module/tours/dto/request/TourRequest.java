@@ -1,5 +1,6 @@
 package com.wedservice.backend.module.tours.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,6 +32,8 @@ public class TourRequest {
     @NotNull(message = "Destination id is required")
     private Long destinationId;
 
+    private Long cancellationPolicyId;
+
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Base price must be greater than or equal to 0")
     private BigDecimal basePrice;
@@ -50,6 +54,8 @@ public class TourRequest {
     @Size(max = 50, message = "Trip mode must not exceed 50 characters")
     private String tripMode;
 
+    private String shortDescription;
+    private String description;
     private String highlights;
     private String inclusions;
     private String exclusions;
@@ -58,4 +64,10 @@ public class TourRequest {
 
     @Size(max = 20, message = "Status must not exceed 20 characters")
     private String status;
+
+    private List<Long> tagIds;
+    private List<@Valid TourMediaRequest> media;
+    private List<@Valid TourSeasonalityRequest> seasonality;
+    private List<@Valid TourItineraryDayRequest> itineraryDays;
+    private List<@Valid TourChecklistItemRequest> checklistItems;
 }

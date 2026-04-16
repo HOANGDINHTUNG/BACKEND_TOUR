@@ -282,11 +282,14 @@ Các điểm rất đáng chú ý:
   - `DB_USERNAME`
   - `DB_PASSWORD`
 - default hiện tại:
-  - `wed_user`
+  - `wed_app_user`
   - `123456`
+- schema runtime hiện tại: `wedservice`
 - timezone: `Asia/Ho_Chi_Minh`
 - file log: `logs/backend.log`
 - SQL debug bật ở dev
+- Hibernate không tự tạo/sửa bảng ở môi trường dev (`ddl-auto=none`)
+- Flyway là nguồn quản lý schema cho các môi trường thật
 
 ### 5.3 `application-test.yaml`
 
@@ -325,26 +328,11 @@ Ví dụ README nên xem đây là một chủ đích kỹ thuật của dự á
 
 ### 5.5 Điểm cần lưu ý về tên database
 
-Hiện đang có một điểm cần ghi nhận:
+Hiện tại runtime dev đang dùng schema `wedservice`.
 
-- `application-dev.yaml` trỏ vào database `wedservice`
-- nhưng migration `V1__init_schema.sql` lại `CREATE DATABASE travelviet` và `USE travelviet`
-- `ERD.sql` cũng đang theo `travelviet`
+Migration `V1__init_schema.sql` đã được chỉnh để chạy trên đúng schema mà datasource/Flyway kết nối vào, thay vì tự `CREATE DATABASE` và `USE` một database khác.
 
-Điều này không phải lỗi README, mà là một **điểm cấu hình cần thống nhất** của codebase.
-
-Nếu tiếp tục phát triển dự án, nên quyết định rõ:
-
-- dùng `wedservice`
-hoặc
-- dùng `travelviet`
-
-và đồng bộ giữa:
-
-- datasource config
-- flyway migration
-- ERD
-- tài liệu
+`ERD.sql` vẫn đang dùng tên `travelviet`, nên đây vẫn là tài liệu cần đồng bộ tiếp nếu muốn tên schema trong toàn repo hoàn toàn thống nhất.
 
 ---
 
@@ -741,7 +729,7 @@ Không chỉ là bảng comment đơn giản.
 ### 11.1 Không mặc định dùng root để app truy cập database
 
 - app dùng `DB_USERNAME` / `DB_PASSWORD`
-- default local là `wed_user`
+- default local là `wed_app_user`
 - đây là thói quen tốt về bảo mật và vận hành
 
 ### 11.2 Có correlation id ngay từ đầu

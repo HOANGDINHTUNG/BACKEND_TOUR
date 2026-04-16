@@ -1,6 +1,6 @@
 SET NAMES utf8mb4; SET FOREIGN_KEY_CHECKS = 0; 
-CREATE DATABASE IF NOT EXISTS travelviet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; 
-USE travelviet; 
+-- Run against the schema selected by the datasource/Flyway connection.
+-- Do not switch databases inside the migration, otherwise runtime config and migration history diverge.
 SET FOREIGN_KEY_CHECKS = 1; 
 
 -- 1. USERS audit_logs/ PREFERENCES / DEVICES -- 
