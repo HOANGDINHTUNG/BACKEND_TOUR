@@ -6,18 +6,23 @@ import com.wedservice.backend.common.util.DataNormalizer;
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
 import com.wedservice.backend.module.bookings.service.BookingStatusHistoryRecorder;
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
+import com.wedservice.backend.module.bookings.dto.request.BookingQuoteRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreatePassengerRequest;
+import com.wedservice.backend.module.bookings.dto.response.BookingQuoteResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
 import com.wedservice.backend.module.bookings.entity.Booking;
+import com.wedservice.backend.module.bookings.entity.BookingComboItem;
 import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.bookings.entity.BookingPassenger;
 import com.wedservice.backend.module.bookings.entity.BookingStatus;
+import com.wedservice.backend.module.bookings.repository.BookingComboItemRepository;
 import com.wedservice.backend.module.bookings.repository.BookingPassengerRepository;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
+import com.wedservice.backend.module.bookings.service.BookingPricingService;
 import com.wedservice.backend.module.bookings.service.command.BookingCommandService;
 import com.wedservice.backend.module.bookings.validator.BookingValidator;
-import com.wedservice.backend.module.tours.entity.TourSchedule;
-import com.wedservice.backend.module.tours.repository.TourScheduleRepository;
+import com.wedservice.backend.module.loyalty.service.MissionTrackerService;
+import com.wedservice.backend.module.loyalty.service.UserPassportService;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,8 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -34,22 +37,22 @@ import java.util.UUID;
 public class BookingCommandServiceImpl implements BookingCommandService {
 
     private final BookingRepository bookingRepository;
+    private final BookingComboItemRepository bookingComboItemRepository;
     private final BookingPassengerRepository passengerRepository;
-    private final TourScheduleRepository tourScheduleRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookingValidator bookingValidator;
+    private final BookingPricingService bookingPricingService;
     private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
     private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+    private final UserPassportService userPassportService;
+    private final MissionTrackerService missionTrackerService;
 
     @Override
     @Transactional
     public BookingResponse createBooking(CreateBookingRequest request) {
         bookingValidator.validateCreateRequest(request);
         UUID ownerId = resolveBookingOwnerId(request.getUserId());
-        TourSchedule schedule = tourScheduleRepository.findById(request.getScheduleId())
-                .orElseThrow(() -> new BadRequestException("Schedule not found"));
-        bookingValidator.validateScheduleForBooking(request, schedule, LocalDateTime.now());
-        BigDecimal subtotalAmount = bookingValidator.calculateSubtotal(request, schedule);
+        BookingQuoteResponse quote = bookingPricingService.quoteBookingForUser(ownerId, toQuoteRequest(request));
 
         Booking booking = Booking.builder()
                 .bookingCode("BK" + System.currentTimeMillis())
@@ -65,12 +68,20 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .seniors(request.getSeniors())
                 .status(BookingStatus.PENDING_PAYMENT)
                 .paymentStatus(BookingPaymentStatus.UNPAID)
-                .subtotalAmount(subtotalAmount)
-                .finalAmount(subtotalAmount)
-                .currency("VND")
+                .subtotalAmount(quote.getSubtotalAmount())
+                .discountAmount(quote.getDiscountAmount())
+                .voucherDiscountAmount(quote.getVoucherDiscountAmount())
+                .loyaltyDiscountAmount(quote.getLoyaltyDiscountAmount())
+                .addonAmount(quote.getAddonAmount())
+                .taxAmount(quote.getTaxAmount())
+                .finalAmount(quote.getFinalAmount())
+                .currency(quote.getCurrency())
+                .voucherId(quote.getAppliedVoucher() == null ? null : quote.getAppliedVoucher().getVoucherId())
+                .comboId(quote.getAppliedCombo() == null ? null : quote.getAppliedCombo().getComboId())
                 .build();
 
         booking = bookingRepository.save(booking);
+        saveComboSnapshotIfPresent(booking, quote);
         tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
         tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         bookingStatusHistoryRecorder.record(
@@ -103,7 +114,13 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
                 .status(booking.getStatus().getValue())
+                .subtotalAmount(booking.getSubtotalAmount())
+                .discountAmount(booking.getDiscountAmount())
+                .voucherDiscountAmount(booking.getVoucherDiscountAmount())
+                .addonAmount(booking.getAddonAmount())
                 .finalAmount(booking.getFinalAmount())
+                .voucherId(booking.getVoucherId())
+                .comboId(booking.getComboId())
                 .build();
     }
 
@@ -125,7 +142,9 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         if (booking.getPaymentStatus() != BookingPaymentStatus.PAID) {
             throw new BadRequestException("Only paid bookings can be checked in");
         }
-        return updateBookingStatus(booking, BookingStatus.CHECKED_IN, reason);
+        BookingResponse response = updateBookingStatus(booking, BookingStatus.CHECKED_IN, reason);
+        userPassportService.recordBookingCheckIn(booking, reason);
+        return response;
     }
 
     @Override
@@ -135,7 +154,9 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         if (booking.getStatus() != BookingStatus.CHECKED_IN) {
             throw new BadRequestException("Only checked-in bookings can be completed");
         }
-        return updateBookingStatus(booking, BookingStatus.COMPLETED, reason);
+        BookingResponse response = updateBookingStatus(booking, BookingStatus.COMPLETED, reason);
+        missionTrackerService.incrementProgress(booking.getUserId(), "TOTAL_BOOKINGS", java.math.BigDecimal.ONE);
+        return response;
     }
 
     private UUID resolveBookingOwnerId(String requestedUserId) {
@@ -193,7 +214,40 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
                 .status(booking.getStatus().getValue())
+                .subtotalAmount(booking.getSubtotalAmount())
+                .discountAmount(booking.getDiscountAmount())
+                .voucherDiscountAmount(booking.getVoucherDiscountAmount())
+                .addonAmount(booking.getAddonAmount())
                 .finalAmount(booking.getFinalAmount())
+                .voucherId(booking.getVoucherId())
+                .comboId(booking.getComboId())
+                .build();
+    }
+
+    private void saveComboSnapshotIfPresent(Booking booking, BookingQuoteResponse quote) {
+        if (quote.getAppliedCombo() == null) {
+            return;
+        }
+
+        bookingComboItemRepository.save(BookingComboItem.builder()
+                .bookingId(booking.getId())
+                .comboId(quote.getAppliedCombo().getComboId())
+                .unitPrice(quote.getAppliedCombo().getUnitPrice())
+                .discountAmount(quote.getAppliedCombo().getDiscountAmount())
+                .finalPrice(quote.getAppliedCombo().getFinalPrice())
+                .build());
+    }
+
+    private BookingQuoteRequest toQuoteRequest(CreateBookingRequest request) {
+        return BookingQuoteRequest.builder()
+                .tourId(request.getTourId())
+                .scheduleId(request.getScheduleId())
+                .adults(request.getAdults())
+                .children(request.getChildren())
+                .infants(request.getInfants())
+                .seniors(request.getSeniors())
+                .voucherCode(request.getVoucherCode())
+                .comboId(request.getComboId())
                 .build();
     }
 }

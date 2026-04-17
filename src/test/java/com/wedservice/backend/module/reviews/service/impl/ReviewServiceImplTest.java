@@ -13,6 +13,7 @@ import com.wedservice.backend.module.reviews.repository.ReviewAspectRepository;
 import com.wedservice.backend.module.reviews.repository.ReviewReplyRepository;
 import com.wedservice.backend.module.reviews.repository.ReviewRepository;
 import com.wedservice.backend.module.reviews.validator.ReviewValidator;
+import com.wedservice.backend.module.loyalty.service.MissionTrackerService;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,9 @@ class ReviewServiceImplTest {
 
     @Mock
     private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+ 
+    @Mock
+    private MissionTrackerService missionTrackerService;
 
     private ReviewServiceImpl reviewService;
 
@@ -67,7 +71,8 @@ class ReviewServiceImplTest {
                 bookingRepository,
                 authenticatedUserProvider,
                 reviewValidator,
-                tourRuntimeStatsSyncService
+                tourRuntimeStatsSyncService,
+                missionTrackerService
         );
     }
 

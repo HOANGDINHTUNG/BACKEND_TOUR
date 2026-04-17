@@ -15,6 +15,8 @@ import com.wedservice.backend.module.payments.entity.Payment;
 import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
 import com.wedservice.backend.module.payments.service.command.PaymentCommandService;
+import com.wedservice.backend.module.promotions.repository.VoucherRepository;
+import com.wedservice.backend.module.promotions.repository.VoucherUserClaimRepository;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,6 +38,8 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
 
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
+    private final VoucherRepository voucherRepository;
+    private final VoucherUserClaimRepository voucherUserClaimRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookingStatusHistoryRecorder bookingStatusHistoryRecorder;
     private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
@@ -65,6 +69,7 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPaymentStatus(BookingPaymentStatus.PAID);
         bookingRepository.save(booking);
+        markVoucherUsageIfPresent(booking);
         tourRuntimeStatsSyncService.syncScheduleState(booking.getScheduleId());
         tourRuntimeStatsSyncService.syncTourBookingStats(booking.getTourId());
         if (oldStatus != booking.getStatus()) {
@@ -112,5 +117,25 @@ public class PaymentCommandServiceImpl implements PaymentCommandService {
         if (!authenticatedUserProvider.getRequiredCurrentUserId().equals(booking.getUserId())) {
             throw new AccessDeniedException("You do not have permission to access this payment");
         }
+    }
+
+    private void markVoucherUsageIfPresent(Booking booking) {
+        if (booking.getVoucherId() == null) {
+            return;
+        }
+
+        voucherRepository.findById(booking.getVoucherId()).ifPresent(voucher -> {
+            voucher.setUsedCount(safeInteger(voucher.getUsedCount()) + 1);
+            voucherRepository.save(voucher);
+        });
+
+        voucherUserClaimRepository.findByVoucherIdAndUserId(booking.getVoucherId(), booking.getUserId()).ifPresent(claim -> {
+            claim.setUsedCount(safeInteger(claim.getUsedCount()) + 1);
+            voucherUserClaimRepository.save(claim);
+        });
+    }
+
+    private int safeInteger(Integer value) {
+        return value == null ? 0 : value;
     }
 }

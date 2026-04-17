@@ -11,5 +11,7 @@ public interface TourTagRepository extends JpaRepository<TourTag, TourTagId> {
 
     List<TourTag> findByIdTourId(Long tourId);
 
+    List<TourTag> findByIdTourIdIn(Collection<Long> tourIds);
+
     List<TourTag> findByIdTagIdIn(Collection<Long> tagIds);
 }

@@ -1,6 +1,7 @@
 package com.wedservice.backend.module.bookings.validator;
 
 import com.wedservice.backend.common.exception.BadRequestException;
+import com.wedservice.backend.module.bookings.dto.request.BookingQuoteRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreatePassengerRequest;
 import com.wedservice.backend.module.tours.entity.TourSchedule;
@@ -24,16 +25,14 @@ public class BookingValidator {
     private static final Set<String> ALLOWED_PASSENGER_GENDERS = Set.of("male", "female", "other", "unknown");
 
     public void validateCreateRequest(CreateBookingRequest request) {
-        if (request.getChildren() < 0 || request.getInfants() < 0 || request.getSeniors() < 0) {
-            throw new BadRequestException("Passenger counts cannot be negative");
-        }
+        validateTravellerCounts(request.getAdults(), request.getChildren(), request.getInfants(), request.getSeniors());
 
         int totalTravellers = request.getAdults() + request.getChildren() + request.getInfants() + request.getSeniors();
-        if (totalTravellers <= 0) {
-            throw new BadRequestException("Booking must include at least one traveller");
-        }
-
         validatePassengerManifest(request, totalTravellers);
+    }
+
+    public void validateQuoteRequest(BookingQuoteRequest request) {
+        validateTravellerCounts(request.getAdults(), request.getChildren(), request.getInfants(), request.getSeniors());
     }
 
     public void validateScheduleForBooking(CreateBookingRequest request, TourSchedule schedule, LocalDateTime now) {
@@ -63,10 +62,26 @@ public class BookingValidator {
     }
 
     public BigDecimal calculateSubtotal(CreateBookingRequest request, TourSchedule schedule) {
-        return multiply(schedule.getAdultPrice(), request.getAdults())
-                .add(multiply(schedule.getChildPrice(), request.getChildren()))
-                .add(multiply(schedule.getInfantPrice(), request.getInfants()))
-                .add(multiply(schedule.getSeniorPrice(), request.getSeniors()));
+        return calculateSubtotal(request.getAdults(), request.getChildren(), request.getInfants(), request.getSeniors(), schedule);
+    }
+
+    public BigDecimal calculateSubtotal(BookingQuoteRequest request, TourSchedule schedule) {
+        return calculateSubtotal(request.getAdults(), request.getChildren(), request.getInfants(), request.getSeniors(), schedule);
+    }
+
+    public BigDecimal calculateSubtotal(int adults, int children, int infants, int seniors, TourSchedule schedule) {
+        return multiply(schedule.getAdultPrice(), adults)
+                .add(multiply(schedule.getChildPrice(), children))
+                .add(multiply(schedule.getInfantPrice(), infants))
+                .add(multiply(schedule.getSeniorPrice(), seniors));
+    }
+
+    public int calculateSeatCount(int adults, int children, int seniors) {
+        return adults + children + seniors;
+    }
+
+    public int calculateTravellerCount(int adults, int children, int infants, int seniors) {
+        return adults + children + infants + seniors;
     }
 
     public String normalizePassengerType(String rawValue) {
@@ -115,6 +130,17 @@ public class BookingValidator {
         validatePassengerTypeCount(passengers, request.getChildren(), "child");
         validatePassengerTypeCount(passengers, request.getInfants(), "infant");
         validatePassengerTypeCount(passengers, request.getSeniors(), "senior");
+    }
+
+    private void validateTravellerCounts(int adults, int children, int infants, int seniors) {
+        if (children < 0 || infants < 0 || seniors < 0) {
+            throw new BadRequestException("Passenger counts cannot be negative");
+        }
+
+        int totalTravellers = calculateTravellerCount(adults, children, infants, seniors);
+        if (totalTravellers <= 0) {
+            throw new BadRequestException("Booking must include at least one traveller");
+        }
     }
 
     private void validatePassengerTypeCount(List<CreatePassengerRequest> passengers, int allowedCount, String passengerType) {

@@ -1,20 +1,25 @@
 package com.wedservice.backend.module.bookings.service.command.impl;
 
 import com.wedservice.backend.common.security.AuthenticatedUserProvider;
+import com.wedservice.backend.module.bookings.dto.request.BookingQuoteRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
 import com.wedservice.backend.module.bookings.dto.request.CreatePassengerRequest;
+import com.wedservice.backend.module.bookings.dto.response.AppliedComboQuoteResponse;
+import com.wedservice.backend.module.bookings.dto.response.BookingQuoteResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
+import com.wedservice.backend.module.bookings.service.BookingPricingService;
 import com.wedservice.backend.module.bookings.service.BookingStatusHistoryRecorder;
 import com.wedservice.backend.module.bookings.entity.Booking;
+import com.wedservice.backend.module.bookings.entity.BookingComboItem;
 import com.wedservice.backend.module.bookings.entity.BookingPassenger;
 import com.wedservice.backend.module.bookings.entity.BookingPaymentStatus;
 import com.wedservice.backend.module.bookings.entity.BookingStatus;
+import com.wedservice.backend.module.bookings.repository.BookingComboItemRepository;
 import com.wedservice.backend.module.bookings.repository.BookingPassengerRepository;
 import com.wedservice.backend.module.bookings.repository.BookingRepository;
 import com.wedservice.backend.module.bookings.validator.BookingValidator;
-import com.wedservice.backend.module.tours.entity.TourSchedule;
-import com.wedservice.backend.module.tours.entity.TourScheduleStatus;
-import com.wedservice.backend.module.tours.repository.TourScheduleRepository;
+import com.wedservice.backend.module.loyalty.service.MissionTrackerService;
+import com.wedservice.backend.module.loyalty.service.UserPassportService;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,7 +51,10 @@ class BookingCommandServiceImplTest {
     private BookingPassengerRepository passengerRepository;
 
     @Mock
-    private TourScheduleRepository tourScheduleRepository;
+    private BookingComboItemRepository bookingComboItemRepository;
+
+    @Mock
+    private BookingPricingService bookingPricingService;
 
     @Mock
     private AuthenticatedUserProvider authenticatedUserProvider;
@@ -58,41 +65,33 @@ class BookingCommandServiceImplTest {
     @Mock
     private TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
 
+    @Mock
+    private UserPassportService userPassportService;
+ 
+    @Mock
+    private MissionTrackerService missionTrackerService;
+
     private BookingCommandServiceImpl bookingCommandService;
 
     @BeforeEach
     void setUp() {
         bookingCommandService = new BookingCommandServiceImpl(
                 bookingRepository,
+                bookingComboItemRepository,
                 passengerRepository,
-                tourScheduleRepository,
                 authenticatedUserProvider,
                 new BookingValidator(),
+                bookingPricingService,
                 bookingStatusHistoryRecorder,
-                tourRuntimeStatsSyncService
+                tourRuntimeStatsSyncService,
+                userPassportService,
+                missionTrackerService
         );
     }
 
     @Test
     void createBooking_usesCurrentUserCalculatesAmountsAndMapsPassengers() {
         UUID currentUserId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now();
-        TourSchedule schedule = TourSchedule.builder()
-                .id(22L)
-                .tourId(10L)
-                .departureAt(now.plusDays(10))
-                .returnAt(now.plusDays(12))
-                .bookingOpenAt(now.minusDays(5))
-                .bookingCloseAt(now.plusDays(5))
-                .capacityTotal(30)
-                .bookedSeats(4)
-                .adultPrice(new BigDecimal("100.00"))
-                .childPrice(new BigDecimal("60.00"))
-                .infantPrice(new BigDecimal("10.00"))
-                .seniorPrice(new BigDecimal("80.00"))
-                .status(TourScheduleStatus.OPEN)
-                .build();
-
         CreateBookingRequest request = CreateBookingRequest.builder()
                 .userId(UUID.randomUUID().toString())
                 .tourId(10L)
@@ -104,6 +103,7 @@ class BookingCommandServiceImplTest {
                 .children(1)
                 .infants(1)
                 .seniors(1)
+                .comboId(6L)
                 .passengers(List.of(
                         CreatePassengerRequest.builder()
                                 .fullName("Passenger One")
@@ -124,12 +124,36 @@ class BookingCommandServiceImplTest {
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(currentUserId);
         when(authenticatedUserProvider.isCurrentUserBackoffice()).thenReturn(false);
-        when(tourScheduleRepository.findById(22L)).thenReturn(Optional.of(schedule));
+        when(bookingPricingService.quoteBookingForUser(org.mockito.ArgumentMatchers.eq(currentUserId), any(BookingQuoteRequest.class)))
+                .thenReturn(BookingQuoteResponse.builder()
+                        .tourId(10L)
+                        .scheduleId(22L)
+                        .subtotalAmount(new java.math.BigDecimal("350.00"))
+                        .discountAmount(new java.math.BigDecimal("70.00"))
+                        .voucherDiscountAmount(new java.math.BigDecimal("20.00"))
+                        .loyaltyDiscountAmount(java.math.BigDecimal.ZERO)
+                        .addonAmount(new java.math.BigDecimal("200.00"))
+                        .taxAmount(java.math.BigDecimal.ZERO)
+                        .finalAmount(new java.math.BigDecimal("530.00"))
+                        .currency("VND")
+                        .appliedVoucher(com.wedservice.backend.module.bookings.dto.response.AppliedVoucherQuoteResponse.builder()
+                                .voucherId(5L)
+                                .build())
+                        .appliedCombo(AppliedComboQuoteResponse.builder()
+                                .comboId(6L)
+                                .comboCode("COMBO-001")
+                                .comboName("Adventure Combo")
+                                .unitPrice(new java.math.BigDecimal("250.00"))
+                                .discountAmount(new java.math.BigDecimal("50.00"))
+                                .finalPrice(new java.math.BigDecimal("200.00"))
+                                .build())
+                        .build());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> {
             Booking booking = invocation.getArgument(0);
             booking.setId(99L);
             return booking;
         });
+        when(bookingComboItemRepository.save(any(BookingComboItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(passengerRepository.save(any(BookingPassenger.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         BookingResponse response = bookingCommandService.createBooking(request);
@@ -142,7 +166,20 @@ class BookingCommandServiceImplTest {
         assertThat(savedBooking.getStatus()).isEqualTo(BookingStatus.PENDING_PAYMENT);
         assertThat(savedBooking.getPaymentStatus()).isEqualTo(BookingPaymentStatus.UNPAID);
         assertThat(savedBooking.getSubtotalAmount()).isEqualByComparingTo("350.00");
-        assertThat(savedBooking.getFinalAmount()).isEqualByComparingTo("350.00");
+        assertThat(savedBooking.getDiscountAmount()).isEqualByComparingTo("70.00");
+        assertThat(savedBooking.getVoucherDiscountAmount()).isEqualByComparingTo("20.00");
+        assertThat(savedBooking.getAddonAmount()).isEqualByComparingTo("200.00");
+        assertThat(savedBooking.getFinalAmount()).isEqualByComparingTo("530.00");
+        assertThat(savedBooking.getVoucherId()).isEqualTo(5L);
+        assertThat(savedBooking.getComboId()).isEqualTo(6L);
+
+        ArgumentCaptor<BookingComboItem> comboCaptor = ArgumentCaptor.forClass(BookingComboItem.class);
+        verify(bookingComboItemRepository).save(comboCaptor.capture());
+        assertThat(comboCaptor.getValue().getBookingId()).isEqualTo(99L);
+        assertThat(comboCaptor.getValue().getComboId()).isEqualTo(6L);
+        assertThat(comboCaptor.getValue().getUnitPrice()).isEqualByComparingTo("250.00");
+        assertThat(comboCaptor.getValue().getDiscountAmount()).isEqualByComparingTo("50.00");
+        assertThat(comboCaptor.getValue().getFinalPrice()).isEqualByComparingTo("200.00");
 
         ArgumentCaptor<BookingPassenger> passengerCaptor = ArgumentCaptor.forClass(BookingPassenger.class);
         verify(passengerRepository, times(2)).save(passengerCaptor.capture());
@@ -156,7 +193,9 @@ class BookingCommandServiceImplTest {
 
         assertThat(response.getId()).isEqualTo(99L);
         assertThat(response.getStatus()).isEqualTo("pending_payment");
-        assertThat(response.getFinalAmount()).isEqualByComparingTo("350.00");
+        assertThat(response.getAddonAmount()).isEqualByComparingTo("200.00");
+        assertThat(response.getFinalAmount()).isEqualByComparingTo("530.00");
+        assertThat(response.getComboId()).isEqualTo(6L);
         verify(bookingStatusHistoryRecorder).record(
                 99L,
                 null,
@@ -171,20 +210,6 @@ class BookingCommandServiceImplTest {
     @Test
     void createBooking_rejectsScheduleThatDoesNotBelongToTour() {
         UUID currentUserId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now();
-        TourSchedule schedule = TourSchedule.builder()
-                .id(22L)
-                .tourId(999L)
-                .departureAt(now.plusDays(10))
-                .returnAt(now.plusDays(12))
-                .bookingOpenAt(now.minusDays(2))
-                .bookingCloseAt(now.plusDays(2))
-                .capacityTotal(20)
-                .bookedSeats(0)
-                .adultPrice(new BigDecimal("100.00"))
-                .status(TourScheduleStatus.OPEN)
-                .build();
-
         CreateBookingRequest request = CreateBookingRequest.builder()
                 .userId(currentUserId.toString())
                 .tourId(10L)
@@ -196,7 +221,8 @@ class BookingCommandServiceImplTest {
 
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(currentUserId);
         when(authenticatedUserProvider.isCurrentUserBackoffice()).thenReturn(false);
-        when(tourScheduleRepository.findById(22L)).thenReturn(Optional.of(schedule));
+        when(bookingPricingService.quoteBookingForUser(org.mockito.ArgumentMatchers.eq(currentUserId), any(BookingQuoteRequest.class)))
+                .thenThrow(new com.wedservice.backend.common.exception.BadRequestException("Schedule does not belong to the requested tour"));
 
         assertThatThrownBy(() -> bookingCommandService.createBooking(request))
                 .hasMessageContaining("Schedule does not belong to the requested tour");
@@ -249,5 +275,27 @@ class BookingCommandServiceImplTest {
 
         assertThatThrownBy(() -> bookingCommandService.checkInBooking(45L, "Arrival at gate"))
                 .hasMessageContaining("Only confirmed bookings can be checked in");
+    }
+
+    @Test
+    void checkInBooking_recordsUserCheckinAfterStatusUpdate() {
+        UUID userId = UUID.randomUUID();
+        Booking booking = Booking.builder()
+                .id(46L)
+                .bookingCode("BK46")
+                .userId(userId)
+                .status(BookingStatus.CONFIRMED)
+                .paymentStatus(BookingPaymentStatus.PAID)
+                .build();
+
+        when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(userId);
+        when(authenticatedUserProvider.isCurrentUserBackoffice()).thenReturn(false);
+        when(bookingRepository.findById(46L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookingResponse response = bookingCommandService.checkInBooking(46L, "Arrival at gate");
+
+        assertThat(response.getStatus()).isEqualTo("checked_in");
+        verify(userPassportService).recordBookingCheckIn(booking, "Arrival at gate");
     }
 }

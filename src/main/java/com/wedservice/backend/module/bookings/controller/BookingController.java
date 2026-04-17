@@ -2,7 +2,9 @@ package com.wedservice.backend.module.bookings.controller;
 
 import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
+import com.wedservice.backend.module.bookings.dto.request.BookingQuoteRequest;
 import com.wedservice.backend.module.bookings.dto.request.UpdateBookingStatusRequest;
+import com.wedservice.backend.module.bookings.dto.response.BookingQuoteResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingStatusHistoryResponse;
 import com.wedservice.backend.module.bookings.facade.BookingFacade;
@@ -20,6 +22,13 @@ import java.util.List;
 public class BookingController {
 
     private final BookingFacade bookingFacade;
+
+    @PostMapping("/quote")
+    @PreAuthorize("hasAuthority('booking.create')")
+    public ApiResponse<BookingQuoteResponse> quoteBooking(@Valid @RequestBody BookingQuoteRequest request) {
+        BookingQuoteResponse response = bookingFacade.quoteBooking(request);
+        return ApiResponse.success(response, "Booking quote calculated");
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

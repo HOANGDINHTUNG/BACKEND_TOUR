@@ -44,7 +44,7 @@ public class AuditLogService {
         try {
             return jsonMapper.readTree(rawJson);
         } catch (Exception ex) {
-            return JsonNodeFactory.instance.textNode(rawJson);
+            return JsonNodeFactory.instance.stringNode(rawJson);
         }
     }
 

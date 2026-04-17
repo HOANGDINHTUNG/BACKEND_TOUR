@@ -10,6 +10,8 @@ import java.util.List;
 public interface TourSeasonalityRepository extends JpaRepository<TourSeasonality, Long> {
     List<TourSeasonality> findByTourId(Long tourId);
 
+    List<TourSeasonality> findByTourIdIn(List<Long> tourIds);
+
     @Query("""
             select ts
             from TourSeasonality ts

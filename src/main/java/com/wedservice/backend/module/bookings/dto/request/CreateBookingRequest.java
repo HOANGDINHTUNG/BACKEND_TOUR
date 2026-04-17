@@ -3,6 +3,7 @@ package com.wedservice.backend.module.bookings.dto.request;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -41,6 +42,11 @@ public class CreateBookingRequest {
 
     @Builder.Default
     private int seniors = 0;
+
+    @Size(max = 50, message = "voucherCode must not exceed 50 characters")
+    private String voucherCode;
+
+    private Long comboId;
 
     private java.util.List<CreatePassengerRequest> passengers;
 }

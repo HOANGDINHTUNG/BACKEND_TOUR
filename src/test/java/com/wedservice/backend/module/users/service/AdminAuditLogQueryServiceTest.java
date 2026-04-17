@@ -61,7 +61,7 @@ class AdminAuditLogQueryServiceTest {
         request.setPage(0);
         request.setSize(20);
 
-        when(auditLogRepository.findAll(any(Specification.class), eq(PageRequest.of(0, 20, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")))))
+        when(auditLogRepository.findAll((Specification<AuditLog>) any(), eq(PageRequest.of(0, 20, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")))))
                 .thenReturn(new PageImpl<>(List.of(auditLog), PageRequest.of(0, 20), 1));
         when(auditLogService.parseJson("{\"code\":\"EDITOR\"}")).thenReturn(JsonNodeFactory.instance.objectNode().put("code", "EDITOR"));
         when(auditLogService.parseJson("{\"code\":\"EDITOR_PLUS\"}")).thenReturn(JsonNodeFactory.instance.objectNode().put("code", "EDITOR_PLUS"));
@@ -70,7 +70,7 @@ class AdminAuditLogQueryServiceTest {
 
         assertThat(response.getContent()).hasSize(1);
         assertThat(response.getContent().get(0).getActionName()).isEqualTo("role.update");
-        assertThat(response.getContent().get(0).getOldData().get("code").asText()).isEqualTo("EDITOR");
+        assertThat(response.getContent().get(0).getOldData().get("code").asString()).isEqualTo("EDITOR");
     }
 
     @Test

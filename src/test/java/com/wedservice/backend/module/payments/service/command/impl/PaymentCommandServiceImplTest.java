@@ -11,6 +11,10 @@ import com.wedservice.backend.module.payments.dto.response.PaymentResponse;
 import com.wedservice.backend.module.payments.entity.Payment;
 import com.wedservice.backend.module.payments.entity.PaymentStatus;
 import com.wedservice.backend.module.payments.repository.PaymentRepository;
+import com.wedservice.backend.module.promotions.entity.Voucher;
+import com.wedservice.backend.module.promotions.entity.VoucherUserClaim;
+import com.wedservice.backend.module.promotions.repository.VoucherRepository;
+import com.wedservice.backend.module.promotions.repository.VoucherUserClaimRepository;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +44,12 @@ class PaymentCommandServiceImplTest {
     private BookingRepository bookingRepository;
 
     @Mock
+    private VoucherRepository voucherRepository;
+
+    @Mock
+    private VoucherUserClaimRepository voucherUserClaimRepository;
+
+    @Mock
     private AuthenticatedUserProvider authenticatedUserProvider;
 
     @Mock
@@ -55,6 +65,8 @@ class PaymentCommandServiceImplTest {
         paymentCommandService = new PaymentCommandServiceImpl(
                 paymentRepository,
                 bookingRepository,
+                voucherRepository,
+                voucherUserClaimRepository,
                 authenticatedUserProvider,
                 bookingStatusHistoryRecorder,
                 tourRuntimeStatsSyncService
@@ -69,6 +81,7 @@ class PaymentCommandServiceImplTest {
                 .userId(userId)
                 .tourId(2L)
                 .scheduleId(3L)
+                .voucherId(7L)
                 .contactName("Nguyen Van B")
                 .contactPhone("0909111111")
                 .status(BookingStatus.PENDING_PAYMENT)
@@ -88,6 +101,11 @@ class PaymentCommandServiceImplTest {
         when(paymentRepository.existsByBookingIdAndStatus(15L, PaymentStatus.PAID)).thenReturn(false);
         when(authenticatedUserProvider.isCurrentUserBackoffice()).thenReturn(false);
         when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(userId);
+        when(voucherRepository.findById(7L)).thenReturn(Optional.of(Voucher.builder().id(7L).usedCount(3).build()));
+        when(voucherRepository.save(any(Voucher.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(voucherUserClaimRepository.findByVoucherIdAndUserId(7L, userId))
+                .thenReturn(Optional.of(VoucherUserClaim.builder().id(8L).voucherId(7L).userId(userId).usedCount(0).build()));
+        when(voucherUserClaimRepository.save(any(VoucherUserClaim.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> {
             Payment payment = invocation.getArgument(0);
             payment.setId(50L);
@@ -105,6 +123,12 @@ class PaymentCommandServiceImplTest {
         verify(bookingRepository).save(bookingCaptor.capture());
         assertThat(bookingCaptor.getValue().getStatus()).isEqualTo(BookingStatus.CONFIRMED);
         assertThat(bookingCaptor.getValue().getPaymentStatus()).isEqualTo(BookingPaymentStatus.PAID);
+        ArgumentCaptor<Voucher> voucherCaptor = ArgumentCaptor.forClass(Voucher.class);
+        verify(voucherRepository).save(voucherCaptor.capture());
+        assertThat(voucherCaptor.getValue().getUsedCount()).isEqualTo(4);
+        ArgumentCaptor<VoucherUserClaim> claimCaptor = ArgumentCaptor.forClass(VoucherUserClaim.class);
+        verify(voucherUserClaimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getUsedCount()).isEqualTo(1);
         verify(bookingStatusHistoryRecorder).record(
                 15L,
                 BookingStatus.PENDING_PAYMENT,

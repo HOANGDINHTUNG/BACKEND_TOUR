@@ -1,9 +1,12 @@
 package com.wedservice.backend.module.bookings.facade;
 
 import com.wedservice.backend.module.bookings.dto.request.CreateBookingRequest;
+import com.wedservice.backend.module.bookings.dto.request.BookingQuoteRequest;
+import com.wedservice.backend.module.bookings.dto.response.BookingQuoteResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingResponse;
 import com.wedservice.backend.module.bookings.dto.response.BookingStatusHistoryResponse;
 import com.wedservice.backend.module.bookings.service.command.BookingCommandService;
+import com.wedservice.backend.module.bookings.service.BookingPricingService;
 import com.wedservice.backend.module.bookings.service.query.BookingQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,11 @@ public class BookingFacade {
 
     private final BookingCommandService bookingCommandService;
     private final BookingQueryService bookingQueryService;
+    private final BookingPricingService bookingPricingService;
+
+    public BookingQuoteResponse quoteBooking(BookingQuoteRequest request) {
+        return bookingPricingService.quoteBooking(request);
+    }
 
     public BookingResponse createBooking(CreateBookingRequest request) {
         // Orchestration (validation, seat lock, payment trigger) can be added here

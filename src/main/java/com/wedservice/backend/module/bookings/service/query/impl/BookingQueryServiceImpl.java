@@ -32,7 +32,13 @@ public class BookingQueryServiceImpl implements BookingQueryService {
                 .id(booking.getId())
                 .bookingCode(booking.getBookingCode())
                 .status(booking.getStatus().getValue())
+                .subtotalAmount(booking.getSubtotalAmount())
+                .discountAmount(booking.getDiscountAmount())
+                .voucherDiscountAmount(booking.getVoucherDiscountAmount())
+                .addonAmount(booking.getAddonAmount())
                 .finalAmount(booking.getFinalAmount())
+                .voucherId(booking.getVoucherId())
+                .comboId(booking.getComboId())
                 .build();
     }
 

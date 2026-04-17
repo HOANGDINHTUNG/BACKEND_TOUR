@@ -72,9 +72,35 @@ public class Booking extends AuditableEntity {
     @Builder.Default
     private BigDecimal subtotalAmount = BigDecimal.ZERO;
 
+    @Column(name = "discount_amount", precision = 14, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Column(name = "voucher_discount_amount", precision = 14, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal voucherDiscountAmount = BigDecimal.ZERO;
+
+    @Column(name = "loyalty_discount_amount", precision = 14, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal loyaltyDiscountAmount = BigDecimal.ZERO;
+
+    @Column(name = "addon_amount", precision = 14, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal addonAmount = BigDecimal.ZERO;
+
+    @Column(name = "tax_amount", precision = 14, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
     @Column(name = "final_amount", precision = 14, scale = 2, nullable = false)
     @Builder.Default
     private BigDecimal finalAmount = BigDecimal.ZERO;
+
+    @Column(name = "voucher_id")
+    private Long voucherId;
+
+    @Column(name = "combo_id")
+    private Long comboId;
 
     @Column(name = "currency", length = 3, nullable = false)
     @Builder.Default

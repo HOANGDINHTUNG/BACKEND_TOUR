@@ -14,7 +14,7 @@
   - Replaced active-flow string literals with type-safe enums in service logic
 - `Task 0.4`: done
   - Added service-level baseline tests for `tours`, `bookings`, `payments`, and `reviews`
-  - Test execution is still blocked by the current Maven wrapper bootstrap issue in this repo
+  - Baseline test execution was later verified after the Maven wrapper bootstrap fix
 - `Task 0.5`: done
   - Published a table-to-layer implementation checklist
   - Labeled ERD areas as `implemented`, `mvp`, or `schema-only`
@@ -28,74 +28,35 @@
 | --- | --- | --- | --- | --- |
 | `auth` | Depends on `users`, `roles`, `permissions`, `user_roles`, `role_permissions` | Controller, facade, command/query services, JWT/security classes present | `AuthControllerTest`, `JwtServiceTest`, `SecurityIntegrationTest` | Core auth is present |
 | `users` core | `users`, `roles`, `permissions`, `user_roles` | Entity/repository/service/controller present | Controller/service/repository tests present | Core user management is relatively stable |
-| `users` extras | `user_preferences`, `user_devices`, `user_addresses` | All three now have entity/repository/service/controller flows inside `users/profile` | `UserProfileServiceTest`, `UserProfileControllerTest` cover all three | User extras phase is active at self-profile scope |
-| `audit/admin ops` | `audit_logs` | Entity/repository/query/controller flow present; `AuditTrailRecorder` now records RBAC and admin user write events via shared helper | `AdminAuditLogQueryServiceTest`, `AdminAuditLogControllerTest`, `AdminRbacCommandServiceTest`, `AdminUserServiceTest` | Audit is active, but producer scope is still partial |
+| `users` extras | `user_preferences`, `user_devices`, `user_addresses` | All three now have entity/repository/service/controller flows inside `users/profile` | `UserProfileServiceTest`, `UserProfileControllerTest`, `Phase2UserAdminIntegrationTest` | User extras phase is active at self-profile scope with integration coverage |
+| `audit/admin ops` | `audit_logs` | Entity/repository/query/controller flow present; `AuditTrailRecorder` now records RBAC and admin user write events via shared helper | `AdminAuditLogQueryServiceTest`, `AdminAuditLogControllerTest`, `AdminRbacCommandServiceTest`, `AdminUserServiceTest`, `Phase2UserAdminIntegrationTest` | Audit is active, but producer scope is still partial |
 | `destinations` | `destinations`, `destination_media`, `destination_foods`, `destination_specialties`, `destination_activities`, `destination_tips`, `destination_events`, `destination_follows` | Entity/repository/service/controller present | Proposal and admin update integration tests only | Public/admin flows exist but test coverage is partial |
-| `tours` core | `tours`, `tour_media`, `tour_seasonality`, `tour_itinerary_days`, `itinerary_items`, `tour_checklist_items`, `tour_schedules`, `tour_schedule_pickup_points`, `tour_schedule_guides` | Entities and repositories exist, create/update/query flows exist | No tests found | Data model exists, API/service layer is still MVP |
-| `tours` missing attachments | `tags`, `guides`, `cancellation_policies`, `cancellation_policy_rules`, `tour_tags` | No concrete module flow found | No tests | Schema exists, feature not implemented |
-| `bookings` | `bookings`, `booking_passengers` | Entity/repository/service/controller present | No tests found | Core flow exists but still skeletal |
-| `bookings` missing lifecycle | `booking_status_history`, `booking_combo_items` | No entity/repository/service/controller found | No tests | Schema exists, feature not implemented |
-| `payments` | `payments`, `refund_requests` | Entity/repository/service/controller present | No tests found | Core payment/refund flow exists but lacks hardening |
+| `tours` core | `tours`, `tour_media`, `tour_seasonality`, `tour_itinerary_days`, `itinerary_items`, `tour_checklist_items`, `tour_schedules`, `tour_schedule_pickup_points`, `tour_schedule_guides` | Entities and repositories exist, create/update/query flows exist | `TourCommandServiceImplTest`, `TourQueryServiceImplTest` | Tour root orchestration, schedule management, and search hardening are active at MVP level |
+| `tours` supporting master data | `tags`, `guides`, `cancellation_policies`, `cancellation_policy_rules`, `tour_tags` | Entity/repository/service/query flows present through tour root and schedule management | Tour command/query tests present | Supporting catalog bindings are active, but still exposed indirectly through tour APIs |
+| `bookings` | `bookings`, `booking_passengers`, `booking_status_history`, `booking_combo_items` | Entity/repository/service/controller present; quote pricing engine, lifecycle history, voucher pricing, and combo snapshot flow are active | `BookingCommandServiceImplTest`, `BookingPricingServiceTest`, `BookingControllerTest`, `Phase3CommerceIntegrationTest` | Core booking flow is active with commerce integration; `booking_products` remains pending |
+| `payments` | `payments`, `refund_requests` | Entity/repository/service/controller present; successful payment now syncs booking + voucher usage counters | `PaymentCommandServiceImplTest`, `RefundServiceImplTest`, `Phase1LifecycleIntegrationTest`, `Phase3CommerceIntegrationTest` | Core payment/refund flow is active and hardened at service level |
+| `promotions/vouchers` | `promotion_campaigns`, `vouchers`, `voucher_user_claims` | Entity/repository/service/controller present | Service/controller tests present | Admin core flow, user claim/ownership flow, and booking/payment integration are active |
+| `commerce catalog` | `products`, `combo_packages`, `combo_package_items` | Entity/repository/service/controller present in `module/commerce` | Service/controller tests present | Admin product and combo catalog flow is active |
+| `engagement` | `wishlist_tours`, `user_tour_views`, `notifications`, `recommendation_logs` | Entity/repository/service/controller are present in `module/engagement` and `module/notifications`; public tour detail now hooks view logging for authenticated users, and self-profile recommendation flow now persists result snapshots | `UserWishlistServiceImplTest`, `UserWishlistControllerTest`, `UserTourViewServiceImplTest`, `UserTourViewControllerTest`, `TourControllerTest`, `AdminNotificationServiceTest`, `UserNotificationServiceTest`, `AdminNotificationControllerTest`, `UserNotificationControllerTest`, `UserRecommendationServiceImplTest`, `UserRecommendationControllerTest` | Wishlist, view-tracking, in-app notification foundation, and recommendation groundwork are active |
+| `weather` | `weather_forecasts`, `weather_alerts`, `crowd_predictions`, `route_estimates` | Entity/repository/service/controller present in `module/weather`; public destination weather read, public crowd prediction read, public/admin route estimate flow, and admin weather management are active | `PublicWeatherServiceTest`, `AdminWeatherServiceTest`, `WeatherControllerTest`, `AdminWeatherControllerTest`, `RouteEstimateControllerTest`, `AdminRouteEstimateControllerTest` | Forecast, alert, crowd prediction, and route estimate foundations are active at MVP level |
+| `loyalty` | `travel_passports`, `badge_definitions`, `passport_badges`, `passport_visited_destinations`, `user_checkins` | Entity/repository/service/controller present in `module/loyalty`; self-profile passport read, admin badge catalog/grant, manual checkin, and booking check-in sync flow are active | `UserPassportServiceTest`, `AdminBadgeServiceTest`, `UserPassportControllerTest`, `AdminBadgeControllerTest`, `UserCheckinControllerTest`, `AdminUserCheckinControllerTest`, `BookingCommandServiceImplTest` | Loyalty groundwork is active with check-in automation connected to booking lifecycle |
+| `schedule chat` | `schedule_chat_rooms`, `schedule_chat_room_members`, `schedule_chat_messages` | Entity/repository/service/controller present in `module/schedulechat`; user/admin room read, admin room upsert, and message flow are active | `ScheduleChatServiceTest`, `UserScheduleChatControllerTest`, `AdminScheduleChatControllerTest` | Schedule chat foundation is active with room bootstrap and member sync from eligible bookings |
+| `support` | `support_sessions`, `support_messages` | Entity/repository/service/controller present in `module/support`; user and backoffice messaging foundation is active | `UserSupportServiceTest`, `AdminSupportServiceTest`, `UserSupportControllerTest`, `AdminSupportControllerTest` | Support session assignment, status, and message lifecycle are active at MVP level |
 | `reviews` | `reviews`, `review_aspects`, `review_replies` | Entity/repository/service/controller present | No tests found | Core flow exists |
 | `reviews` analysis | `review_analysis` | No entity/repository/service/controller found | No tests | Schema exists, feature not implemented |
 | `system` | health only | Controller/facade/query present | No dedicated test found | Minimal support endpoint only |
 
 ## Tables In ERD But Not Implemented In Backend Flow
 
-### User and profile extensions
-
-- `user_preferences`
-- `user_devices`
-- `user_addresses`
-
-### Tour catalog and policy
-
-- `tags`
-- `guides`
-- `cancellation_policies`
-- `cancellation_policy_rules`
-- `tour_tags`
-
 ### Booking and commerce extensions
 
-- `promotion_campaigns`
-- `vouchers`
-- `voucher_user_claims`
-- `combo_packages`
-- `combo_package_items`
-- `products`
-- `booking_status_history`
-- `booking_combo_items`
+- `booking_products`
 
 ### Engagement, recommendation, analytics
 
 - `mission_definitions`
 - `user_missions`
 - `review_analysis`
-- `weather_forecasts`
-- `weather_alerts`
-- `crowd_predictions`
-- `route_estimates`
-- `notifications`
-- `user_tour_views`
-- `wishlist_tours`
-- `recommendation_logs`
-
-### Support and real-time communication
-
-- `support_sessions`
-- `support_messages`
-- `schedule_chat_rooms`
-- `schedule_chat_room_members`
-- `schedule_chat_messages`
-
-### Loyalty and passport
-
-- `travel_passports`
-- `badge_definitions`
-- `passport_badges`
-- `user_checkins`
-- `passport_visited_destinations`
 
 ## Enum and Status Audit
 
@@ -128,15 +89,24 @@
 - `auth`
 - `users`
 - `destinations` partial
-- `tours` baseline
-- `bookings` baseline
-- `payments` baseline
-- `reviews` baseline
+- `tours`
+- `bookings`
+- `payments`
+- `refunds`
+- `reviews`
+- `promotions`
+- `commerce`
+- `engagement`
+- `notifications`
+- `recommendations`
+- `weather`
+- `loyalty`
+- `support`
+- `schedule chat`
 - common security/logging
 
 ### Missing for active business flows
 
-- `refunds`
 - `system`
 
 ## Definition Of Done For Phase 0
@@ -161,8 +131,6 @@
 
 ## Next Recommended Work
 
-- Start `Phase 1`
+- Begin planning `Phase 5`
 - Priority target:
-  - complete `bookings` pricing and lifecycle
-  - harden `payments/refunds`
-  - deepen `tours` beyond MVP data wiring
+  - mission definitions / user missions or deeper loyalty automation

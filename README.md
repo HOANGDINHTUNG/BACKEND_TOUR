@@ -11,8 +11,6 @@ README này không đi sâu giải thích logic từng hàm, mà tập trung mô
 - các chi tiết nhỏ nhưng đáng giá trong cách tổ chức code
 - hiện trạng mạnh, yếu, điểm cần lưu ý khi tiếp tục phát triển
 
----
-
 ## 1. Tổng Quan Kỹ Thuật
 
 ### 1.1 Mục tiêu của backend
@@ -798,6 +796,21 @@ Các test đang thấy trong dự án:
 - `UserRepositoryTest`
 - `AdminUserServiceTest`
 - `UserProfileServiceTest`
+- `Phase2UserAdminIntegrationTest`
+- `AdminPromotionCampaignServiceTest`
+- `AdminPromotionCampaignControllerTest`
+- `AdminVoucherServiceTest`
+- `AdminVoucherControllerTest`
+- `UserVoucherServiceTest`
+- `UserVoucherControllerTest`
+- `BookingPricingServiceTest`
+- `BookingControllerTest`
+- `BookingCommandServiceImplTest`
+- `PaymentCommandServiceImplTest`
+- `AdminProductServiceTest`
+- `AdminProductControllerTest`
+- `AdminComboPackageServiceTest`
+- `AdminComboPackageControllerTest`
 - `TourCommandServiceImplTest`
 - `BookingCommandServiceImplTest`
 - `PaymentCommandServiceImplTest`
@@ -844,6 +857,272 @@ Sau đợt hoàn thiện core commerce và tour catalog gần nhất:
 - đã có integration test cho `completed booking -> review -> tour rating stats`
 - có thể coi Phase 1 core là đã chốt xong và sẵn sàng chuyển sang Phase 2
 
+
+### 12.6 Trang thai sau Phase 2
+
+Sau dot hoan thien `users extras + RBAC + audit logs`:
+
+- `users/profile` da cover du `addresses`, `preferences`, `devices`
+- admin da co read/write API cho `roles`, `permissions`, `audit-logs`
+- `AuditTrailRecorder` da centralize audit metadata cho admin write flows trong module `users`
+- da co integration test `Phase2UserAdminIntegrationTest` cho `address CRUD + default switching`, `preference upsert`, `device register/remove`, `role-permission update + audit log capture`
+- co the coi Phase 2 core la da chot xong va san sang chuyen sang phase tiep theo
+
+### 12.7 Trang thai sau Task 3.1
+
+Sau dot khoi dong `Phase 3`:
+
+- da co module `promotions` cho `promotion_campaigns`
+- admin da co API `GET list/detail`, `POST`, `PUT`, `PATCH status`
+- permission gate dung `voucher.view`, `voucher.create`, `voucher.update`, `voucher.delete`
+- da co test `AdminPromotionCampaignServiceTest` va `AdminPromotionCampaignControllerTest`
+- `Phase 3` da bat dau, nhung moi hoan thanh `Task 3.1`
+
+### 12.8 Trang thai sau Task 3.2
+
+Sau dot hoan thien `vouchers core`:
+
+- da co module admin cho `vouchers` voi API `GET list/detail`, `POST`, `PUT`, `PATCH status`
+- da co validation cho `discountType`, `discountValue`, `usage limits`, `applicableScope`, `campaign window`
+- da co test `AdminVoucherServiceTest` va `AdminVoucherControllerTest`
+- `Phase 3` da hoan thanh `Task 3.1` va `Task 3.2`, con lai `voucher claims`, `pricing engine`, `booking integration`, `combo/products`
+
+### 12.9 Trang thai sau Task 3.3
+
+Sau dot hoan thien `voucher_user_claims`:
+
+- da co user-facing API `GET /users/me/vouchers` va `POST /vouchers/claim`
+- da co rule claim cho `active window`, `member level`, `total usage exhaustion`, `duplicate claim`
+- da co test `UserVoucherServiceTest` va `UserVoucherControllerTest`
+- `Phase 3` da hoan thanh `Task 3.1`, `Task 3.2`, `Task 3.3`; con lai `pricing engine`, `booking integration`, `combo/products`
+
+### 12.10 Trang thai sau Task 3.4
+
+Sau dot hoan thien `voucher pricing engine`:
+
+- da co `POST /bookings/quote` de tinh gia booking voi voucher claim cua current user
+- da co rule quote cho `minOrderValue`, `usage limits`, `applicableScope`, `member level`
+- quote chi support voucher `percentage` va `fixed_amount` cho payable amount; `gift` va `cashback` chua duoc tru tien
+- da co test `BookingPricingServiceTest` va `BookingControllerTest`
+- `Phase 3` da hoan thanh `Task 3.1` den `Task 3.4`; con lai `booking integration`, `combo/products`
+
+### 12.11 Trang thai sau Task 3.5
+
+Sau dot noi voucher vao booking/payment:
+
+- `POST /bookings` da nhan them `voucherCode` va dung chung `BookingPricingService`
+- booking moi da persist `subtotalAmount`, `discountAmount`, `voucherDiscountAmount`, `finalAmount`, `voucherId`
+- `POST /payments` neu thanh cong se tang `vouchers.usedCount` va `voucher_user_claims.usedCount` khi booking co voucher
+- da co test `BookingCommandServiceImplTest` va `PaymentCommandServiceImplTest` cover nhung thay doi nay
+- `Phase 3` da hoan thanh `Task 3.1` den `Task 3.5`; con lai `combo/products`
+
+### 12.12 Trang thai sau Task 3.6
+
+Sau dot mo `module/commerce`:
+
+- da co admin API cho `products` va `combo-packages`
+- `products` da ho tro list/detail/create/update/status
+- `combo-packages` da ho tro list/detail/create/update/status kem nested item list
+- combo item da validate ref cho `product`/`tour`, va `basePrice` phai khop tong gia niem yet cua item
+- do seed permission hien tai chua co ma rieng cho product/combo, flow dang tam dung `voucher.view|create|update|delete`
+- da co test `AdminProductServiceTest`, `AdminProductControllerTest`, `AdminComboPackageServiceTest`, `AdminComboPackageControllerTest`
+- `Phase 3` da hoan thanh `Task 3.1` den `Task 3.6`; con lai `booking combo flow`
+
+### 12.13 Trang thai sau Task 3.7
+
+Sau dot noi combo vao booking:
+
+- `POST /bookings/quote` va `POST /bookings` da nhan them `comboId`
+- combo duoc tinh nhu add-on qua `addonAmount`, va gia thanh toan duoc snapshot vao `booking_combo_items`
+- booking moi da persist `comboId` tren `bookings`
+- voucher trong phase hien tai chi discount phan tour subtotal; combo khong bi voucher discount
+- da co test `BookingPricingServiceTest` va `BookingCommandServiceImplTest` cover combo booking flow
+- `Phase 3` da hoan thanh `Task 3.1` den `Task 3.7`; con lai `verify + docs chot phase`
+
+### 12.14 Trang thai sau Phase 3
+
+Sau dot verify va chot `Phase 3`:
+
+- da co integration test `Phase3CommerceIntegrationTest` cover chuoi `voucher + combo + booking + payment`
+- test nay xac nhan `booking_combo_items` duoc snapshot dung gia tai thoi diem mua
+- test nay xac nhan `vouchers.usedCount` va `voucher_user_claims.usedCount` tang dung sau thanh toan thanh cong
+- `discountAmount` cua booking hien duoc persist theo tong `voucher discount + combo discount`, con `addonAmount` la gia combo sau discount
+- co the coi `Phase 3` da chot xong cho nhom `promotion + voucher + commerce catalog + booking commerce integration`
+- phan ngoai scope con lai lien quan commerce la `booking_products`, van dang `schema-only`
+
+### 12.15 Trang thai sau Task 4.1
+
+Sau dot mo dau `Phase 4` voi `wishlist_tours`:
+
+- da co module moi `engagement` cho self-profile wishlist flow
+- da co API:
+  - `GET /users/me/wishlist/tours`
+  - `POST /users/me/wishlist/tours/{tourId}`
+  - `DELETE /users/me/wishlist/tours/{tourId}`
+- add wishlist chi cho phep voi tour `active` va chua bi soft-delete
+- wishlist list tra ve tour summary nhe va sort theo `created_at desc`
+- `POST` va `DELETE` deu duoc thiet ke idempotent de frontend goi an toan
+- da co test `UserWishlistServiceImplTest` va `UserWishlistControllerTest`
+- `Phase 4` da bat dau, va `Task 4.1` da xong
+
+### 12.16 Trang thai sau Task 4.2
+
+Sau dot mo rong `Phase 4` voi `user_tour_views`:
+
+- `GET /tours/{id}` gio se tu ghi view neu caller da dang nhap
+- view log co cooldown 30 phut theo cap `(userId, tourId)` de tranh spam khi refresh lien tuc
+- da co them API `GET /users/me/tour-views` de tra lich su xem tour gan day
+- response history duoc dedupe theo `tourId`, giu row moi nhat va chi expose tour con `active`
+- da co test `UserTourViewServiceImplTest`, `UserTourViewControllerTest`, `TourControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` va `Task 4.2`; con lai `notifications` va `recommendation`
+
+### 12.17 Trang thai sau Task 4.3
+
+Sau dot mo rong `Phase 4` voi `notifications foundation`:
+
+- da co module moi `notifications`
+- da co API:
+  - `POST /notifications`
+  - `GET /users/me/notifications`
+  - `PATCH /users/me/notifications/{id}/read`
+  - `PATCH /users/me/notifications/read-all`
+- current foundation chi support `IN_APP`; request channel khac se bi reject
+- admin create flow hien gate bang `user.update` vi codebase chua co permission rieng cho notification write
+- user notification list chi tra cac row da visible, sap xep unread first roi den `sentAt desc`
+- da co test `AdminNotificationServiceTest`, `UserNotificationServiceTest`, `AdminNotificationControllerTest`, `UserNotificationControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1`, `Task 4.2`, `Task 4.3`; con lai `recommendation`
+
+### 12.18 Trang thai sau Task 4.4
+
+Sau dot mo rong `Phase 4` voi `recommendation groundwork`:
+
+- da co them self-profile API:
+  - `POST /users/me/recommendations/tours`
+  - `GET /users/me/recommendations/logs`
+- recommendation hien la heuristic MVP, score tour theo tag affinity, budget, trip mode, group size, seasonality, preference flags, destination affinity tu wishlist/view history, va popularity boost nhe
+- moi lan generate recommendation se persist snapshot vao `recommendation_logs`
+- `GET /users/me/recommendations/logs` tra lai snapshot da luu, khong recompute lai
+- da co test `UserRecommendationServiceImplTest` va `UserRecommendationControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1`, `Task 4.2`, `Task 4.3`, `Task 4.4`
+
+### 12.19 Trang thai sau Task 4.5
+
+Sau dot mo rong `Phase 4` voi `support foundation`:
+
+- da co module moi `support`
+- da co user API:
+  - `POST /users/me/support/sessions`
+  - `GET /users/me/support/sessions`
+  - `GET /users/me/support/sessions/{id}`
+  - `POST /users/me/support/sessions/{id}/messages`
+- da co backoffice API:
+  - `GET /support/sessions`
+  - `GET /support/sessions/{id}`
+  - `PATCH /support/sessions/{id}/assign`
+  - `PATCH /support/sessions/{id}/status`
+  - `POST /support/sessions/{id}/messages`
+- customer reply se dua session sang `waiting_staff`, staff reply se dua session sang `waiting_customer`
+- session `resolved` hoac `closed` se khong nhan them message
+- da co audit cho admin assign/status/reply
+- da co test `UserSupportServiceTest`, `AdminSupportServiceTest`, `UserSupportControllerTest`, `AdminSupportControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` den `Task 4.5`
+
+### 12.20 Trang thai sau Task 4.6
+
+Sau dot mo rong `Phase 4` voi `weather foundation`:
+
+- da co module moi `weather`
+- da co public API:
+  - `GET /destinations/{destinationUuid}/weather/forecasts`
+  - `GET /destinations/{destinationUuid}/weather/alerts`
+- da co admin API:
+  - `GET /admin/destinations/{destinationUuid}/weather/forecasts`
+  - `PUT /admin/destinations/{destinationUuid}/weather/forecasts/{forecastDate}`
+  - `GET /admin/destinations/{destinationUuid}/weather/alerts`
+  - `POST /admin/destinations/{destinationUuid}/weather/alerts`
+  - `PUT /admin/destinations/{destinationUuid}/weather/alerts/{alertId}`
+  - `PATCH /admin/destinations/{destinationUuid}/weather/alerts/{alertId}/status`
+- public chi expose destination da `approved`, `active`, va chua soft-delete
+- public forecast chi tra cac row tu hom nay tro di; public alert chi tra alert dang active trong khung hieu luc
+- admin weather write da co audit cho forecast upsert va alert create/update/status
+- da co test `PublicWeatherServiceTest`, `AdminWeatherServiceTest`, `WeatherControllerTest`, `AdminWeatherControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` den `Task 4.6`
+
+### 12.21 Trang thai sau Task 4.7
+
+Sau dot mo rong `Phase 4` voi `loyalty groundwork`:
+
+- da co module moi `loyalty`
+- da co self-profile API:
+  - `GET /users/me/passport`
+- da co admin API:
+  - `GET /badges`
+  - `GET /badges/{id}`
+  - `POST /badges`
+  - `PUT /badges/{id}`
+  - `PATCH /badges/{id}/status`
+  - `POST /badges/{badgeId}/grant/users/{userId}`
+- `GET /users/me/passport` se auto-bootstrap passport neu user chua co row trong `travel_passports`
+- passport response hien tra stats, unlocked badges, va visited destination snapshots
+- grant badge la idempotent, va chi grant cho badge dang active
+- da co test `UserPassportServiceTest`, `AdminBadgeServiceTest`, `UserPassportControllerTest`, `AdminBadgeControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` den `Task 4.7`
+
+### 12.22 Trang thai sau Task 4.8
+
+Sau dot mo rong tiep `Phase 4` voi `user_checkins groundwork`:
+
+- da co them API:
+  - `GET /users/me/checkins`
+  - `POST /users/{userId}/checkins`
+- `PATCH /bookings/{id}/check-in` gio se tu dong ghi `user_checkins` neu booking chua co row check-in
+- passport stats duoc sync sau check-in:
+  - `travel_passports.totalCheckins`
+  - `travel_passports.totalDestinations`
+  - `passport_visited_destinations`
+- manual check-in can it nhat `bookingId` hoac `destinationUuid`
+- check-in theo booking duoc de-duplicate theo `(bookingId, userId)`
+- da co test `UserCheckinControllerTest`, `AdminUserCheckinControllerTest`, va bo sung coverage trong `BookingCommandServiceImplTest`
+
+### 12.23 Trang thai sau Task 4.9
+
+Sau dot mo rong tiep `Phase 4` voi `schedule chat foundation`:
+
+- da co module moi `schedulechat`
+- da co user-facing API:
+  - `GET /schedules/{scheduleId}/chat-room`
+  - `GET /schedules/{scheduleId}/chat-room/messages`
+  - `POST /schedules/{scheduleId}/chat-room/messages`
+- da co admin/backoffice API:
+  - `GET /admin/schedules/{scheduleId}/chat-room`
+  - `PUT /admin/schedules/{scheduleId}/chat-room`
+  - `GET /admin/schedules/{scheduleId}/chat-room/messages`
+  - `POST /admin/schedules/{scheduleId}/chat-room/messages`
+- room duoc auto-bootstrap neu schedule chua co chat room
+- member rows duoc auto-sync tu booked users hop le, va current caller se duoc ensure member row khi vao room/gui tin
+- non-backoffice chi duoc vao room neu co booking cua schedule o trang thai `confirmed|checked_in|completed`
+- non-backoffice bi chan neu room `staff_only` hoac `isActive = false`
+- da co test `ScheduleChatServiceTest`, `UserScheduleChatControllerTest`, `AdminScheduleChatControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` den `Task 4.9`
+
+### 12.24 Trang thai sau Task 4.10
+
+Sau dot mo rong tiep `Phase 4` voi `crowd predictions + route estimates`:
+
+- `module/weather` da co them:
+  - `GET /destinations/{destinationUuid}/weather/crowd-predictions`
+  - `GET /admin/destinations/{destinationUuid}/weather/crowd-predictions`
+  - `PUT /admin/destinations/{destinationUuid}/weather/crowd-predictions/{predictionDate}`
+  - `GET /route-estimates`
+  - `GET /admin/route-estimates`
+  - `POST /admin/route-estimates`
+- public crowd prediction chi expose destination `approved`, `active`, chua soft-delete, va chi tra row tu hom nay tro di
+- route estimate foundation hien cho phep luu snapshot route va tra danh sach recent route theo bo loc `fromLabel/toLabel`
+- admin write da co audit cho:
+  - `crowd_prediction.upsert`
+  - `route_estimate.create`
+- da co test `PublicWeatherServiceTest`, `AdminWeatherServiceTest`, `WeatherControllerTest`, `AdminWeatherControllerTest`, `RouteEstimateControllerTest`, `AdminRouteEstimateControllerTest`
+- `Phase 4` da hoan thanh `Task 4.1` den `Task 4.10`
 ---
 
 ## 13. Đánh Giá Hiện Trạng Codebase

@@ -250,6 +250,19 @@ Các file đáng chú ý:
   - booking đã thanh toán -> `cancel_requested`
 - `PATCH /bookings/{id}/check-in`: chỉ hợp lệ với booking `confirmed` và `paymentStatus = paid`
 - `PATCH /bookings/{id}/complete`: chỉ hợp lệ với booking `checked_in`
+- `POST /bookings/quote` cần `booking.create`
+- `POST /bookings/quote` hiện đã có pricing engine dùng chung:
+  - tính `subtotalAmount`, `discountAmount`, `voucherDiscountAmount`, `addonAmount`, `finalAmount`
+  - cho phép áp voucher đã claim của current user
+  - cho phép gắn `comboId` như add-on nếu combo đang active
+  - check `minOrderValue`, `usageLimitTotal`, `usageLimitPerUser`, `applicableScope`, `applicableMemberLevel`
+  - hiện chỉ cho `percentage` và `fixed_amount` giảm payable amount
+  - `gift` và `cashback` hiện bị reject ở quote pricing
+- `POST /bookings` hiện đã dùng lại `BookingPricingService`:
+  - nhận thêm `voucherCode` va `comboId`
+  - persist `subtotalAmount`, `discountAmount`, `voucherDiscountAmount`, `addonAmount`, `finalAmount`, `voucherId`, `comboId`
+  - giữ cùng rule pricing với `POST /bookings/quote`
+  - neu co combo thi ghi them snapshot vao `booking_combo_items` voi `unit_price`, `discount_amount`, `final_price`
 
 ### Payments
 
@@ -262,6 +275,9 @@ Các file đáng chú ý:
 - `amount` phải lớn hơn `0` và phải khớp với `booking.finalAmount`
 - Booking chỉ được thanh toán khi `status` là `pending_payment` hoặc `confirmed`
 - Nếu payment thành công, backend cập nhật `booking.status = confirmed` và `booking.paymentStatus = paid`
+- Nếu booking có `voucherId`, payment success sẽ tăng:
+  - `vouchers.usedCount`
+  - `voucher_user_claims.usedCount` theo `(voucherId, booking.userId)`
 - Backend chặn tạo thêm successful payment nếu booking đã `paid` / `refunded` hoặc đã có payment `paid` trước đó
 
 ### Refunds
@@ -309,6 +325,8 @@ Các file đáng chú ý:
 - `POST /admin/tours` và `PUT /admin/tours/{id}` hiện hỗ trợ `cancellationPolicyId`
 - `GET /tours/{id}` hiện trả kèm `tags`, `media`, `seasonality`, `itineraryDays[].items`, `checklistItems`
 - `GET /tours/{id}` hiện trả thêm `cancellationPolicy` cùng `rules`
+- `GET /tours/{id}` hien se ghi `user_tour_views` neu caller da dang nhap
+- View log co cooldown 30 phut theo cap `(userId, tourId)` de tranh spam khi refresh lien tuc
 - `GET /tours` vẫn giữ response mỏng hơn và không load các collection lớn này
 - `GET /tours` hiện chỉ trả tour `active`, filter được theo `destinationId`, `keyword`, `tagIds`, `minPrice`, `maxPrice`, `travelMonth`, `featuredOnly`, `studentFriendlyOnly`, `familyFriendlyOnly`, `seniorFriendlyOnly`
 - `GET /tours` hiện filter thêm được theo `difficultyLevel`, `activityLevel`, `minDurationDays`, `maxDurationDays`
@@ -490,6 +508,7 @@ Từ thời điểm file này được tạo:
 - giảm số lần phải đọc lại toàn bộ repo
 - giảm token cho phần khởi động ngữ cảnh
 - vẫn giữ được độ hiểu sâu về dự án nếu file được duy trì đều
+
 ---
 
 ## 13. Theo Doi Audit Phase 0
@@ -507,10 +526,34 @@ Từ thời điểm file này được tạo:
 - Khi chay test voi Java 25 hien co warning lien quan Lombok `Unsafe` va Mockito dynamic agent; chua block build nhung nen xu ly sau
 - `AGENTS.md` da duoc bo sung quy uoc doc `PHASE_0_AUDIT.md` va `PHASE_0_IMPLEMENTATION_CHECKLIST.md` khi lam viec theo roadmap/ERD, dong thoi nhac dong bo `API_DOCUMENTATION.md` va uu tien `mvnw.cmd` tren Windows
 - `README.md` da duoc cap nhat de phan anh ket qua Phase 0, bo test baseline moi, tai lieu audit/checklist, va huong dan chay Maven wrapper tren Windows
-- Task `2.1` dang/khoi dong trong Phase 2 voi huong giu `user_addresses` ben trong flow `users/profile`, khong tach module rieng
+- Phase 2 da duoc chot xong cho nhom `users extras + RBAC + audit logs`, giu `user_addresses`, `user_preferences`, `user_devices` ben trong flow `users/profile` thay vi tach module rieng
 - `UserProfileController` co bo endpoint address book: `GET/POST/PUT /users/me/addresses`, `PATCH /users/me/addresses/{id}/default`, `DELETE /users/me/addresses/{id}`
 - `UserProfileController` co them preference endpoints: `GET /users/me/preferences`, `PUT /users/me/preferences`
 - `UserProfileController` co them device endpoints: `GET /users/me/devices`, `POST /users/me/devices`, `DELETE /users/me/devices/{id}`
+- module `engagement` da co `UserWishlistController` cho:
+  - `GET /users/me/wishlist/tours`
+  - `POST /users/me/wishlist/tours/{tourId}`
+  - `DELETE /users/me/wishlist/tours/{tourId}`
+- module `engagement` da co them `UserTourViewController` cho:
+  - `GET /users/me/tour-views`
+- module `notifications` da co:
+  - `POST /notifications`
+  - `GET /users/me/notifications`
+  - `PATCH /users/me/notifications/{id}/read`
+  - `PATCH /users/me/notifications/read-all`
+- module `engagement` da co them recommendation flow:
+  - `POST /users/me/recommendations/tours`
+  - `GET /users/me/recommendations/logs`
+- module `support` da co:
+  - `POST /users/me/support/sessions`
+  - `GET /users/me/support/sessions`
+  - `GET /users/me/support/sessions/{id}`
+  - `POST /users/me/support/sessions/{id}/messages`
+  - `GET /support/sessions`
+  - `GET /support/sessions/{id}`
+  - `PATCH /support/sessions/{id}/assign`
+  - `PATCH /support/sessions/{id}/status`
+  - `POST /support/sessions/{id}/messages`
 - Da co them `AdminRbacController` cho read-only RBAC endpoints: `GET /roles`, `GET /roles/{id}`, `GET /permissions`
 - `AdminRbacController` da co them write endpoints: `POST /roles`, `PUT /roles/{id}`, `PATCH /roles/{id}/permissions`
 - Rule address book da chot:
@@ -549,4 +592,246 @@ Từ thời điểm file này được tạo:
   - `ipAddress` va `userAgent` duoc lay tu request scope neu co
   - `AuditTrailRecorder` la helper dung chung de centralize `actionName/entityName` va tranh scatter string literal o tung service
   - producer scope hien tai da duoc noi vao admin write flow: `role.create`, `role.update`, `permission.assign`, `user.create`, `user.update`, `user.deactivate`
+- Rule `promotion_campaigns` da chot:
+  - module moi la `promotions`, hien co `AdminPromotionCampaignController` cho `GET list/detail`, `POST`, `PUT`, `PATCH status`
+  - permission gate dung seed co san: `voucher.view`, `voucher.create`, `voucher.update`, `voucher.delete`
+  - `code` duoc normalize uppercase; `name/description` duoc trim qua `DataNormalizer`
+  - `endAt` phai sau `startAt`
+  - `conditionsJson` va `rewardJson` duoc nhan/tra dang JSON, luu xuong DB dang JSON string
+  - audit producer da duoc noi vao `promotion_campaign.create`, `promotion_campaign.update`, `promotion_campaign.status.update`
+- Rule `vouchers` da chot:
+  - module `promotions` da co `AdminVoucherController` cho `GET list/detail`, `POST`, `PUT`, `PATCH status`
+  - permission gate dung seed co san: `voucher.view`, `voucher.create`, `voucher.update`, `voucher.delete`
+  - `code` duoc normalize uppercase; `name/description` duoc trim qua `DataNormalizer`
+  - enum da duoc typed cho `discountType` (`percentage|fixed_amount|gift|cashback`) va `applicableScope` (`all|tour|destination`)
+  - `endAt` phai sau `startAt`; voucher `percentage` phai `<= 100`; voucher non-`gift` phai co `discountValue > 0`
+  - `campaignId`, `applicableTourId`, `applicableDestinationId` duoc validate ton tai; neu bind campaign thi khung active cua voucher phai nam trong khung campaign
+  - audit producer da duoc noi vao `voucher.create`, `voucher.update`, `voucher.status.update`
+- Rule `voucher_user_claims` da chot:
+  - user-facing flow nam trong module `promotions` qua `UserVoucherController` cho `GET /users/me/vouchers` va `POST /vouchers/claim`
+  - claim lookup bang `voucherCode` sau khi normalize uppercase
+  - claim chi thanh cong khi voucher dang active, con trong thoi gian hieu luc, chua exhausted theo `usageLimitTotal/usedCount`
+  - neu voucher co `applicableMemberLevel` thi backend dang check khop exact member level cua user
+  - moi user chi duoc claim 1 lan cho moi voucher theo unique `(voucher_id, user_id)`
+  - danh sach `/users/me/vouchers` tra ve metadata voucher + `status` compute runtime (`available`, `inactive`, `expired`, `exhausted_total`, `used_up`)
+- Rule `booking quote pricing` da chot:
+  - service moi la `BookingPricingService`, exposed qua `POST /bookings/quote`
+  - quote van dung rule schedule y het `POST /bookings`: schedule ownership, status `open`, booking window, capacity
+  - quote chi ap voucher da claim boi current user
+  - quote cho phep chon `comboId`; combo duoc tinh nhu add-on va khong bi voucher discount trong phase hien tai
+  - quote support `percentage` va `fixed_amount`; `gift` va `cashback` khong duoc coi la giam payable amount o phase hien tai
+- Rule `commerce catalog` da chot:
+  - co module moi `module/commerce` cho `products` va `combo_packages`
+  - admin API active:
+    - `GET/POST/PUT/PATCH status /products`
+    - `GET/POST/PUT/PATCH status /combo-packages`
+  - do seed permission hien tai chua co ma rieng cho product/combo, controller dang tam gate bang `voucher.view|create|update|delete`
+  - `products.sku` va `combo_packages.code` duoc normalize uppercase
+  - `combo_packages.basePrice` phai bang tong `quantity * unitPrice` cua item list
+  - `discountAmount` phai `<= basePrice`
+  - `combo item` hien cho phep `product|tour|service|gift|other`; neu la `product` hoac `tour` thi `itemRefId` bat buoc ton tai
+- Rule `booking commerce integration` da chot:
+  - `POST /bookings/quote` va `POST /bookings` da nhan them `comboId`
+  - `discountAmount` cua booking/quote hien duoc tinh theo tong `voucherDiscountAmount + comboDiscountAmount`
+  - `addonAmount` la gia combo sau discount, duoc cong vao `finalAmount`
+  - khi create booking co combo, backend persist `comboId` va ghi snapshot vao `booking_combo_items` voi `unit_price`, `discount_amount`, `final_price`
+  - voucher trong phase hien tai chi discount phan `subtotalAmount` cua tour, khong discount phan combo add-on
+- Da co `Phase3CommerceIntegrationTest` de cover end-to-end cho `voucher + combo + booking + payment`
+  - xac nhan booking persist dung `discountAmount`, `voucherDiscountAmount`, `addonAmount`, `finalAmount`, `voucherId`, `comboId`
+  - xac nhan `booking_combo_items` luu snapshot dung theo gia combo tai thoi diem mua
+  - xac nhan payment thanh cong se dong bo `vouchers.usedCount` va `voucher_user_claims.usedCount`
+- Phase 3 da duoc chot xong cho nhom `promotion campaigns + vouchers + voucher claims + booking pricing + commerce catalog + booking combo integration`
+- Ngoai scope Phase 3, `booking_products` van la bang `schema-only` trong ERD
+- Rule `wishlist_tours` da chot:
+  - module moi la `engagement`, hien co self-profile flow `GET/POST/DELETE /users/me/wishlist/tours`
+  - add wishlist chi cho phep voi tour `active` va chua bi soft-delete
+  - list wishlist tra ve tour summary nhe hon `TourResponse`, sort theo `created_at desc`
+  - list hien chi tra cac tour con `active`; neu tour da inactive hoac bi xoa mem thi row wishlist khong duoc expose ra response
+  - `POST /users/me/wishlist/tours/{tourId}` la idempotent: neu row da ton tai thi tra lai row cu
+  - `DELETE /users/me/wishlist/tours/{tourId}` la idempotent: row khong ton tai van tra success
+- Rule `user_tour_views` da chot:
+  - `GET /tours/{id}` la diem record view cho current authenticated user; caller anonymous thi bo qua
+  - backend chi ghi view cho tour `active` va chua bi soft-delete
+  - co cooldown 30 phut theo cap `(userId, tourId)` truoc khi ghi them mot row moi
+  - self-profile endpoint `GET /users/me/tour-views` tra history da duoc dedupe theo `tourId`, giu row moi nhat va sort theo `viewedAt desc`
+  - response history chi expose tour con `active`
+- Rule `notifications` da chot:
+  - module moi la `notifications`, hien co admin create flow `POST /notifications` va self-profile flow `GET /users/me/notifications`, `PATCH /users/me/notifications/{id}/read`, `PATCH /users/me/notifications/read-all`
+  - current foundation chi support `IN_APP`; neu request gui channel khac thi backend reject
+  - `POST /notifications` tam thoi gate bang `user.update` vi codebase chua co permission rieng cho notification write
+  - `userId` phai la UUID hop le cua user ton tai va chua bi soft-delete
+  - future scheduling chua duoc support; neu `scheduledAt > now` thi reject
+  - `payload` neu co phai la JSON hop le
+  - `GET /users/me/notifications` chi tra cac notification da visible theo rule `sentAt <= now` hoac `scheduledAt <= now`
+  - list notifications duoc sort unread first, sau do `sentAt desc`, roi `createdAt desc`
+  - `PATCH /users/me/notifications/{id}/read` la idempotent
+  - `PATCH /users/me/notifications/read-all` chi update cac row unread va tra `updatedCount`
+- Rule `recommendation_logs` da chot:
+  - flow nam trong `module/engagement`, hien co self-profile endpoints `POST /users/me/recommendations/tours` va `GET /users/me/recommendations/logs`
+  - moi request generate recommendation se persist 1 row vao `recommendation_logs` kem `generated_result` va `scoring_detail`
+  - recommendation hien la heuristic MVP, score active tours theo:
+    - `requestedTag` hoac fallback `favoriteTags`
+    - `requestedBudget` hoac fallback `budgetLevel`
+    - `requestedTripMode` hoac fallback `preferredTripMode`
+    - `requestedPeopleCount` vs `minGroupSize/maxGroupSize`
+    - `requestedDepartureAt` month vs `tour_seasonality`
+    - flags preference nhu `prefersFamilyFriendly`, `prefersStudentBudget`, `prefersLowMobility`
+    - affinity destination tu `wishlist_tours` va `user_tour_views`
+  - featured/rating/booking count lam popularity boost nhe
+  - neu request khong truyen `requestedTag`, backend fallback sang favorite tag dau tien da normalize trong `user_preferences.favoriteTags`
+  - `GET /users/me/recommendations/logs` tra snapshot recommendation da luu, khong recompute lai
+- Rule `support_sessions` / `support_messages` da chot:
+  - module moi la `support`, hien co user flow tao/xem session va gui message, cung voi backoffice flow list/detail/assign/status/reply
+  - user endpoints gate bang `support.view` va `support.reply`
+  - admin/backoffice endpoints gate bang `support.view`, `support.assign`, `support.reply`
+  - tao session bat buoc co `initialMessage`; backend tao luon first message `senderType = customer`
+  - customer reply se dua session sang `waiting_staff`
+  - staff reply se dua session sang `waiting_customer`
+  - session `resolved` hoac `closed` khong cho gui them message
+  - `PATCH /support/sessions/{id}/assign` cho phep assign hoac clear assignment; `assignedStaffId` neu co phai tro toi user active va internal/backoffice
+  - `PATCH /support/sessions/{id}/status` neu set `resolved`/`closed` thi ghi `endedAt`; neu mo lai thi clear `endedAt`
+  - admin reply hien audit qua `support_message.reply`; assign/status audit qua `support_session.assign` va `support_session.status.update`
+- Rule `schedule_chat_rooms` / `schedule_chat_room_members` / `schedule_chat_messages` da chot:
+  - module moi la `schedulechat`
+  - user-facing endpoints hien co:
+    - `GET /schedules/{scheduleId}/chat-room`
+    - `GET /schedules/{scheduleId}/chat-room/messages`
+    - `POST /schedules/{scheduleId}/chat-room/messages`
+  - admin/backoffice endpoints hien co:
+    - `GET /admin/schedules/{scheduleId}/chat-room`
+    - `PUT /admin/schedules/{scheduleId}/chat-room`
+    - `GET /admin/schedules/{scheduleId}/chat-room/messages`
+    - `POST /admin/schedules/{scheduleId}/chat-room/messages`
+  - user flow gate bang `isAuthenticated()` va service layer moi kiem tra quyen vao room
+  - non-backoffice chi vao duoc room neu co booking cua schedule o trang thai `confirmed|checked_in|completed`
+  - non-backoffice bi reject neu room `staff_only` hoac `isActive = false`
+  - backend auto-bootstrap room neu schedule chua co chat room
+  - backend auto-sync `schedule_chat_room_members` tu booked users hop le, va dam bao current caller co member row khi truy cap/gui tin
+  - gui message se reject neu member row cua current user dang `isMuted = true`
+  - admin room upsert hien audit qua `schedule_chat_room.upsert`; admin gui tin audit qua `schedule_chat_message.send`
+- Da co test cho wishlist flow:
+  - `UserWishlistServiceImplTest`
+  - `UserWishlistControllerTest`
+- Da co test cho user tour view flow:
+  - `UserTourViewServiceImplTest`
+  - `UserTourViewControllerTest`
+  - `TourControllerTest`
+- Da co test cho notification foundation:
+  - `AdminNotificationServiceTest`
+  - `UserNotificationServiceTest`
+  - `AdminNotificationControllerTest`
+  - `UserNotificationControllerTest`
+- Da co test cho recommendation groundwork:
+  - `UserRecommendationServiceImplTest`
+  - `UserRecommendationControllerTest`
+- Da co test cho support foundation:
+  - `UserSupportServiceTest`
+  - `AdminSupportServiceTest`
+  - `UserSupportControllerTest`
+  - `AdminSupportControllerTest`
+- Da co test cho schedule chat foundation:
+  - `ScheduleChatServiceTest`
+  - `UserScheduleChatControllerTest`
+  - `AdminScheduleChatControllerTest`
+- Rule `weather_forecasts` / `weather_alerts` da chot:
+  - module moi la `weather`, hien co public read flow theo destination va admin manage flow theo destination
+  - public endpoints la `GET /destinations/{destinationUuid}/weather/forecasts` va `GET /destinations/{destinationUuid}/weather/alerts`
+  - public chi expose destination `approved`, `active`, chua soft-delete
+  - public forecast chi tra cac row `forecastDate >= today`
+  - public alert chi tra cac row `isActive = true`, `validFrom <= now`, `validTo >= now`
+  - admin endpoints la:
+    - `GET /admin/destinations/{destinationUuid}/weather/forecasts`
+    - `PUT /admin/destinations/{destinationUuid}/weather/forecasts/{forecastDate}`
+    - `GET /admin/destinations/{destinationUuid}/weather/alerts`
+    - `POST /admin/destinations/{destinationUuid}/weather/alerts`
+    - `PUT /admin/destinations/{destinationUuid}/weather/alerts/{alertId}`
+    - `PATCH /admin/destinations/{destinationUuid}/weather/alerts/{alertId}/status`
+  - forecast upsert validate `tempMin <= tempMax`, percent fields trong `0..100`, `windSpeed >= 0`, va `rawPayload` neu co phai la JSON hop le
+  - weather alert validate `validTo >= validFrom`; `scheduleId` neu co phai ton tai va thuoc ve tour co destination khop voi destination cua alert
+  - admin weather write hien audit qua:
+    - `weather_forecast.upsert`
+    - `weather_alert.create`
+    - `weather_alert.update`
+    - `weather_alert.status.update`
+- Rule `crowd_predictions` / `route_estimates` da chot:
+  - van nam trong `module/weather`
+  - public endpoints hien co:
+    - `GET /destinations/{destinationUuid}/weather/crowd-predictions`
+    - `GET /route-estimates`
+  - admin endpoints hien co:
+    - `GET /admin/destinations/{destinationUuid}/weather/crowd-predictions`
+    - `PUT /admin/destinations/{destinationUuid}/weather/crowd-predictions/{predictionDate}`
+    - `GET /admin/route-estimates`
+    - `POST /admin/route-estimates`
+  - public crowd prediction chi expose destination `approved`, `active`, chua soft-delete va chi tra row `predictionDate >= today`
+  - crowd prediction upsert validate:
+    - `crowdLevel` bat buoc
+    - `predictedVisitors >= 0` neu co
+    - `confidenceScore` neu co phai trong `0..100`
+    - `reasonsJson` neu co phai la JSON hop le
+  - route estimate public/admin list hien filter bang `containsIgnoreCase` tren `fromLabel` / `toLabel`, sap xep `createdAt desc`
+  - route estimate create validate:
+    - `fromLabel`, `toLabel` bat buoc
+    - latitude/longitude cua moi dau diem phai di theo cap
+    - latitude trong `-90..90`, longitude trong `-180..180`
+    - `distanceKm >= 0`, `durationMinutes >= 0` neu co
+  - admin write hien audit qua:
+    - `crowd_prediction.upsert`
+    - `route_estimate.create`
+- Da co test cho weather foundation:
+  - `PublicWeatherServiceTest`
+  - `AdminWeatherServiceTest`
+  - `WeatherControllerTest`
+  - `AdminWeatherControllerTest`
+  - `RouteEstimateControllerTest`
+  - `AdminRouteEstimateControllerTest`
+- Rule `travel_passports` / `badge_definitions` / `passport_badges` da chot:
+  - module moi la `loyalty`
+  - self-profile endpoint `GET /users/me/passport` tra travel passport snapshot cua current user
+  - neu current user chua co row trong `travel_passports`, backend se auto-bootstrap passport row truoc khi tra response
+  - passport response hien gom:
+    - passport core stats
+    - danh sach badge da mo khoa sap xep theo `unlockedAt desc`
+    - visited destination snapshots sap xep theo `lastVisitedAt desc`
+  - admin badge endpoints hien co:
+    - `GET /badges`
+    - `GET /badges/{id}`
+    - `POST /badges`
+    - `PUT /badges/{id}`
+- Rule `mission_definitions` / `user_missions` da chot:
+  - admin endpoints hien co: `GET/POST/PUT/PATCH /admin/missions`, gate bang `loyalty.view` va `loyalty.update`
+  - user endpoints hien co: `GET /users/me/missions` va `POST /users/me/missions/{id}/claim`
+  - mission core logic:
+    - `TOTAL_BOOKINGS` code duoc track tu `BookingCommandService.completeBooking`
+    - `TOTAL_REVIEWS` code duoc track tu `ReviewService.createReview`
+    - completion gui check-in-app notification kieu `SYSTEM`
+    - `POINTS` reward cong loyalty points cho user
+    - `VOUCHER` reward tao row `voucher_user_claims` cho user (phai co `rewardRefId` tro vao `voucherId`)
+    - `PATCH /badges/{id}/status`
+- Rule `Phase 5: Support & Community Perfecting` da chot:
+  - `support_sessions` hien co them:
+    - `rating` (Integer 1..5) va `feedback` (String)
+    - endpoint `PATCH /support/sessions/{id}/rate` cho phep user danh gia sau khi session resolved
+    - admin tool `GET /admin/support/sessions` hien cho phep advanced filtering theo `status`, `userId`, `assignedStaffId` dung JpaSpecification
+  - `schedule_chat` hien co them:
+    - pagination cho messages (`Pageable` in `GET /schedules/{id}/chat-room/messages` va admin equivalent)
+    - user moderation: `PATCH /admin/schedules/{id}/chat-room/members/{userId}/mute` de cam chat
+  - trigger thong bao:
+    - staff reply support session -> gui in-app notification cho customer
+    - chat message moi -> gui in-app notification cho cac member khac (co snippet truncation)
+  - foundation: `InternalNotificationService` duoc su dung de trigger thong bao tu cac backend modules khac
+    - `POST /badges/{badgeId}/grant/users/{userId}`
+  - codebase chua co permission rieng cho badge/passport admin flow, nen tam gate bang `user.view` va `user.update`
+  - badge `code` duoc normalize uppercase va `conditionJson` neu co phai la JSON hop le
+  - grant badge la idempotent: neu passport da co badge thi backend tra row cu, khong tao trung
+  - grant badge chi cho phep voi badge dang active
+  - loyalty groundwork hien da noi `user_checkins` vao app layer; `PATCH /bookings/{id}/check-in` se tu dong ghi check-in va sync passport stats
+- Da co test cho loyalty groundwork:
+  - `UserPassportServiceTest`
+  - `AdminBadgeServiceTest`
+  - `UserPassportControllerTest`
+  - `AdminBadgeControllerTest`
+  - `UserCheckinControllerTest`
+  - `AdminUserCheckinControllerTest`
+- Da co `Phase2UserAdminIntegrationTest` de cover end-to-end cho `address CRUD + default switching`, `preference upsert`, `device register/remove`, `role-permission update + audit log capture`
 - `UserProfileFacade.updateMyProfile` khong con validate unique o facade; de command/service xu ly voi `currentUserId` dung scope

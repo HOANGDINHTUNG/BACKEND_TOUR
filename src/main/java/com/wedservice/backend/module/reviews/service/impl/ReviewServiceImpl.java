@@ -25,6 +25,7 @@ import com.wedservice.backend.module.reviews.repository.ReviewRepository;
 import com.wedservice.backend.module.reviews.service.command.ReviewCommandService;
 import com.wedservice.backend.module.reviews.service.query.ReviewQueryService;
 import com.wedservice.backend.module.reviews.validator.ReviewValidator;
+import com.wedservice.backend.module.loyalty.service.MissionTrackerService;
 import com.wedservice.backend.module.tours.service.TourRuntimeStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -54,6 +55,7 @@ public class ReviewServiceImpl implements ReviewCommandService, ReviewQueryServi
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final ReviewValidator reviewValidator;
     private final TourRuntimeStatsSyncService tourRuntimeStatsSyncService;
+    private final MissionTrackerService missionTrackerService;
 
     @Override
     @Transactional
@@ -89,6 +91,7 @@ public class ReviewServiceImpl implements ReviewCommandService, ReviewQueryServi
 
         saveAspects(review.getId(), request.getAspects());
         tourRuntimeStatsSyncService.syncTourRating(review.getTourId());
+        missionTrackerService.incrementProgress(booking.getUserId(), "TOTAL_REVIEWS", java.math.BigDecimal.ONE);
         return toResponse(review);
     }
 

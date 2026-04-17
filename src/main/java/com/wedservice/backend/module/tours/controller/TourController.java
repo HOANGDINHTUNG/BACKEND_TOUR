@@ -2,6 +2,7 @@ package com.wedservice.backend.module.tours.controller;
 
 import com.wedservice.backend.common.response.ApiResponse;
 import com.wedservice.backend.common.response.PageResponse;
+import com.wedservice.backend.module.engagement.facade.UserTourViewFacade;
 import com.wedservice.backend.module.tours.dto.request.TourSearchRequest;
 import com.wedservice.backend.module.tours.dto.response.TourResponse;
 import com.wedservice.backend.module.tours.dto.response.TourScheduleResponse;
@@ -22,6 +23,7 @@ import java.util.List;
 public class TourController {
 
     private final TourFacade tourFacade;
+    private final UserTourViewFacade userTourViewFacade;
 
     @GetMapping
     public ApiResponse<PageResponse<TourResponse>> searchTours(@Valid @ModelAttribute TourSearchRequest request) {
@@ -32,7 +34,9 @@ public class TourController {
 
     @GetMapping("/{id}")
     public ApiResponse<TourResponse> getTour(@PathVariable Long id) {
-        return ApiResponse.success(tourFacade.getTour(id));
+        TourResponse response = tourFacade.getTour(id);
+        userTourViewFacade.recordCurrentUserTourViewIfAuthenticated(id);
+        return ApiResponse.success(response);
     }
 
     @GetMapping("/{id}/schedules")
