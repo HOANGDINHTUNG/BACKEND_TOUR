@@ -1463,6 +1463,8 @@ CREATE OR REPLACE VIEW v_user_effective_permissions AS
             JOIN
         roles r ON r.id = ur.role_id AND r.is_active = TRUE
             JOIN
+        role_permissions rp ON rp.role_id = r.id
+            JOIN
         permissions p ON p.id = rp.permission_id AND p.is_active = TRUE; 
 
 CREATE OR REPLACE VIEW v_transactions AS
@@ -1500,7 +1502,8 @@ CREATE OR REPLACE VIEW v_transactions AS
     WHERE r.status = 'completed';
 
 -- 17. FUNCTIONS / PROCEDURES -- 
-DELIMITER $$ CREATE FUNCTION fn_generate_code(p_prefix VARCHAR(10)) 
+DELIMITER $$
+CREATE FUNCTION fn_generate_code(p_prefix VARCHAR(10)) 
 RETURNS VARCHAR(50) DETERMINISTIC BEGIN RETURN CONCAT( 
 	UPPER(p_prefix), 
     DATE_FORMAT(NOW(), '%y%m%d%H%i%s'), 
@@ -1538,7 +1541,10 @@ AND TIMESTAMPDIFF(HOUR, NOW(), ts.departure_at) >= IFNULL(cpr.min_hours_before, 
 AND ( cpr.max_hours_before IS NULL OR TIMESTAMPDIFF(HOUR, NOW(), ts.departure_at) < cpr.max_hours_before ) 
 WHERE b.id = p_booking_id ORDER BY cpr.min_hours_before DESC LIMIT 1; END$$ 
 -- ========================================================= -- 18. TRIGGERS -- ========================================================= 
-CREATE TRIGGER trg_users_before_insert BEFORE INSERT ON users FOR EACH ROW BEGIN IF NEW.id IS NULL OR NEW.id = '' THEN SET NEW.id = UUID(); END IF; END$$ CREATE TRIGGER trg_guides_before_insert BEFORE INSERT ON guides FOR EACH ROW BEGIN IF NEW.code IS NULL OR NEW.code = '' THEN SET NEW.code = fn_generate_code('GD'); END IF; END$$ CREATE TRIGGER trg_tour_schedules_before_insert BEFORE INSERT ON tour_schedules FOR EACH ROW BEGIN IF NEW.schedule_code IS NULL OR NEW.schedule_code = '' THEN SET NEW.schedule_code = fn_generate_code('SCH'); END IF; END$$ CREATE TRIGGER trg_bookings_before_insert BEFORE INSERT ON bookings FOR EACH ROW BEGIN DECLARE v_capacity INT DEFAULT 0; DECLARE v_booked INT DEFAULT 0; DECLARE v_new_seats INT DEFAULT 0; IF NEW.booking_code IS NULL OR NEW.booking_code = '' THEN SET NEW.booking_code = fn_generate_code('BK'); END IF; SET v_new_seats = NEW.adults + NEW.children + NEW.seniors;SELECT 
+CREATE TRIGGER trg_users_before_insert BEFORE INSERT ON users FOR EACH ROW BEGIN IF NEW.id IS NULL OR NEW.id = '' THEN SET NEW.id = UUID(); END IF; END$$ 
+CREATE TRIGGER trg_guides_before_insert BEFORE INSERT ON guides FOR EACH ROW BEGIN IF NEW.code IS NULL OR NEW.code = '' THEN SET NEW.code = fn_generate_code('GD'); END IF; END$$ 
+CREATE TRIGGER trg_tour_schedules_before_insert BEFORE INSERT ON tour_schedules FOR EACH ROW BEGIN IF NEW.schedule_code IS NULL OR NEW.schedule_code = '' THEN SET NEW.schedule_code = fn_generate_code('SCH'); END IF; END$$ 
+CREATE TRIGGER trg_bookings_before_insert BEFORE INSERT ON bookings FOR EACH ROW BEGIN DECLARE v_capacity INT DEFAULT 0; DECLARE v_booked INT DEFAULT 0; DECLARE v_new_seats INT DEFAULT 0; IF NEW.booking_code IS NULL OR NEW.booking_code = '' THEN SET NEW.booking_code = fn_generate_code('BK'); END IF; SET v_new_seats = NEW.adults + NEW.children + NEW.seniors;SELECT 
     capacity_total, booked_seats
 INTO v_capacity , v_booked FROM
     tour_schedules
@@ -1569,7 +1575,8 @@ SET
     total_spent = total_spent + NEW.final_amount,
     loyalty_points = loyalty_points + FLOOR(NEW.final_amount / 1000000)
 WHERE
-    id = NEW.user_id; END IF; END$$ CREATE TRIGGER trg_bookings_after_delete AFTER DELETE ON bookings FOR EACH ROW BEGIN CALL sp_sync_schedule_booked_seats(OLD.schedule_id); CALL sp_sync_tour_booking_stats(OLD.tour_id); END$$ CREATE TRIGGER trg_payments_before_insert BEFORE INSERT ON payments FOR EACH ROW BEGIN IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN SET NEW.payment_code = fn_generate_code('PM'); END IF; END$$ CREATE TRIGGER trg_refund_requests_before_insert BEFORE INSERT ON refund_requests FOR EACH ROW BEGIN IF NEW.refund_code IS NULL OR NEW.refund_code = '' THEN SET NEW.refund_code = fn_generate_code('RF'); END IF; END$$ CREATE TRIGGER trg_support_sessions_before_insert BEFORE INSERT ON support_sessions FOR EACH ROW BEGIN IF NEW.session_code IS NULL OR NEW.session_code = '' THEN SET NEW.session_code = fn_generate_code('CS'); END IF; END$$ CREATE TRIGGER trg_users_after_insert AFTER INSERT ON users FOR EACH ROW BEGIN DECLARE v_user_role_id BIGINT; INSERT INTO travel_passports(user_id, passport_no) VALUES (NEW.id, fn_generate_code('TVP')); SELECT id INTO v_user_role_id FROM roles WHERE code = 'USER' LIMIT 1; IF v_user_role_id IS NOT NULL THEN INSERT IGNORE INTO user_roles(user_id, role_id, is_primary, assigned_at, note) VALUES (NEW.id, v_user_role_id, TRUE, NOW(), 'Auto assign default USER role'); END IF; END$$ CREATE TRIGGER trg_reviews_after_insert AFTER INSERT ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(NEW.tour_id); END$$ CREATE TRIGGER trg_reviews_after_update AFTER UPDATE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); IF NEW.tour_id <> OLD.tour_id THEN CALL sp_sync_tour_rating(NEW.tour_id); END IF; END$$ CREATE TRIGGER trg_reviews_after_delete AFTER DELETE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); END$$ CREATE TRIGGER trg_user_checkins_after_insert AFTER INSERT ON user_checkins FOR EACH ROW BEGIN UPDATE travel_passports tp SET tp.total_checkins = ( SELECT COUNT(*) FROM user_checkins uc WHERE uc.user_id = NEW.user_id ) WHERE tp.user_id = NEW.user_id; END$$ DELIMITER ; 
+    id = NEW.user_id; END IF; END$$ CREATE TRIGGER trg_bookings_after_delete AFTER DELETE ON bookings FOR EACH ROW BEGIN CALL sp_sync_schedule_booked_seats(OLD.schedule_id); CALL sp_sync_tour_booking_stats(OLD.tour_id); END$$ CREATE TRIGGER trg_payments_before_insert BEFORE INSERT ON payments FOR EACH ROW BEGIN IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN SET NEW.payment_code = fn_generate_code('PM'); END IF; END$$ CREATE TRIGGER trg_refund_requests_before_insert BEFORE INSERT ON refund_requests FOR EACH ROW BEGIN IF NEW.refund_code IS NULL OR NEW.refund_code = '' THEN SET NEW.refund_code = fn_generate_code('RF'); END IF; END$$ CREATE TRIGGER trg_support_sessions_before_insert BEFORE INSERT ON support_sessions FOR EACH ROW BEGIN IF NEW.session_code IS NULL OR NEW.session_code = '' THEN SET NEW.session_code = fn_generate_code('CS'); END IF; END$$ CREATE TRIGGER trg_users_after_insert AFTER INSERT ON users FOR EACH ROW BEGIN DECLARE v_user_role_id BIGINT; INSERT INTO travel_passports(user_id, passport_no) VALUES (NEW.id, fn_generate_code('TVP')); SELECT id INTO v_user_role_id FROM roles WHERE code = 'USER' LIMIT 1; IF v_user_role_id IS NOT NULL THEN INSERT IGNORE INTO user_roles(user_id, role_id, is_primary, assigned_at, note) VALUES (NEW.id, v_user_role_id, TRUE, NOW(), 'Auto assign default USER role'); END IF; END$$ CREATE TRIGGER trg_reviews_after_insert AFTER INSERT ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(NEW.tour_id); END$$ CREATE TRIGGER trg_reviews_after_update AFTER UPDATE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); IF NEW.tour_id <> OLD.tour_id THEN CALL sp_sync_tour_rating(NEW.tour_id); END IF; END$$ CREATE TRIGGER trg_reviews_after_delete AFTER DELETE ON reviews FOR EACH ROW BEGIN CALL sp_sync_tour_rating(OLD.tour_id); END$$ CREATE TRIGGER trg_user_checkins_after_insert AFTER INSERT ON user_checkins FOR EACH ROW BEGIN UPDATE travel_passports tp SET tp.total_checkins = ( SELECT COUNT(*) FROM user_checkins uc WHERE uc.user_id = NEW.user_id ) WHERE tp.user_id = NEW.user_id; END$$
+DELIMITER ; 
 -- ========================================================= -- 19. DEFAULT DATA -- ========================================================= 
 
 INSERT IGNORE INTO roles (code, name, description, role_scope, hierarchy_level, is_system_role, is_active) 
