@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -181,10 +182,20 @@ public class UserProfileService {
             throw new BadRequestException("At least deviceName or pushToken must be provided");
         }
 
-        UserDevice device = StringUtils.hasText(normalizedPushToken)
-                ? userDeviceRepository.findFirstByUserIdAndPushToken(userId, normalizedPushToken)
-                    .orElseGet(() -> UserDevice.builder().userId(userId).build())
-                : UserDevice.builder().userId(userId).build();
+        UserDevice device = null;
+        if (StringUtils.hasText(normalizedPushToken)) {
+            Optional<UserDevice> existing = userDeviceRepository.findFirstByUserIdAndPushToken(userId, normalizedPushToken);
+            if (existing.isPresent()) {
+                if (Boolean.TRUE.equals(existing.get().getIsActive())) {
+                    throw new BadRequestException("Device with this push token is already registered and active.");
+                }
+                device = existing.get();
+            }
+        }
+
+        if (device == null) {
+            device = UserDevice.builder().userId(userId).build();
+        }
 
         applyDeviceRequest(device, request, normalizedDeviceName, normalizedPushToken);
         device.setIsActive(true);
@@ -198,7 +209,7 @@ public class UserProfileService {
         UUID userId = findCurrentUser().getId();
         UserDevice device = findMyDevice(userId, id);
         if (!Boolean.TRUE.equals(device.getIsActive())) {
-            return;
+            throw new BadRequestException("Device has already been removed or is inactive.");
         }
         device.setIsActive(false);
         userDeviceRepository.save(device);

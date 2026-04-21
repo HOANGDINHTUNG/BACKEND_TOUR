@@ -1,7 +1,7 @@
 spring:
   debug: true
   datasource:
-    url: jdbc:mysql://localhost:3308/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3307/wedservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:wed_app_user}
     password: ${DB_PASSWORD:123456}
   flyway:

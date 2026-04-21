@@ -536,6 +536,33 @@ class UserProfileServiceTest {
     }
 
     @Test
+    void registerMyDevice_throwsBadRequest_whenPushTokenAlreadyActive() {
+        UUID userId = UUID.randomUUID();
+        User currentUser = activeUser(userId);
+        UserDeviceRequest request = UserDeviceRequest.builder()
+                .platform("android")
+                .pushToken("token-already-active")
+                .build();
+        UserDevice activeDevice = UserDevice.builder()
+                .id(82L)
+                .userId(userId)
+                .pushToken("token-already-active")
+                .isActive(true)
+                .build();
+
+        when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
+        when(userDeviceRepository.findFirstByUserIdAndPushToken(userId, "token-already-active"))
+                .thenReturn(Optional.of(activeDevice));
+
+        assertThatThrownBy(() -> userProfileService.registerMyDevice(request))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Device with this push token is already registered and active.");
+
+        verify(userDeviceRepository, never()).save(any(UserDevice.class));
+    }
+
+    @Test
     void registerMyDevice_rejectsWhenNoDeviceNameAndNoPushToken() {
         UUID userId = UUID.randomUUID();
         User currentUser = activeUser(userId);
@@ -563,7 +590,7 @@ class UserProfileServiceTest {
                 .platform("ios")
                 .deviceName("iPhone")
                 .pushToken("token-9")
-                .appVersion("2.0.0")
+                .appVersion( "2.0.0")
                 .isActive(true)
                 .build();
 
@@ -576,6 +603,27 @@ class UserProfileServiceTest {
 
         assertThat(device.getIsActive()).isFalse();
         verify(userDeviceRepository).save(device);
+    }
+
+    @Test
+    void deleteMyDevice_throwsBadRequest_whenDeviceAlreadyInactive() {
+        UUID userId = UUID.randomUUID();
+        User currentUser = activeUser(userId);
+        UserDevice device = UserDevice.builder()
+                .id(92L)
+                .userId(userId)
+                .isActive(false)
+                .build();
+
+        when(authenticatedUserProvider.getRequiredCurrentUserId()).thenReturn(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
+        when(userDeviceRepository.findByIdAndUserId(92L, userId)).thenReturn(Optional.of(device));
+
+        assertThatThrownBy(() -> userProfileService.deleteMyDevice(92L))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Device has already been removed or is inactive.");
+
+        verify(userDeviceRepository, never()).save(any(UserDevice.class));
     }
 
     private User activeUser(UUID userId) {

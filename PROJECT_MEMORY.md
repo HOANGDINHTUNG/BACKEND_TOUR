@@ -40,7 +40,7 @@
 - Port hiện tại: `8088`
 - Context path: `/api/v1`
 - Profile mặc định: `dev`
-- Runtime dev hiện trỏ MySQL schema `wedservice` qua port `3308`
+- Runtime dev hiện trỏ MySQL schema `wedservice` qua port `3306`
 - Dev không còn để Hibernate tự sửa schema; hướng chuẩn hiện tại là để Flyway quản lý migration
 - Lệnh chạy thường dùng:
 

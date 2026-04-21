@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.wedservice.backend.module.users.entity.User;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.common.util.DataNormalizer;
@@ -18,6 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // login bằng username/password hoặc khi bạn check JWT (filter của bạn cũng dùng)
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         String normalizedLogin = DataNormalizer.normalizeLoginIdentifier(username);
 

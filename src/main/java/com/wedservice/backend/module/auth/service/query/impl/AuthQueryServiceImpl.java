@@ -16,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class AuthQueryServiceImpl implements AuthQueryService {
     private final JwtService jwtService;
 
     @Override
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         String login = DataNormalizer.normalizeLoginIdentifier(request.getLogin());
 
@@ -58,6 +60,7 @@ public class AuthQueryServiceImpl implements AuthQueryService {
      * Mỗi lần refresh đều tạo lại cả access token lẫn refresh token mới.
      */
     @Override
+    @Transactional(readOnly = true)
     public AuthResponse refresh(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 

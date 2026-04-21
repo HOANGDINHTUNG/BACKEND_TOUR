@@ -1213,6 +1213,20 @@ Windows:
 
 ---
 
+### 14.6 Mysql
+
+```powershell
+SET GLOBAL log_bin_trust_function_creators = 1;
+```
+
+Windows:
+
+```powershell
+.\mvnw.cmd test
+```
+
+---
+
 ## 15. Tài Liệu Liên Quan
 
 - [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)

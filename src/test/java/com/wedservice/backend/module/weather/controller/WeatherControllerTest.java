@@ -2,10 +2,8 @@ package com.wedservice.backend.module.weather.controller;
 
 import com.wedservice.backend.common.exception.GlobalExceptionHandler;
 import com.wedservice.backend.module.weather.dto.response.CrowdPredictionResponse;
-import com.wedservice.backend.module.weather.entity.RouteEstimate;
 import com.wedservice.backend.module.weather.dto.response.WeatherAlertResponse;
 import com.wedservice.backend.module.weather.dto.response.WeatherForecastResponse;
-import com.wedservice.backend.module.weather.dto.response.RouteEstimateResponse;
 import com.wedservice.backend.module.weather.entity.WeatherSeverity;
 import com.wedservice.backend.module.weather.facade.WeatherFacade;
 import org.junit.jupiter.api.BeforeEach;

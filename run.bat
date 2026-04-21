@@ -1,0 +1,3 @@
+@echo off
+echo Starting TravelViet Backend...
+.\mvnw.cmd spring-boot:run

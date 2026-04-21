@@ -6,13 +6,10 @@ import com.wedservice.backend.module.auth.security.CustomUserDetails;
 import com.wedservice.backend.module.auth.service.command.AuthCommandService;
 import com.wedservice.backend.module.auth.validator.AuthValidator;
 import com.wedservice.backend.module.users.entity.Gender;
-import com.wedservice.backend.module.users.entity.Role;
 import com.wedservice.backend.module.users.entity.Status;
 import com.wedservice.backend.module.users.entity.UserCategory;
 import com.wedservice.backend.module.users.entity.User;
-import com.wedservice.backend.module.users.entity.UserRole;
 import com.wedservice.backend.module.users.mapper.UserMapper;
-import com.wedservice.backend.module.users.repository.RoleRepository;
 import com.wedservice.backend.module.users.repository.UserRepository;
 import com.wedservice.backend.module.auth.security.JwtService;
 import com.wedservice.backend.module.users.event.UserRegisteredEvent;
@@ -20,6 +17,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import com.wedservice.backend.common.util.DataNormalizer;
 
@@ -33,9 +31,9 @@ public class AuthCommandServiceImpl implements AuthCommandService {
     private final UserMapper userMapper;
     private final AuthValidator authValidator;
     private final ApplicationEventPublisher eventPublisher;
-    private final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = DataNormalizer.normalizeEmail(request.getEmail());
         String phone = DataNormalizer.normalizePhone(request.getPhone());
@@ -57,17 +55,6 @@ public class AuthCommandServiceImpl implements AuthCommandService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        if (savedUser.getUserRoles().isEmpty()) {
-            Role defaultRole = roleRepository.findByCode("USER").orElse(null);
-            if (defaultRole != null) {
-                savedUser.getUserRoles().add(UserRole.builder()
-                        .user(savedUser)
-                        .role(defaultRole)
-                        .isPrimary(true)
-                        .build());
-                savedUser = userRepository.save(savedUser);
-            }
-        }
 
         // Publish registration event for async processing
         eventPublisher.publishEvent(new UserRegisteredEvent(
@@ -76,7 +63,12 @@ public class AuthCommandServiceImpl implements AuthCommandService {
                 savedUser.getFullName()
         ));
 
+        // Note: The 'USER' role and 'TravelPassport' are automatically assigned 
+        // by a database trigger (trg_users_after_insert).
+        // CustomUserDetails and JwtService handle the case where roles are not yet 
+        // refreshed in the Hibernate session by defaulting to 'USER'.
         CustomUserDetails userDetails = CustomUserDetails.fromUser(savedUser);
+        
         return AuthResponse.builder()
                 .user(userMapper.toDto(savedUser))
                 .tokenType("Bearer")

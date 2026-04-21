@@ -15,7 +15,6 @@ import com.wedservice.backend.module.weather.dto.request.AdminUpsertWeatherForec
 import com.wedservice.backend.module.weather.dto.request.AdminWeatherAlertRequest;
 import com.wedservice.backend.module.weather.dto.request.UpdateWeatherAlertStatusRequest;
 import com.wedservice.backend.module.weather.entity.CrowdPrediction;
-import com.wedservice.backend.module.weather.entity.RouteEstimate;
 import com.wedservice.backend.module.weather.entity.WeatherAlert;
 import com.wedservice.backend.module.weather.entity.WeatherForecast;
 import com.wedservice.backend.module.weather.entity.WeatherSeverity;
